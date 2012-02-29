@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 # 
@@ -13,3 +15,26 @@
 # 
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import json
+
+import requests
+
+def main():
+    example_data = json.dumps({
+            "#": "Hello, World!",
+            "time": 1330535386,
+            "email": "cal@calpaterson.com"
+            })
+    response = requests.post(
+        "http://localhost:5000/mark",
+        data=json.dumps(example_data),
+        headers={"Content-Type": "application/json"})
+    print response.content
+    # if response.status_code == 201:
+    #     print "Success!"
+    # else:
+    #     print "Failed!"
+
+if __name__ == "__main__":
+    main()

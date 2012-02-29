@@ -1,0 +1,16 @@
+Recall
+======
+
+About
+-----
+Recall is a program for storing bookmarks of different things.
+
+Running the server
+------------------
+Dependancies:
+    - mongodb
+    - pymongo
+    - python flask
+    - python requests
+
+First, run mongodb.  Then ./server.py and then ./tmp/load_test_data.py
