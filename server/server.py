@@ -47,7 +47,7 @@ def getAllMarksByEmail(email):
 def addMark():
     mark_as_dict = json.loads(request.json)
     mark_as_dict[u"url"] = config["api-hostname"] + "/mark/" + mark_as_dict[u"@"] \
-        + "/" + str(mark_as_dict[u"time"])
+        + "/" + str(mark_as_dict[u"~"])
     db = Connection("localhost", 27017).recall.marks
     db.insert(mark_as_dict)
     del(mark_as_dict["_id"])
