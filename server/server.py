@@ -46,7 +46,7 @@ def getAllMarks(email):
 @app.route("/mark", methods=["POST"])
 def addMark():
     mark_as_dict = json.loads(request.json)
-    mark_as_dict[u"url"] = config["SERVER_URL"] + "mark/" + mark_as_dict[u"email"] \
+    mark_as_dict[u"url"] = config["api-url"] + "mark/" + mark_as_dict[u"email"] \
         + "/" + str(mark_as_dict[u"time"])
     db = Connection("localhost", 27017).recall.marks
     db.insert(mark_as_dict)
