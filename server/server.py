@@ -53,7 +53,8 @@ def get_all_marks_by_email(email):
 def add_mark():
     mark_as_dict = json.loads(request.json)
     try:
-        mark_as_dict[u"url"] = config["api-hostname"] + "/mark/" \
+        mark_as_dict[u"url"] = "http://" + config["api-hostname"] \
+            + "/mark/" \
             + mark_as_dict[u"@"] \
             + "/" + str(mark_as_dict[u"~"])
     except KeyError:
