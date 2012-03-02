@@ -27,28 +27,34 @@ config = {}
 app = Flask(__name__)
 
 @app.route("/mark/<email>/<time>", methods=["GET"])
-def getMark(email, time):
+def get_mark(email, time):
     db = Connection("localhost", 27017).recall.marks
+    mark = db.find_one({"@": email, "~": int(time)})
     try:
-        mark = db.find_one({"@": email, "~": int(time)})
         del(mark[u"_id"])
+    except TypeError:
+        return "", 404
     return json.dumps(mark)
 
 @app.route("/mark/<email>", methods=["GET"])
-def getAllMarksByEmail(email):
+def get_all_marks_by_email(email):
     db = Connection("localhost", 27017).recall.marks
     rs = db.find({"@": email})
     marks = []
     for mark in rs:
-        del(mark[u"_id"])
+        try:
+            del(mark[u"_id"])
+        except TypeError:
+            return "", 404
         marks.append(mark)
     return json.dumps(marks)
 
 @app.route("/mark", methods=["POST"])
-def addMark():
+def add_mark():
     mark_as_dict = json.loads(request.json)
     try:
-        mark_as_dict[u"url"] = config["api-hostname"] + "/mark/" + mark_as_dict[u"@"] \
+        mark_as_dict[u"url"] = config["api-hostname"] + "/mark/" \
+            + mark_as_dict[u"@"] \
             + "/" + str(mark_as_dict[u"~"])
     except KeyError:
         return "", 400
