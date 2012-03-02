@@ -17,13 +17,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import time
 
 import requests
 
 def main():
     example_data = json.dumps({
             "#": "Hello, World!",
-            "time": 1330535386,
+            "time": int(time.time()),
             "email": "cal@calpaterson.com"
             })
     response = requests.post(
