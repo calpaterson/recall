@@ -29,14 +29,14 @@ app = Flask(__name__)
 @app.route("/mark/<email>/<time>", methods=["GET"])
 def getMark(email, time):
     db = Connection("localhost", 27017).recall.marks
-    mark = db.find_one({"email": email, "time": int(time)})
+    mark = db.find_one({"@": email, "~": int(time)})
     del(mark[u"_id"])
     return json.dumps(mark)
 
 @app.route("/mark/<email>", methods=["GET"])
-def getAllMarks(email):
+def getAllMarksByEmail(email):
     db = Connection("localhost", 27017).recall.marks
-    rs = db.find({"email": email})
+    rs = db.find({"@": email})
     marks = []
     for mark in rs:
         del(mark[u"_id"])
@@ -46,7 +46,7 @@ def getAllMarks(email):
 @app.route("/mark", methods=["POST"])
 def addMark():
     mark_as_dict = json.loads(request.json)
-    mark_as_dict[u"url"] = config["api-hostname"] + "/mark/" + mark_as_dict[u"email"] \
+    mark_as_dict[u"url"] = config["api-hostname"] + "/mark/" + mark_as_dict[u"@"] \
         + "/" + str(mark_as_dict[u"time"])
     db = Connection("localhost", 27017).recall.marks
     db.insert(mark_as_dict)

@@ -24,18 +24,19 @@ import requests
 def main():
     example_data = json.dumps({
             "#": "Hello, World!",
-            "time": int(time.time()),
-            "email": "cal@calpaterson.com"
+            "~": int(time.time()),
+            "@": "cal@calpaterson.com"
             })
     response = requests.post(
         "http://api.recall.calpaterson.com/mark",
         data=json.dumps(example_data),
         headers={"Content-Type": "application/json"})
-    print response.content
-    # if response.status_code == 201:
-    #     print "Success!"
-    # else:
-    #     print "Failed!"
+    try:
+        print response.content
+        j = json.loads(response.content)
+        print j["url"]
+    except:
+        print "Failed"
 
 if __name__ == "__main__":
     main()
