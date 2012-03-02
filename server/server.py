@@ -17,11 +17,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+from sys import argv
 
 from flask import Flask, request
 from pymongo import Connection
 
-SERVER_URL = "http://localhost:5000/"
+config = {}
 
 app = Flask(__name__)
 
@@ -32,10 +33,20 @@ def getMark(email, time):
     del(mark[u"_id"])
     return json.dumps(mark)
 
+@app.route("/mark/<email>", methods=["GET"])
+def getAllMarks(email):
+    db = Connection("localhost", 27017).recall.marks
+    rs = db.find({"email": email})
+    marks = []
+    for mark in rs:
+        del(mark[u"_id"])
+        marks.append(mark)
+    return json.dumps(marks)
+
 @app.route("/mark", methods=["POST"])
 def addMark():
     mark_as_dict = json.loads(request.json)
-    mark_as_dict[u"url"] = SERVER_URL + "mark/" + mark_as_dict[u"email"] \
+    mark_as_dict[u"url"] = config["SERVER_URL"] + "mark/" + mark_as_dict[u"email"] \
         + "/" + str(mark_as_dict[u"time"])
     db = Connection("localhost", 27017).recall.marks
     db.insert(mark_as_dict)
@@ -43,4 +54,5 @@ def addMark():
     return json.dumps(mark_as_dict), 201
 
 if __name__ == "__main__":
+    config = json.loads(open(argv[1]).read())
     app.run()

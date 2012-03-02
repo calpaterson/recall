@@ -27,7 +27,7 @@ def main():
             "email": "cal@calpaterson.com"
             })
     response = requests.post(
-        "http://localhost:5000/mark",
+        "http://api.recall.calpaterson.com/mark",
         data=json.dumps(example_data),
         headers={"Content-Type": "application/json"})
     print response.content
