@@ -42,10 +42,17 @@ def get_all_marks_by_email(email):
     rs = db.find({"@": email})
     marks = []
     for mark in rs:
-        try:
-            del(mark[u"_id"])
-        except TypeError:
-            return "", 404
+        del(mark[u"_id"])
+        marks.append(mark)
+    return json.dumps(marks)
+
+@app.route("/mark", methods=["GET"])
+def get_all_marks():
+    db = Connection("localhost", 27017).recall.marks
+    rs = db.find()
+    marks = []
+    for mark in rs:
+        del(mark[u"_id"])
         marks.append(mark)
     return json.dumps(marks)
 
