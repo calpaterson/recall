@@ -21,25 +21,32 @@ import time
 
 import requests
 
-CALPATERSON_API = "http://api.recall.calpaterson.com/mark"
+CALPATERSON_API_HOST = "api.recall.calpaterson.com"
 
 def main():
-    print "Say: ",
+    print "Say:",
     comment = raw_input()
+    print "Where?:",
+    where = raw_input()
+    if where == "":
+        where = CALPATERSON_API_HOST
+    where = "http://" + where + "/mark"
     example_data = json.dumps({
             "#": comment,
             "~": int(time.time()),
             "@": "cal@calpaterson.com"
             })
+    print example_data
     response = requests.post(
-        CALPATERSON_API,
+        where,
         data=json.dumps(example_data),
         headers={"Content-Type": "application/json"})
     try:
         j = json.loads(response.content)
         print j["url"]
-    except:
+    except Exception as e:
         print "Failed"
+        print e
         exit(1)
 
 if __name__ == "__main__":
