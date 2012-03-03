@@ -20,7 +20,7 @@ $(document).ready(
 	// -----
 	$('#brand').click(
 	    function(){
-		document.reload();
+		$(document).reload();
 	    }
 	);
 	
@@ -50,7 +50,7 @@ $(document).ready(
 	    function (){
 		$("#learn-more-btn").fadeOut();
 		$('#hero-initial').fadeOut(
-		    "slow",
+		    null,
 		    function (){
 			$('#learn-more').fadeIn();
 		    });
@@ -61,16 +61,15 @@ $(document).ready(
 	// -------------
 	$.getJSON(recall_config["api-base-url"] + "/mark/cal@calpaterson.com",
 		 function (data){
-		     var convertUnixtimeToDate = function(unixtime){
-			 var now = new Date();
+		     var unixtimeToTimeago = function(unixtime){
 			 var then = new Date(unixtime * 1000);
-			 return (((now - then) / 1000) / 60) + "minutes ago";
+			 return $.timeago(then);
 		     };
 		     $.each(data,
 			    function(_, elem){
 				$("#marks").append(
-				    "<li><strong>" + elem["@"] + "</strong> at " + convertUnixtimeToDate(elem["~"]) + ":",
-				    "<em>" + elem["#"] + "</em></li>");
+				    "<h3>" + elem["@"] + " said, " + unixtimeToTimeago(elem["~"]) + ";</h3>",
+				    "<h4><em>" + elem["#"] + "</em></h4>");
 			    });
 		 });
     }

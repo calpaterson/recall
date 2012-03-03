@@ -1,0 +1,8 @@
+/* Undo bootstrap for the timeago abbr */
+#marks {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: justify;
+    max-width: 35em;
+    width: 90%;
+}
