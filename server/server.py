@@ -21,6 +21,7 @@ from sys import argv
 
 from flask import Flask, request
 from pymongo import Connection
+import pymongo
 
 config = {}
 
@@ -39,7 +40,7 @@ def get_mark(email, time):
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
     db = Connection("localhost", 27017).recall.marks
-    rs = db.find({"@": email})
+    rs = db.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
@@ -49,7 +50,7 @@ def get_all_marks_by_email(email):
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
     db = Connection("localhost", 27017).recall.marks
-    rs = db.find()
+    rs = db.find(sort=[("~", pymongo.DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
