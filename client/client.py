@@ -54,7 +54,6 @@ def main():
         "@": "cal@calpaterson.com"
         }
     mark_json = json.dumps(sign_mark(mark))
-    print mark_json
     response = requests.post(
         where,
         data=mark_json,
