@@ -59,17 +59,28 @@ $(document).ready(
 
 	// List of posts
 	// -------------
-	$.getJSON(recall_config["api-base-url"] + "/mark/cal@calpaterson.com",
+	$.getJSON(recall_config["api-base-url"] + "/mark",
 		 function (data){
-		     var unixtimeToTimeago = function(unixtime){
-			 var then = new Date(unixtime * 1000);
-			 return $.timeago(then);
-		     };
 		     $.each(data,
 			    function(_, elem){
+				var getComment = function(){
+					return elem["#"];
+				};
+				var getWho = function(){
+					return elem["@"];
+				};
+				var getTime = function(){
+				    var then = new Date(elem['~'] * 1000);
+				    return $.timeago(then);
+				};
 				$("#marks").append(
-				    "<h3>" + elem["@"] + " said, " + unixtimeToTimeago(elem["~"]) + ";</h3>",
-				    "<h4><em>" + elem["#"] + "</em></h4>");
+				    '<div class="row show-grid"><div class="span6 offset3" style="border-radius: 10px; background-color: #EEE; text-align: justify; font-size: larger; min-height: 30px; line-height: 30px; padding: 1em; border: 2em">'
+					+ getWho()
+					+ " said: <strong>"
+					+ getComment()
+				        + '</strong> <em>'
+				        + getTime()
+				        + '</em></div></div></br>');
 			    });
 		 });
     }
