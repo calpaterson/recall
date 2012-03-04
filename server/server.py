@@ -58,7 +58,7 @@ def get_all_marks():
 
 @app.route("/mark", methods=["POST"])
 def add_mark():
-    mark_as_dict = json.loads(request.json)
+    mark_as_dict = json.loads(request.data)
     try:
         mark_as_dict[u"url"] = "http://" + config["api-hostname"] \
             + "/mark/" \

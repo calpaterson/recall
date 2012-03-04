@@ -18,33 +18,52 @@
 
 import json
 import time
+from io import BytesIO
 
 import requests
+import gpgme
 
 CALPATERSON_API_HOST = "api.recall.calpaterson.com"
+LOCALHOST_API = "localhost:5000"
 
-def main():
+def get_what_and_where():
     print "Say:",
-    comment = raw_input()
+    what = raw_input()
     print "Where?:",
     where = raw_input()
     if where == "":
-        where = CALPATERSON_API_HOST
+        where = LOCALHOST_API
     where = "http://" + where + "/mark"
-    example_data = json.dumps({
-            "#": comment,
-            "~": int(time.time()),
-            "@": "cal@calpaterson.com"
-            })
-    print example_data
+    return what, where
+
+def sign_mark(mark):
+    mark_bytes = BytesIO(json.dumps(mark))
+
+    ctx = gpgme.Context()
+    sign = BytesIO("")
+
+    ctx.sign(mark_bytes, sign, gpgme.SIG_MODE_CLEAR)
+    mark["signatures"] = [sign.getvalue()]
+    return mark
+
+def main():
+    what, where = get_what_and_where()
+    mark = {
+        "#": what,
+        "~": int(time.time()),
+        "@": "cal@calpaterson.com"
+        }
+    mark_json = json.dumps(sign_mark(mark))
+    print mark_json
     response = requests.post(
         where,
-        data=json.dumps(example_data),
+        data=mark_json,
         headers={"Content-Type": "application/json"})
     try:
         j = json.loads(response.content)
         print j["url"]
     except Exception as e:
+        print response.content
         print "Failed"
         print e
         exit(1)
