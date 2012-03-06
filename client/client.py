@@ -26,10 +26,29 @@ import gpgme
 CALPATERSON_API_HOST = "api.recall.calpaterson.com"
 LOCALHOST_API = "localhost:5000"
 
+TYPES = { "location": {"latitude": float,
+                       "longitude": float}}
+
+def get_location():
+    print "Longitude [-0.2046306]:",
+    longitude = raw_input()
+    if longitude == "":
+        longitude = float("-0.2046306")
+    else:
+        longitude = float(raw_input())
+
+    print "Latitude [51.5341945]:",
+    latitude = raw_input()
+    if latitude == "":
+        latitude = float("51.5341945")
+    else:
+        latitude = float(raw_input())
+    return latitude, longitude
+
 def get_what_and_where():
-    print "Say:",
+    print "Say [%s]:" % "I'm an idiot",
     what = raw_input()
-    print "Where?:",
+    print "Which server [%s]?:" % LOCALHOST_API,
     where = raw_input()
     if where == "":
         where = LOCALHOST_API
@@ -48,8 +67,15 @@ def sign_mark(mark):
 
 def main():
     what, where = get_what_and_where()
+    # mark = {
+    #     "#": what,
+    #     "~": int(time.time()),
+    #     "@": "cal@calpaterson.com"
+    #     }
+    lat, longi = get_location()
     mark = {
-        "#": what,
+        "latitude": lat,
+        "longitude": longi,
         "~": int(time.time()),
         "@": "cal@calpaterson.com"
         }
