@@ -74,4 +74,4 @@ def add_mark():
 
 if __name__ == "__main__":
     config = json.loads(open(argv[1]).read())
-    app.run()
+    app.run(debug=True)
