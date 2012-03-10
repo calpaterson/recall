@@ -19,16 +19,34 @@
 import json
 from sys import argv
 
-from flask import Flask, request
+from flask import Flask, request, make_response
 from pymongo import Connection
+from werkzeug.routing import BaseConverter
 import pymongo
 
 config = {}
 
 app = Flask(__name__)
 
-@app.route("/mark/<email>/<time>", methods=["GET"])
+class RegexConverter(BaseConverter):
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
+        self.regex = items[0]
+
+app.url_map.converters['regex'] = RegexConverter
+
+def preflight():
+    response = make_response()
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "X-PINGOTHER"
+    response.headers["Access-Control-Max-Age"] = "1728000"
+    return response
+
+@app.route("/mark/<email>/<time>", methods=["GET", "OPTIONS"])
 def get_mark(email, time):
+    if request.method == "OPTIONS":
+        return preflight()
     db = Connection("localhost", 27017).recall.marks
     mark = db.find_one({"@": email, "~": int(time)})
     try:
@@ -37,8 +55,10 @@ def get_mark(email, time):
         return "", 404
     return json.dumps(mark)
 
-@app.route("/mark/<email>", methods=["GET"])
+@app.route("/mark/<email>", methods=["GET", "OPTIONS"])
 def get_all_marks_by_email(email):
+    if request.method == "OPTIONS":
+        return preflight()
     db = Connection("localhost", 27017).recall.marks
     rs = db.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
     marks = []
@@ -47,8 +67,10 @@ def get_all_marks_by_email(email):
         marks.append(mark)
     return json.dumps(marks)
 
-@app.route("/mark", methods=["GET"])
+@app.route("/mark", methods=["GET", "OPTIONS"])
 def get_all_marks():
+    if request.method == "OPTIONS":
+        return preflight()
     db = Connection("localhost", 27017).recall.marks
     rs = db.find(sort=[("~", pymongo.DESCENDING)])
     marks = []
@@ -64,7 +86,7 @@ def add_mark():
         mark_as_dict[u"url"] = "http://" + config["api-hostname"] \
             + "/mark/" \
             + mark_as_dict[u"@"] \
-            + "/" + str(mark_as_dict[u"~"])
+            + "/" + str(int(mark_as_dict[u"~"]))
     except KeyError:
         return "", 400
     db = Connection("localhost", 27017).recall.marks
