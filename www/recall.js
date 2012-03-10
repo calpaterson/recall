@@ -66,9 +66,10 @@ $(document).ready(
 	);
 
 	$.get("/bookmarklet", function(data){
+		  var bookmarklet = data.replace(/BASE_API_URL/, recall_config["api-base-url"]);
 		  $("#bookmarklet").attr(
 		      "href",
-		      "javascript:" + data);
+		      "javascript:" + bookmarklet);
 	      }
 	     );
 
