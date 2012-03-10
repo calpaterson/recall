@@ -28,18 +28,10 @@ config = {}
 
 app = Flask(__name__)
 
-class RegexConverter(BaseConverter):
-    def __init__(self, url_map, *items):
-        super(RegexConverter, self).__init__(url_map)
-        self.regex = items[0]
-
-app.url_map.converters['regex'] = RegexConverter
-
 def preflight():
     response = make_response()
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "X-PINGOTHER"
     response.headers["Access-Control-Max-Age"] = "1728000"
     return response
 
