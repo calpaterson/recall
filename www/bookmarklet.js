@@ -24,7 +24,7 @@ $(document).ready(
 	    if (commentRegex.test(buttonClasses)){
 		var mark = {
 		    "#": $("#comment-body").val(),
-		    "~": 0,
+		    "~": Math.floor(new Date().getTime() / 1000),
 		    "@": "cal@calpaterson.com"
 		    };
 		$.ajax(
