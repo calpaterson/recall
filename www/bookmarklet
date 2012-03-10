@@ -1,0 +1,5 @@
+void(open(
+	 'http://localhost/bookmarklet.html?version=1',
+	 'Mark this',
+	 'toolbar=no,width=470,height=300'
+     ));

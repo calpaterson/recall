@@ -57,6 +57,23 @@ $(document).ready(
             }
         );
 
+	// Bookmarklet Modal
+	// -----------------
+	$('#show-bookmarklet-modal').click(
+	    function(){
+		$('#bookmarklet-modal').modal();
+	    }
+	);
+
+	$.get("/bookmarklet", function(data){
+		  $("#bookmarklet").attr(
+		      "href",
+		      "javascript:" + data);
+	      }
+	     );
+
+        // List of posts
+        // -------------
         var getTime = function(elem){
             var then = new Date(elem['~'] * 1000);
             return $.timeago(then);
@@ -80,8 +97,6 @@ $(document).ready(
             return location;
         };
 
-        // List of posts
-        // -------------
         $.getJSON(recall_config["api-base-url"] + "/mark",
                   function (data){
                       $.each(
