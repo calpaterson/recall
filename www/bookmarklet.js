@@ -15,36 +15,52 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 $(document).ready(
-    $("button.send-mark").click(
-	function(event){
-	    var commentRegex = /comment/;
-	    var locationRegex = /location/;
-	    
-	    var buttonClasses = $(event.target).attr("class");
-	    if (commentRegex.test(buttonClasses)){
-		var mark = {
-		    "#": $("#comment-body").val(),
-		    "~": Math.floor(new Date().getTime() / 1000),
-		    "@": "cal@calpaterson.com"
+    function(){
+	var bookmarkletTabSelection = localStorage.getItem(
+	    "bookmarklet-tab-selection");
+	if (bookmarkletTabSelection){
+	    $(".active").removeClass("active");
+	    $(bookmarkletTabSelection).addClass("active");
+	    $(bookmarkletTabSelection + "-tab").addClass("active");
+	};
+
+	$(".tab").click(
+	    function(event){
+		localStorage.setItem("bookmarklet-tab-selection",
+				     $(event.target).attr("href"));
+ 	    });
+	
+	$("button.send-mark").click(
+	    function(event){
+		var commentRegex = /comment/;
+		var locationRegex = /location/;
+		
+		var buttonClasses = $(event.target).attr("class");
+		if (commentRegex.test(buttonClasses)){
+		    var mark = {
+			"#": $("#comment-body").val(),
+			"~": Math.floor(new Date().getTime() / 1000),
+			"@": "cal@calpaterson.com"
 		    };
-		$.ajax(
-		    recall_config["api-base-url"] + "/mark",
-		    {
-			type: 'post',
-			data: JSON.stringify(mark),
-			contentType: 'application/json',
-			dataType: 'json',
-			success: function(data, textStatus, jqXHR){
-			    if (textStatus === "success"){
-				$("#mark-alert-success").fadeIn();
-			    } else {
-				$("#mark-alert-failure").fadeIn();
+		    $.ajax(
+			recall_config["api-base-url"] + "/mark",
+			{
+			    type: 'post',
+			    data: JSON.stringify(mark),
+			    contentType: 'application/json',
+			    dataType: 'json',
+			    success: function(data, textStatus, jqXHR){
+				if (textStatus === "success"){
+				    $("#mark-alert-success").fadeIn();
+				} else {
+				    $("#mark-alert-failure").fadeIn();
+				}
 			    }
 			}
-		    }
-		);
-	    } else if (locationRegex.test(buttonClasses)) {
-		$("#mark-alert-failure").fadeIn();		
-	    }
-	})
+		    );
+		} else if (locationRegex.test(buttonClasses)) {
+		    $("#mark-alert-failure").fadeIn();		
+		}
+	    });
+    }
 );

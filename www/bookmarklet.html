@@ -39,12 +39,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <body>
     <div class="tabbable">
       <ul class="nav nav-tabs">
-	<li class="active"><a href="#1" data-toggle="tab">Comment</a></li>
-	<!-- <li><a href="#2" data-toggle="tab">Location</a></li> -->
+	<li id="comment-tab-tab">
+	  <a href="#comment-tab" class="tab" data-toggle="tab">Comment</a>
+	</li>
+	<!--
+	    <li>
+	      <a href="#2" data-toggle="tab">Location</a>
+	    </li> -->
+	<li id="hyperlink-tab-tab">
+	  <a href="#hyperlink-tab" class="tab" data-toggle="tab">Hyperlink</a>
+	</li>
       </ul>
       <div class="tab-content">
 
-	<div class="tab-pane active" id="1">
+	<div class="tab-pane active" id="comment-tab">
           <div class="well">
 	    <textarea class="span4"
 		      autofocus="true"
@@ -68,6 +76,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	    </p>
 	    <div>
 	      <button class="location-btn btn send-mark">
+		<i class="icon-ok"></i> Mark</button>
+	    </div>
+	  </div>
+	</div>
+
+	<div class="tab-pane" id="hyperlink-tab">
+          <div class="well">
+	    <p>
+	      <label>Title</label>
+	      <input class="span4" type="text">
+	    </p>
+	    <p>
+	      <label>Universal Resource Locator</label>
+	      <input class="span4" type="url">
+	    </p>
+	    <div>
+	      <button class="hyperlink-btn btn send-mark">
 		<i class="icon-ok"></i> Mark</button>
 	    </div>
 	  </div>
