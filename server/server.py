@@ -28,17 +28,8 @@ config = {}
 
 app = Flask(__name__)
 
-def preflight():
-    response = make_response()
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
-    response.headers["Access-Control-Max-Age"] = "1728000"
-    return response
-
 @app.route("/mark/<email>/<time>", methods=["GET", "OPTIONS"])
 def get_mark(email, time):
-    if request.method == "OPTIONS":
-        return preflight()
     db = Connection("localhost", 27017).recall.marks
     mark = db.find_one({"@": email, "~": int(time)})
     try:
@@ -49,8 +40,6 @@ def get_mark(email, time):
 
 @app.route("/mark/<email>", methods=["GET", "OPTIONS"])
 def get_all_marks_by_email(email):
-    if request.method == "OPTIONS":
-        return preflight()
     db = Connection("localhost", 27017).recall.marks
     rs = db.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
     marks = []
@@ -61,8 +50,6 @@ def get_all_marks_by_email(email):
 
 @app.route("/mark", methods=["GET", "OPTIONS"])
 def get_all_marks():
-    if request.method == "OPTIONS":
-        return preflight()
     db = Connection("localhost", 27017).recall.marks
     rs = db.find(sort=[("~", pymongo.DESCENDING)])
     marks = []
@@ -87,5 +74,9 @@ def add_mark():
     return json.dumps(mark_as_dict), 201
 
 if __name__ == "__main__":
-    config = json.loads(open(argv[1]).read())
-    app.run(debug=True)
+    try:
+        config = json.loads(open(argv[1]).read())
+    except IndexError:
+        print "ERROR: Need configuration file"
+        exit(1)
+    app.run(debug=True) 
