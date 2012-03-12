@@ -65,7 +65,7 @@ $(document).ready(
 	    }
 	);
 
-	$.get("/bookmarklet", function(data){
+	$.get("/bookmarklet-trampoline", function(data){
 		  var bookmarklet = data.replace(/BASE_API_URL/, recall_config["api-base-url"]);
 		  $("#bookmarklet").attr(
 		      "href",
