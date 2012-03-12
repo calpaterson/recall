@@ -49,9 +49,9 @@ $(document).ready(
 			    data: JSON.stringify(mark),
 			    contentType: 'application/json',
 			    dataType: 'json',
-			    success: function(data, textStatus, jqXHR){
+			    complete: function(jqXHR, textStatus){
 				if (textStatus === "success"){
-				    $("#mark-alert-success").fadeIn();
+				    window.close();
 				} else {
 				    $("#mark-alert-failure").fadeIn();
 				}
