@@ -35,7 +35,7 @@ var sendMark = function(mark) {
 
 var unixtime_now = function() {
     return Math.floor(new Date().getTime() / 1000);
-}
+};
 
 $(document).ready(
     function(){
@@ -54,6 +54,19 @@ $(document).ready(
 		localStorage.setItem("bookmarklet-tab-selection",
 				     $(event.target).attr("href"));
  	    });
+
+	// Preloading hyperlink fields if possible
+	// ---------------------------------------
+	var url = location.href;
+	var banana_split = url.split("&");
+	for (var i = 1; i < banana_split.length; i++){
+	    var sub_split = banana_split[i].split("=");
+	    if (sub_split[0] === "title"){
+		$("#hyperlink-title").val(decodeURIComponent(sub_split[1]));
+	    } else if (sub_split[0] === "url"){
+		$("#hyperlink-url").val(decodeURIComponent(sub_split[1]));
+	    }
+	};
 
 	// Sending the mark
 	// ----------------

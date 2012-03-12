@@ -1,6 +1,10 @@
 void(
     open(
-	'BASE_API_URL' + '/bookmarklet.html?version=1',
+	'BASE_API_URL' +
+	    '/bookmarklet.html?version=1&title=' +
+	    encodeURIComponent(document.title) +
+	    '&url=' +
+	    encodeURIComponent(location.href),
 	'Mark this',
 	'toolbar=no,width=470,height=300'
     ));
