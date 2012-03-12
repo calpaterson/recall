@@ -73,6 +73,54 @@ $(document).ready(
 	      }
 	     );
 
+	// Request Invite Modal
+	// --------------------
+	$("#show-request-invite-modal").click(
+	    function(){
+		$("#request-invite-modal").modal();
+	    });
+
+	$("#name-type-select").change(
+	    function(){
+		var selection = $(this).children(":selected").html();
+		if (selection === "Real Name"){
+		    $("#pseudonym-div").hide();
+		    $("#real-name-div").show();
+		} else if (selection === "Pseudonym"){
+		    $("#real-name-div").hide();
+		    $("#pseudonym-div").show();
+		}
+	    }
+	);
+
+
+	$("#send-invite").click(
+	    function(){
+		var form = $(this).closest("form");
+		var user = {"@": form.children("#email-input").val()};
+		if (form.find("select").val() === "Real Name"){
+		    user["firstName"] = form.find("#first-name-input").val();
+		    user["surname"] = form.find("#surname-input").val();
+		} else {
+		    user["pseudonym"] = form.find("#pseudonym-input").val();
+		}
+		$.ajax(
+		    recall_config["api-base-url"] + "/user",
+		{
+		    type: "post",
+		    data: JSON.stringify(user),
+		    contentType: "application/json",
+		    dataType: "json",
+		    complete: function(jqXHR, textStatus){
+			if (textStatus === "success"){
+			    alert("success");
+			} else {
+			    alert("failure");    
+			}
+		    }
+		});
+	    });
+
         // List of posts
         // -------------
         var getTime = function(elem){

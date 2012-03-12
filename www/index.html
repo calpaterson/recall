@@ -56,6 +56,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <ul class="nav">
               <li class="active"><a id="brand">Home</a></li>
               <li><a id="toggle-hero-unit" href="#">About Recall</a></li>
+	      <li><a id="show-request-invite-modal" href="#">Request Invite</a></li>
 	      <li><a id="show-bookmarklet-modal" href="#">Bookmarklet</a></li>
               <li><a href="mailto:cal@calpaterson.com">Email Author</a></li>
             </ul>
@@ -76,6 +77,36 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<p>
 	  <a class="bookmarklet" id="bookmarklet" href="">Drag me!</a>
 	</p>
+      </div>
+    </div>
+
+    <div class="modal fade" id="request-invite-modal">
+      <div class="modal-header">
+	<a class="close" data-dismiss="modal">×</a>
+	<h3>Requesting an Invite</h3>
+      </div>
+      <div class="modal-body">
+	<p>
+	  Recall is currently in invite-only alpha testing!  That's because things are still being written,
+	  but you can ask to be invited, and I'll get back to you :)
+	</p>
+	<form>
+	  <select id="name-type-select">
+	    <option>Real Name</option>
+	    <option>Pseudonym</option>
+	  </select>
+	  <div id="real-name-div">
+	    <input class="name-input" id="first-name-input" type="text" placeholder="First Name">
+	    <input class="name-input" id="surname-input" type="text" placeholder="Surname">
+	  </div>
+	  <div id="pseudonym-div" hidden="true">
+	    <input type="text" id="pseudonym-input" placeholder="pseudonym">
+	  </div>
+	  <input type="email" id="email-input" placeholder="you@somewhere.com">
+	  <div>
+	    <button class="btn btn-primary" id="send-invite">Request an Invite</button>
+	  </div>
+	</form>
       </div>
     </div>
 
