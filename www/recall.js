@@ -82,6 +82,7 @@ $(document).ready(
 
         var renderComment = function(elem){
             var comment = $($("#comment-template")).clone();
+	    comment.removeAttr("id");
             comment.find(".who")[0].innerText = elem["@"];
             comment.find(".what")[0].innerText = elem["#"];
             comment.find(".when")[0].innerText = getTime(elem);
@@ -90,12 +91,23 @@ $(document).ready(
 
         var renderLocation = function(elem){
             var location = $($('#location-template').clone());
+	    location.removeAttr("id");
             location.find(".who")[0].innerText = elem["@"];
             location.find(".when")[0].innerText = getTime(elem);
             location.find(".location-map")[0].src = 'https://maps.googleapis.com/maps/api/staticmap?center=' +
                 elem.latitude + ',' + elem.longitude + '&sensor=false&size=400x400&' +
                 'markers=color:red%7C' + elem.latitude + ',' + elem.longitude;
             return location;
+        };
+
+        var renderHyperlink = function(elem){
+            var hyperlink = $($("#hyperlink-template")).clone();
+	    hyperlink.removeAttr("id");
+            hyperlink.find(".who")[0].innerText = elem["@"];
+            $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem["hyperlink"]);
+	    hyperlink.find(".title")[0].innerText = elem.title;
+            hyperlink.find(".when")[0].innerText = getTime(elem);
+            return hyperlink;
         };
 
         $.getJSON(recall_config["api-base-url"] + "/mark",
@@ -106,6 +118,8 @@ $(document).ready(
                               if(elem.hasOwnProperty('latitude')){
                                   var loc = renderLocation(elem);
                                   $("#marks").append(loc);
+			      } else if (elem.hasOwnProperty("hyperlink")){
+				  $("#marks").append(renderHyperlink(elem));
                               } else {
                                   $("#marks").append(renderComment(elem));        
                               }

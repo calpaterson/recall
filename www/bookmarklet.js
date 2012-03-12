@@ -14,8 +14,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+var sendMark = function(mark) {
+    $.ajax(
+	recall_config["api-base-url"] + "/mark",
+	{
+	    type: 'post',
+	    data: JSON.stringify(mark),
+	    contentType: 'application/json',
+	    dataType: 'json',
+	    complete: function(jqXHR, textStatus){
+		if (textStatus === "success"){
+		    window.close();
+		} else {
+		    $("#mark-alert-failure").fadeIn();
+		}
+	    }
+	}
+    );
+};
+
+var unixtime_now = function() {
+    return Math.floor(new Date().getTime() / 1000);
+}
+
 $(document).ready(
     function(){
+	// Remembering tab position
+	// ------------------------
 	var bookmarkletTabSelection = localStorage.getItem(
 	    "bookmarklet-tab-selection");
 	if (bookmarkletTabSelection){
@@ -29,36 +54,31 @@ $(document).ready(
 		localStorage.setItem("bookmarklet-tab-selection",
 				     $(event.target).attr("href"));
  	    });
-	
+
+	// Sending the mark
+	// ----------------
 	$("button.send-mark").click(
 	    function(event){
 		var commentRegex = /comment/;
 		var locationRegex = /location/;
+		var hyperlinkRegex = /hyperlink/;
 		
 		var buttonClasses = $(event.target).attr("class");
 		if (commentRegex.test(buttonClasses)){
 		    var mark = {
 			"#": $("#comment-body").val(),
-			"~": Math.floor(new Date().getTime() / 1000),
+			"~": unixtime_now(),
 			"@": "cal@calpaterson.com"
 		    };
-		    $.ajax(
-			recall_config["api-base-url"] + "/mark",
-			{
-			    type: 'post',
-			    data: JSON.stringify(mark),
-			    contentType: 'application/json',
-			    dataType: 'json',
-			    complete: function(jqXHR, textStatus){
-				if (textStatus === "success"){
-				    window.close();
-				} else {
-				    $("#mark-alert-failure").fadeIn();
-				}
-			    }
-			}
-		    );
-		} else if (locationRegex.test(buttonClasses)) {
+		    sendMark(mark);
+		} else if (hyperlinkRegex.test(buttonClasses)){
+		    sendMark({
+				"title": $("#hyperlink-title").val(),
+				"hyperlink": $("#hyperlink-url").val(),
+				 "~": unixtime_now(),
+				 "@": "cal@calpaterson.com"
+			     });
+		} else {
 		    $("#mark-alert-failure").fadeIn();		
 		}
 	    });
