@@ -15,11 +15,11 @@ Cal Paterson (cal at calpaterson dot com)
 Checking dependancies are installed
 -----------------------------------
 Run ```ops/dependencies``` and follow advice.  You will need:
-- python 2.7
-- mongodb
-- pymongo
-- flask
-- requests
+* python 2.7
+* mongodb
+* pymongo
+* flask
+* requests
 
 The program
 -----------
