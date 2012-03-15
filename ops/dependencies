@@ -4,12 +4,24 @@ PYMONGO_EXPECTED_MAJOR_VERSION = 2
 PYMONGO_EXPECTED_MINOR_VERSION = 1
 MONGODB_EXPECTED_PORT = 27017
 MONGODB_EXPECTED_HOST = "localhost"
+PYTHON_EXPECTED_MAJOR_VERSION = 2
+PYTHON_EXPECTED_MINOR_VERSION = 7
+
+import sys
 
 def exit_1_with_message(message):
     print "FAILURE: " + message
     exit(1)
 
 def main():
+    try:
+        assert sys.version_info >= (
+            PYTHON_EXPECTED_MAJOR_VERSION,
+            PYTHON_EXPECTED_MINOR_VERSION)
+    except:
+        exit_1_with_message(
+            "Need python 2.7 or greater")
+
     try:
         import pymongo
         assert pymongo.version_tuple[0] == PYMONGO_EXPECTED_MAJOR_VERSION
