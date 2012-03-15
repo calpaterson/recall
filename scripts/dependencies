@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+PYMONGO_EXPECTED_MAJOR_VERSION = 2
+PYMONGO_EXPECTED_MINOR_VERSION = 1
+MONGODB_EXPECTED_PORT = 27017
+MONGODB_EXPECTED_HOST = "localhost"
+
+def exitOneWithMessage(message):
+    print "FAILURE: " + message
+    exit(1)
+
+def main():
+    try:
+        import pymongo
+        assert pymongo.version_tuple[0] == PYMONGO_EXPECTED_MAJOR_VERSION
+        assert pymongo.version_tuple[1] == PYMONGO_EXPECTED_MINOR_VERSION
+    except ImportError:
+        exitOneWithMessage(
+            "Need to install pymongo - try the debian package python-pymongo")
+    except AssertionError:
+        exitOneWithMessage(
+            "Your pymongo version is %s but recall expects %s.%s.*" % (
+                pymongo.version,
+                PYMONGO_EXPECTED_MAJOR_VERSION,
+                PYMONGO_EXPECTED_MINOR_VERSION))
+
+    try:
+        pymongo.Connection(MONGODB_EXPECTED_HOST, MONGODB_EXPECTED_PORT)
+    except:
+        exitOneWithMessage(
+            "Unable to start test connection with mongodb." +
+            "  Is it running on %s:%s ?" % (
+                MONGODB_EXPECTED_HOST,
+                MONGODB_EXPECTED_PORT))
+
+    try:
+        import flask
+    except ImportError:
+        exit1WithMessage(
+                "Need to install flask - try the debian package python-flask")
+
+    try:
+        import requests
+    except ImportError:
+        exit1WithMessage("Need to install requests - try the debian package python-requests")
+
+    print "All dependencies installed and database up"
+
+if __name__ == "__main__":
+    main()
