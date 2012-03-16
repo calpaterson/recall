@@ -29,7 +29,7 @@ def main():
     except ImportError:
         exit_1_with_message(
             "Need to install pymongo - try the debian package python-pymongo")
-    except AssertionError:
+    except AssertionError and AttributeError:
         exit_1_with_message(
             "Your pymongo version is %s but recall expects %s.%s.*" % (
                 pymongo.version,
