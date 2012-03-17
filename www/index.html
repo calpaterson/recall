@@ -1,4 +1,4 @@
-<!--
+q<!--
 Recall is a program for storing bookmarks of different things
 Copyright (C) 2012  Cal Paterson
 
@@ -24,7 +24,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <meta name="description" content="Recall is a decentralised social bookmarking service">
     <meta name="author" content="Cal Paterson">
 
-    <!-- Le styles -->
     <link href="third-party/bootstrap/css/bootstrap.css" rel="stylesheet">
     <style>
       body {
@@ -38,7 +37,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <!--[if lt IE 9]>
       <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
-
   </head>
 
   <body>
@@ -65,7 +63,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </div>
     </div>
 
-    <div class="modal fade" id="bookmarklet-modal">
+    <div id="bookmarklet-modal" class="modal fade">
       <div class="modal-header">
 	<a class="close" data-dismiss="modal">×</a>
 	<h3>Using the Recall Bookmarklet</h3>
@@ -80,7 +78,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </div>
     </div>
 
-    <div class="modal fade" id="request-invite-modal">
+    <div id="prove-email-modal" class="modal fade">
+      <div class="modal-header">
+	<a class="close" data-dismiss="modal">×</a>
+	<h3>Email Address Verified</h3>
+      </div>
+      <div class="modal-body">
+	<p>
+	  Your email address has been verified and you have been logged in.
+	</p>
+      </div>
+    </div>
+
+    <div id="request-invite-modal" class="modal fade">
       <div class="modal-header">
 	<a class="close" data-dismiss="modal">×</a>
 	<h3>Requesting an Invite</h3>
@@ -100,26 +110,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	    <input class="name-input" id="surname-input" type="text" placeholder="Surname">
 	  </div>
 	  <div id="pseudonym-div" hidden="true">
-	    <input type="text" id="pseudonym-input" placeholder="pseudonym">
+	    <input type="text" id="pseudonym-input" placeholder="Pseudonym">
 	  </div>
-	  <input type="email" id="email-input" placeholder="you@somewhere.com">
+	  <div>
+	    <input type="email" id="email-input" placeholder="you@somewhere.com">
+	  </div>
+	  <div>
+	    <input id="password-input" type="password" placeholder="*********">
+	  </div>
 	  <div>
 	    <button class="btn btn-primary" id="send-invite">Request an Invite</button>
 	  </div>
 	</form>
       </div>
+      <div class="modal-footer">
+	<div class="alert alert-success" hidden="true" id="invite-request-alert-success">
+	  <strong>Thanks!</strong> - we'll get back to you soon!
+	</div>
+	<div class="alert" hidden="true" id="invite-request-alert-failure">
+	  <strong>Failure</strong> - something went wrong
+	</div>
+      </div>
     </div>
 
     <div class="container">
       <div class="hero-unit" id="hero-unit">      
-
 	<div id="hero-initial">
 	  <h1>Hello, World!</h1>
 	  <p>
 	    Recall is a social bookmarking service, but there's more to it than that...
 	  </p>
 	</div>
-	
 	<div id="learn-more" hidden="true">
 	  <h1>Recall is a bit different</h1>
 	  <p>
@@ -133,7 +154,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	    But it's still being worked on, and <strong>hardly anything works yet!</strong>
 	  </p>
 	</div>
-
 	<div id="hero-buttons">
 	  <p>
 	    <a class="btn btn-large" id="hide-hero-unit-btn">
@@ -144,7 +164,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	    </a>
 	  </p>
 	</div>
-
       </div>
       
       <div id="marks">

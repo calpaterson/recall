@@ -57,6 +57,13 @@ $(document).ready(
             }
         );
 
+	// Email Address Verification Modal
+	// --------------------------------
+	var url_args = document.location.href.split("?")[1];
+	if (url_args && url_args.slice(0, 10) == "email_hash"){
+	    $("#prove-email-modal").modal();
+	}
+
 	// Bookmarklet Modal
 	// -----------------
 	$('#show-bookmarklet-modal').click(
@@ -104,6 +111,8 @@ $(document).ready(
 		} else {
 		    user["pseudonym"] = form.find("#pseudonym-input").val();
 		}
+		user["email"] = form.find("#email-input").val();
+		user["password"] = form.find("#password-input").val();
 		$.ajax(
 		    recall_config["api-base-url"] + "/user",
 		{
@@ -113,9 +122,9 @@ $(document).ready(
 		    dataType: "json",
 		    complete: function(jqXHR, textStatus){
 			if (textStatus === "success"){
-			    alert("success");
+			    $("#invite-request-alert-success").fadeIn();
 			} else {
-			    alert("failure");    
+			    $("#invite-request-alert-failure").fadeIn();
 			}
 		    }
 		});

@@ -23,10 +23,20 @@ from flask import Flask, request, make_response
 from pymongo import Connection
 from werkzeug.routing import BaseConverter
 import pymongo
+import bcrypt
 
-config = {}
+config = None
 
 app = Flask(__name__)
+
+def may_only_contain(dict_, whitelist):
+    """Takes a dict and a whitelist of keys and removes all items in the dict
+    not in the whitelist"""
+    d = {}
+    for k, v in dict_.items():
+        if k in whitelist:
+            d[k] = v
+    return d
 
 @app.route("/mark/<email>/<time>", methods=["GET", "OPTIONS"])
 def get_mark(email, time):
@@ -38,7 +48,7 @@ def get_mark(email, time):
         return "", 404
     return json.dumps(mark)
 
-@app.route("/mark/<email>", methods=["GET", "OPTIONS"])
+@app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
     db = Connection("localhost", 27017).recall.marks
     rs = db.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
@@ -48,7 +58,7 @@ def get_all_marks_by_email(email):
         marks.append(mark)
     return json.dumps(marks)
 
-@app.route("/mark", methods=["GET", "OPTIONS"])
+@app.route("/mark", methods=["GET"])
 def get_all_marks():
     db = Connection("localhost", 27017).recall.marks
     rs = db.find(sort=[("~", pymongo.DESCENDING)])
@@ -72,6 +82,54 @@ def add_mark():
     db.insert(mark_as_dict)
     del(mark_as_dict["_id"])
     return json.dumps(mark_as_dict), 201
+
+@app.route("/user/<email>", methods=["GET"])
+def user(email):
+    users = Connection("localhost", 27017).recall.users
+    user = users.find_one(email)
+    if user is None:
+        return "", 404
+    else:
+        return may_only_contain(user, [
+                "pseudonym",
+                "firstName",
+                "surname",
+                "email"])                
+    
+@app.route("/user", methods=["POST"])
+def request_invite():
+    user_as_dict = may_only_contain(json.loads(request.data), [
+            "pseudonym",
+            "firstName",
+            "surname",
+            "email",
+            "password"
+            ])
+    if "email" not in user_as_dict or "password" not in user_as_dict:
+        return "", 400
+    salt = config["password-salt"]
+    user_as_dict["email_hash"] = bcrypt.hashpw(user_as_dict["email"], salt)
+    user_as_dict["password_hash"] = bcrypt.hashpw(user_as_dict["password"], salt)
+    del(user_as_dict["password"])
+    db = Connection("localhost", 27017).recall.users
+    db.ensure_index("email", unique=True)
+    db.insert(user_as_dict, safe=True)
+    return "", 202
+
+@app.route("/user/<email>", methods=["UPDATE"])
+def prove_email(email):
+    body = may_only_contain(json.loads(request.data), [
+            "email_hash"
+            ])
+    db = Connection("localhost", 27017).recall.users
+    spec = {"email": body["email"],
+            "email_hash": body["proof"]}
+    update = {"$set": {"email_verified": True}}
+    success = db.find_one(spec, update, safe=True)["updatedExisting"]
+    if success:
+        return "", 201
+    else:
+        return "", 400
 
 if __name__ == "__main__":
     try:

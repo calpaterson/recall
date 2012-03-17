@@ -1,1 +1,3 @@
-{ "server-url": "localhost:5000" }
+{ "api-hostname": "localhost:5000",
+  "email-verification-salt": "salt"
+  "password-salt": "salt"}
