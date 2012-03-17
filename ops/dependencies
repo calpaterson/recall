@@ -46,6 +46,12 @@ def main():
                 MONGODB_EXPECTED_PORT))
 
     try:
+        import bcrypt
+    except ImportError:
+        exit_1_with_message(
+            "Need to install bcrypt - try the debian package python-bcrypt")
+        
+    try:
         import flask
     except ImportError:
         exit_1_with_message(
