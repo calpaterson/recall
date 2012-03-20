@@ -24,6 +24,7 @@ from pymongo import Connection
 from werkzeug.routing import BaseConverter
 import pymongo
 import bcrypt
+import uuid
 
 config = None
 
@@ -38,7 +39,7 @@ def may_only_contain(dict_, whitelist):
             d[k] = v
     return d
 
-@app.route("/mark/<email>/<time>", methods=["GET", "OPTIONS"])
+@app.route("/mark/<email>/<time>", methods=["GET"])
 def get_mark(email, time):
     db = Connection("localhost", 27017).recall.marks
     mark = db.find_one({"@": email, "~": int(time)})
@@ -107,25 +108,27 @@ def request_invite():
             ])
     if "email" not in user_as_dict or "password" not in user_as_dict:
         return "", 400
-    salt = config["password-salt"]
-    user_as_dict["email_hash"] = bcrypt.hashpw(user_as_dict["email"], salt)
-    user_as_dict["password_hash"] = bcrypt.hashpw(user_as_dict["password"], salt)
+    user_as_dict["email_key"] = str(uuid.uuid4())
+    user_as_dict["password_hash"] = bcrypt.hashpw(
+        user_as_dict["password"],
+        config["password-salt"])
     del(user_as_dict["password"])
     db = Connection("localhost", 27017).recall.users
     db.ensure_index("email", unique=True)
     db.insert(user_as_dict, safe=True)
     return "", 202
 
-@app.route("/user/<email>", methods=["UPDATE"])
-def prove_email(email):
+@app.route("/user/<email>", methods=["POST"])
+def verify_email(email):
     body = may_only_contain(json.loads(request.data), [
-            "email_hash"
+            "email_key",
             ])
     db = Connection("localhost", 27017).recall.users
-    spec = {"email": body["email"],
-            "email_hash": body["proof"]}
+    # TODO: Continue debugging here
+    spec = {"email": email,
+            "email_key": body["email_key"]}
     update = {"$set": {"email_verified": True}}
-    success = db.find_one(spec, update, safe=True)["updatedExisting"]
+    success = db.update(spec, update, safe=True)["updatedExisting"]
     if success:
         return "", 201
     else:

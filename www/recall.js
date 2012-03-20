@@ -14,6 +14,19 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+// Temporary code stolen from http://stackoverflow.com/a/2880929
+var urlParams = {};
+(function () {
+    var e,
+        a = /\+/g,  // Regex for replacing addition symbol with a space
+        r = /([^&=]+)=?([^&]*)/g,
+        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+        q = window.location.search.substring(1);
+
+    while ((e = r.exec(q)))
+       urlParams[d(e[1])] = d(e[2]);
+})();
+
 $(document).ready(
     function() {
         // Brand
@@ -60,8 +73,27 @@ $(document).ready(
 	// Email Address Verification Modal
 	// --------------------------------
 	var url_args = document.location.href.split("?")[1];
-	if (url_args && url_args.slice(0, 10) == "email_hash"){
-	    $("#prove-email-modal").modal();
+	console.log(urlParams);
+	if (urlParams.hasOwnProperty("email_key")){
+	    var email_key = urlParams["email_key"];
+	    var email = urlParams["email"];
+	    $.ajax(
+		recall_config["api-base-url"] + "/user/" + email,
+		{
+		    "type": "post",
+		    "data": JSON.stringify(
+			{"email_key": email_key,
+			 "email": email}),
+		    "contentType": "application/json",
+		    "dataType": "json",
+		    complete : function(jqXHR, textStatus){
+			if (textStatus == "success"){
+			    $("#verify-email-modal").modal();
+			} else {
+			    alert("failure to verify email address");
+			}
+		    }
+		});
 	}
 
 	// Bookmarklet Modal
@@ -73,7 +105,9 @@ $(document).ready(
 	);
 
 	$.get("/bookmarklet-trampoline", function(data){
-		  var bookmarklet = data.replace(/BASE_API_URL/, recall_config["api-base-url"]);
+		  var bookmarklet = data.replace(
+			  /BASE_API_URL/,
+		      recall_config["api-base-url"]);
 		  $("#bookmarklet").attr(
 		      "href",
 		      "javascript:" + bookmarklet);
