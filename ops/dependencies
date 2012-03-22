@@ -8,17 +8,26 @@ PYTHON_EXPECTED_MAJOR_VERSION = 2
 PYTHON_EXPECTED_MINOR_VERSION = 7
 
 import sys
+import os
 
 def exit_1_with_message(message):
     print "FAILURE: " + message
     exit(1)
 
 def main():
+
+    try:
+        exit_value = os.system("which lintian")
+        assert exit_value == 0
+    except AssertionError:
+        exit_1_with_message(
+            "Need to install debian's lintian package")
+
     try:
         assert sys.version_info >= (
             PYTHON_EXPECTED_MAJOR_VERSION,
             PYTHON_EXPECTED_MINOR_VERSION)
-    except:
+    except AssertionError:
         exit_1_with_message(
             "Need python 2.7 or greater")
 
@@ -50,7 +59,7 @@ def main():
     except ImportError:
         exit_1_with_message(
             "Need to install bcrypt - try the debian package python-bcrypt")
-        
+
     try:
         import flask
     except ImportError:
