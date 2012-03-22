@@ -104,15 +104,10 @@ def request_invite():
             "firstName",
             "surname",
             "email",
-            "password"
             ])
-    if "email" not in user_as_dict or "password" not in user_as_dict:
+    if "email" not in user_as_dict:
         return "", 400
     user_as_dict["email_key"] = str(uuid.uuid4())
-    user_as_dict["password_hash"] = bcrypt.hashpw(
-        user_as_dict["password"],
-        config["password-salt"])
-    del(user_as_dict["password"])
     db = Connection("localhost", 27017).recall.users
     db.ensure_index("email", unique=True)
     db.insert(user_as_dict, safe=True)
@@ -121,13 +116,15 @@ def request_invite():
 @app.route("/user/<email>", methods=["POST"])
 def verify_email(email):
     body = may_only_contain(json.loads(request.data), [
-            "email_key",
+            "password",
+            "email_key"
             ])
+    password_hash = bcrypt.hashpw(body["password"], config["password-salt"])
     db = Connection("localhost", 27017).recall.users
-    # TODO: Continue debugging here
     spec = {"email": email,
             "email_key": body["email_key"]}
-    update = {"$set": {"email_verified": True}}
+    update = {"$set": {"email_verified": True,
+                       "password_hash": password_hash}}
     success = db.update(spec, update, safe=True)["updatedExisting"]
     if success:
         return "", 201

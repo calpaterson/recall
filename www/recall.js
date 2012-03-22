@@ -36,6 +36,11 @@ $(document).ready(
                 $(document).reload();
             }
         );
+
+	// Auth Status ("Not Logged In"/"foo@example.com")
+	if (localStorage.getItem("email") !== null){
+	    $("#auth-status").text(localStorage.getItem("email"));
+	}
         
         // Hero Unit
         // ---------
@@ -70,50 +75,6 @@ $(document).ready(
             }
         );
 
-	// Email Address Verification Modal
-	// --------------------------------
-	var url_args = document.location.href.split("?")[1];
-	console.log(urlParams);
-	if (urlParams.hasOwnProperty("email_key")){
-	    var email_key = urlParams["email_key"];
-	    var email = urlParams["email"];
-	    $.ajax(
-		recall_config["api-base-url"] + "/user/" + email,
-		{
-		    "type": "post",
-		    "data": JSON.stringify(
-			{"email_key": email_key,
-			 "email": email}),
-		    "contentType": "application/json",
-		    "dataType": "json",
-		    complete : function(jqXHR, textStatus){
-			if (textStatus == "success"){
-			    $("#verify-email-modal").modal();
-			} else {
-			    alert("failure to verify email address");
-			}
-		    }
-		});
-	}
-
-	// Bookmarklet Modal
-	// -----------------
-	$('#show-bookmarklet-modal').click(
-	    function(){
-		$('#bookmarklet-modal').modal();
-	    }
-	);
-
-	$.get("/bookmarklet-trampoline", function(data){
-		  var bookmarklet = data.replace(
-			  /BASE_API_URL/,
-		      recall_config["api-base-url"]);
-		  $("#bookmarklet").attr(
-		      "href",
-		      "javascript:" + bookmarklet);
-	      }
-	     );
-
 	// Request Invite Modal
 	// --------------------
 	$("#show-request-invite-modal").click(
@@ -134,7 +95,6 @@ $(document).ready(
 	    }
 	);
 
-
 	$("#send-invite").click(
 	    function(){
 		var form = $(this).closest("form");
@@ -146,7 +106,6 @@ $(document).ready(
 		    user["pseudonym"] = form.find("#pseudonym-input").val();
 		}
 		user["email"] = form.find("#email-input").val();
-		user["password"] = form.find("#password-input").val();
 		$.ajax(
 		    recall_config["api-base-url"] + "/user",
 		{
@@ -163,6 +122,55 @@ $(document).ready(
 		    }
 		});
 	    });
+
+	// Email Address Verification Modal
+	// --------------------------------
+	var url_args = document.location.href.split("?")[1];
+	if (urlParams.hasOwnProperty("email_key")){
+	    var email_key = urlParams["email_key"];
+	    var email = urlParams["email"];
+	    $("#verify-email-modal").modal();
+	    var password = "password";
+	    $.ajax(
+	    	recall_config["api-base-url"] + "/user/" + email,
+	    	{
+	    	    "type": "post",
+	    	    "data": JSON.stringify(
+	    		{"email_key": email_key,
+	    		 "email": email,
+			 "password": password}),
+	    	    "contentType": "application/json",
+	    	    "dataType": "json",
+	    	    complete : function(jqXHR, textStatus){
+	    		if (textStatus == "success"){
+	    		    localStorage.setItem("email", email);
+	    		    localStorage.setItem("password", password);
+			    $("#auth-status").text(
+				localStorage.getItem("email"));
+	    		} else {
+	    		    alert("failure to verify email address");
+	    		}
+	    	    }
+	    	});
+	}
+
+	// Bookmarklet Modal
+	// -----------------
+	$('#show-bookmarklet-modal').click(
+	    function(){
+		$('#bookmarklet-modal').modal();
+	    }
+	);
+
+	$.get("/bookmarklet-trampoline", function(data){
+		  var bookmarklet = data.replace(
+			  /BASE_API_URL/,
+		      recall_config["api-base-url"]);
+		  $("#bookmarklet").attr(
+		      "href",
+		      "javascript:" + bookmarklet);
+	      }
+	     );
 
         // List of posts
         // -------------

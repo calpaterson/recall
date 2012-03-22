@@ -52,7 +52,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           <a class="brand" href="#">Recall</a>
           <div class="nav-collapse">
             <ul class="nav">
-              <li class="active"><a id="brand">Home</a></li>
+	      <li class="active"><a id="auth-status" href="#"><b>Not Logged In</b></a></li>
               <li><a id="toggle-hero-unit" href="#">About Recall</a></li>
 	      <li><a id="show-request-invite-modal" href="#">Request Invite</a></li>
 	      <li><a id="show-bookmarklet-modal" href="#">Bookmarklet</a></li>
@@ -81,12 +81,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div id="verify-email-modal" class="modal fade">
       <div class="modal-header">
 	<a class="close" data-dismiss="modal">×</a>
-	<h3>Email Address Verified</h3>
+	<h3>The Final Step: Set Your Password</h3>
       </div>
       <div class="modal-body">
-	<p>
-	  Your email address has been verified and you have been logged in.
-	</p>
+	<input id="password-input" type="password" placeholder="•••••••••••">
+      </div>
+      <div class="modal-footer">
+	<button class="btn btn-primary" id="send-invite">Set Password</button>
       </div>
     </div>
 
@@ -112,12 +113,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	  <div id="pseudonym-div" hidden="true">
 	    <input type="text" id="pseudonym-input" placeholder="Pseudonym">
 	  </div>
-	  <div>
-	    <input type="email" id="email-input" placeholder="you@somewhere.com">
-	  </div>
-	  <div>
-	    <input id="password-input" type="password" placeholder="*********">
-	  </div>
+	  <input type="email" id="email-input" placeholder="you@somewhere.com">
 	  <div>
 	    <button class="btn btn-primary" id="send-invite">Request an Invite</button>
 	  </div>
@@ -166,8 +162,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
       </div>
       
-      <div id="marks">
-      </div>
+      <div id="marks"/>
     </div>
 
     <div id="templates" hidden="true">
