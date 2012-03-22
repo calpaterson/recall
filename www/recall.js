@@ -129,29 +129,34 @@ $(document).ready(
 	if (urlParams.hasOwnProperty("email_key")){
 	    var email_key = urlParams["email_key"];
 	    var email = urlParams["email"];
-	    $("#verify-email-modal").modal();
+	    $("#verify-email-modal").modal("show");
 	    var password = "password";
-	    $.ajax(
-	    	recall_config["api-base-url"] + "/user/" + email,
-	    	{
-	    	    "type": "post",
-	    	    "data": JSON.stringify(
-	    		{"email_key": email_key,
-	    		 "email": email,
-			 "password": password}),
-	    	    "contentType": "application/json",
-	    	    "dataType": "json",
-	    	    complete : function(jqXHR, textStatus){
-	    		if (textStatus == "success"){
-	    		    localStorage.setItem("email", email);
-	    		    localStorage.setItem("password", password);
-			    $("#auth-status").text(
-				localStorage.getItem("email"));
-	    		} else {
-	    		    alert("failure to verify email address");
-	    		}
-	    	    }
-	    	});
+	    $("#send-password").click(
+	    	function(){
+	    	    $.ajax(
+	    		recall_config["api-base-url"] + "/user/" + email,
+	    		{
+	    		    "type": "post",
+	    		    "data": JSON.stringify(
+	    			{"email_key": email_key,
+	    			 "email": email,
+	    			 "password": password}),
+	    		    "contentType": "application/json",
+	    		    "dataType": "json",
+	    		    complete : function(jqXHR, textStatus){
+	    			if (textStatus == "success"){
+	    			    localStorage.setItem("email", email);
+	    			    localStorage.setItem("password", password);
+	    			    $("#auth-status").text(
+	    				localStorage.getItem("email"));
+				    $("#verify-email-modal").modal("hide");
+	    			} else {
+	    			    alert("failure to verify email address");
+	    			}
+	    		    }
+	    		});
+	    	}
+	    )
 	}
 
 	// Bookmarklet Modal

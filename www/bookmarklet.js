@@ -22,6 +22,8 @@ var sendMark = function(mark) {
 	    data: JSON.stringify(mark),
 	    contentType: 'application/json',
 	    dataType: 'json',
+	    username: localStorage.getItem("email"),
+	    password: localStorage.getItem("password"),
 	    complete: function(jqXHR, textStatus){
 		if (textStatus === "success"){
 		    window.close();
