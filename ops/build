@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -e
+
+OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT=$OPS_DIR/..
+
+# If Jenkin's build number available, use that, otherwise DEV
+if [ $BUILD_NUMBER ]
+then
+    VERSION=BUILD_NUMBER
+else
+    VERSION=0-DEV
+fi
+
+# Clean
+rm -rf $OPS_DIR/debian/usr
+
+# Create and populate documentation directory
+DOC_DIR=$OPS_DIR/debian/usr/share/doc/recall
+mkdir -p $DOC_DIR/
+cp $PROJECT_ROOT/LICENCE $DOC_DIR/copyright
+touch $DOC_DIR/changelog.Debian
+gzip --best $DOC_DIR/changelog.Debian
+
+# Copy www to /usr/share/recall
+cp -R $OPS_DIR/../www $OPS_DIR/debian/usr/share/recall/
+
+# Create and populate bin directory
+BIN_DIR=$OPS_DIR/debian/usr/bin
+mkdir -p $BIN_DIR/
+cp $OPS_DIR/../server/server.py $BIN_DIR/recall-server
+
+# Remove *~ files from debian directory
+find ./debian/ -name '*~' -exec rm '{}' ';'
+
+# Set version number correctly, package, then set it back to UNKNOWN
+mkdir -p $OPS_DIR/artifacts
+sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/debian/DEBIAN/control
+fakeroot dpkg-deb --build debian $OPS_DIR/artifacts/recall.deb
+sed -i "s/${VERSION}/0-UNKNOWN/" $OPS_DIR/debian/DEBIAN/control
+
+lintian artifacts/recall.deb
+dpkg-name artifacts/recall.deb
