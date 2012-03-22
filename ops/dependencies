@@ -14,11 +14,23 @@ def exit_1_with_message(message):
     print "FAILURE: " + message
     exit(1)
 
+def assert_presence_of_binary_on_path(name):
+    exit_value = os.system("which " + name)
+    assert exit_value == 0
+
+def assert_presence_of_file(path):
+    assert os.path.isfile(path)
+
 def main():
 
     try:
-        exit_value = os.system("which lintian")
-        assert exit_value == 0
+        assert_presence_of_file("/usr/sbin/nginx")
+    except AssertionError:
+        exit_1_with_message(
+            "Need nginx - install nginx-light")
+
+    try:
+        assert_presence_of_binary_on_path("lintian")
     except AssertionError:
         exit_1_with_message(
             "Need to install debian's lintian package")
