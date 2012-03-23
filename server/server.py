@@ -69,7 +69,36 @@ def get_all_marks():
         marks.append(mark)
     return json.dumps(marks)
 
+from functools import wraps
+from flask import request, Response
+
+
+def check_auth(email, password):
+    """This function is called to check if a username /
+    password combination is valid.
+    """
+    db = Connection("localhost", 27017)
+    password_hash = bcrypt.hashpw(body["password"], config["password-salt"])
+    user = db.find_one(
+        {"email": email,
+         "password_hash": password_hash})
+    if user is None:
+        return False
+    else:
+        return True
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        import pdb; pdb.set_trace()
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return Response("", 400)
+        return f(*args, **kwargs)
+    return decorated
+
 @app.route("/mark", methods=["POST"])
+@requires_auth
 def add_mark():
     mark_as_dict = json.loads(request.data)
     try:
