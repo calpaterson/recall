@@ -26,8 +26,6 @@ import pymongo
 import bcrypt
 import uuid
 
-import pdb
-
 config = None
 
 app = Flask(__name__)
