@@ -150,4 +150,4 @@ if __name__ == "__main__":
     except IndexError:
         print "ERROR: Need configuration file"
         exit(1)
-    app.run(debug=True)
+    app.run()
