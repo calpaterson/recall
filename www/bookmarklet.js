@@ -22,8 +22,6 @@ var sendMark = function(mark) {
 	    data: JSON.stringify(mark),
 	    contentType: 'application/json',
 	    dataType: 'json',
-	    username: localStorage.getItem("email"),
-	    password: localStorage.getItem("password"),
 	    complete: function(jqXHR, textStatus){
 		if (textStatus === "success"){
 		    window.close();
@@ -83,17 +81,21 @@ $(document).ready(
 		    var mark = {
 			"#": $("#comment-body").val(),
 			"~": unixtime_now(),
-			"@": "cal@calpaterson.com"
+			"@": "cal@calpaterson.com",
+			"%email": localStorage.getItem("email"),
+			"%password": localStorage.getItem("password")
 		    };
 		    sendMark(mark);
 		} else if (hyperlinkRegex.test(buttonClasses)){
-		    sendMark({
-				"title": $("#hyperlink-title").val(),
-				"hyperlink": $("#hyperlink-url").val(),
-				 "~": unixtime_now(),
-				 "@": "cal@calpaterson.com"
-			     });
-		} else {
+                    sendMark({
+                                "title": $("#hyperlink-title").val(),
+                                "hyperlink": $("#hyperlink-url").val(),
+                                 "~": unixtime_now(),
+                                 "@": "cal@calpaterson.com",
+                                 "%email": localStorage.getItem("email"),
+				 "%password": localStorage.getItem("password")
+                             });
+                } else {
 		    $("#mark-alert-failure").fadeIn();		
 		}
 	    });

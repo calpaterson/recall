@@ -27,6 +27,10 @@ var urlParams = {};
        urlParams[d(e[1])] = d(e[2]);
 })();
 
+var loggedIn = function (){
+    return localStorage.getItem("email") !== null;
+}
+
 $(document).ready(
     function() {
         // Brand
@@ -38,9 +42,36 @@ $(document).ready(
         );
 
 	// Auth Status ("Not Logged In"/"foo@example.com")
-	if (localStorage.getItem("email") !== null){
+	if (loggedIn()){
 	    $("#auth-status").text(localStorage.getItem("email"));
+	    $("#login-toggle-dropdown").text("Logout");
+	} else {
+	    $("#login-toggle-dropdown").text("Login");
 	}
+
+	$("#send-login").click(
+	    function(){
+		localStorage.setItem(
+		    "email", $("#login-email-input").val());
+		localStorage.setItem(
+		    "password", $("login-password-input").val());
+		$("#login-modal").modal("hide");
+	    }
+	);
+
+	// Login toggle dropdown
+	$("#login-toggle-dropdown").click(
+	    function(event){
+		if (loggedIn()){
+		    localStorage.removeItem("email");
+		    localStorage.removeItem("password");
+		    $("#login-toggle-dropdown").text("Login");
+		} else {
+		    $("#login-modal").modal();
+		    $("#login-toggle-dropdown").text("Logout");
+		}
+	    }
+	);
         
         // Hero Unit
         // ---------

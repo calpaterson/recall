@@ -52,13 +52,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           <a class="brand" href="#">Recall</a>
           <div class="nav-collapse">
             <ul class="nav">
-	      <li class="active"><a id="auth-status" href="#"><b>Not Logged In</b></a></li>
+	      <li class="dropdown">
+		<a class="dropdown-toggle"
+		   data-toggle="dropdown"
+		   href="#">
+		  <b id="auth-status">Not Logged In</b>
+		  <b class="caret"></b>
+		</a>
+		<ul class="dropdown-menu">
+		  <li><a id="login-toggle-dropdown" href="#">Log in</a></li>
+		</ul>
+	      </li>
               <li><a id="toggle-hero-unit" href="#">About Recall</a></li>
 	      <li><a id="show-request-invite-modal" href="#">Request Invite</a></li>
 	      <li><a id="show-bookmarklet-modal" href="#">Bookmarklet</a></li>
               <li><a href="mailto:cal@calpaterson.com">Email Author</a></li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>
         </div>
       </div>
     </div>
@@ -88,6 +98,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </div>
       <div class="modal-footer">
 	<button class="btn btn-primary" id="send-password">Set Password</button>
+      </div>
+    </div>
+
+    <div id="login-modal" class="modal fade">
+      <div class="modal-header">
+	<a class="close" data-dismiss="modal">×</a>
+	<h3>Login</h3>
+      </div>
+      <div class="modal-body">
+	<input id="login-email-input" type="email" placeholder="you@example.com">
+	<input id="login-password-input" type="password" placeholder="•••••••••••">
+      </div>
+      <div class="modal-footer">
+	<button class="btn btn-primary" id="send-login">Login</button>
       </div>
     </div>
 

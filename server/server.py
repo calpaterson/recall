@@ -19,12 +19,14 @@
 import json
 from sys import argv
 
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, Response
 from pymongo import Connection
 from werkzeug.routing import BaseConverter
 import pymongo
 import bcrypt
 import uuid
+
+import pdb
 
 config = None
 
@@ -69,49 +71,33 @@ def get_all_marks():
         marks.append(mark)
     return json.dumps(marks)
 
-from functools import wraps
-from flask import request, Response
-
-
-def check_auth(email, password):
-    """This function is called to check if a username /
-    password combination is valid.
-    """
+def is_authorised(body):
     db = Connection("localhost", 27017)
-    password_hash = bcrypt.hashpw(body["password"], config["password-salt"])
-    user = db.find_one(
-        {"email": email,
+    password_hash = bcrypt.hashpw(body["%password"], config["password-salt"])
+    user = db.recall.users.find_one(
+        {"email": body["%email"],
          "password_hash": password_hash})
     if user is None:
         return False
     else:
         return True
 
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        import pdb; pdb.set_trace()
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return Response("", 400)
-        return f(*args, **kwargs)
-    return decorated
-
 @app.route("/mark", methods=["POST"])
-@requires_auth
 def add_mark():
-    mark_as_dict = json.loads(request.data)
+    body = json.loads(request.data)
+    if not is_authorised(body):
+        return "", 403
     try:
-        mark_as_dict[u"url"] = "http://" + config["api-hostname"] \
+        body[u"url"] = "http://" + config["api-hostname"] \
             + "/mark/" \
-            + mark_as_dict[u"@"] \
-            + "/" + str(int(mark_as_dict[u"~"]))
+            + body[u"@"] \
+            + "/" + str(int(body[u"~"]))
     except KeyError:
         return "", 400
-    db = Connection("localhost", 27017).recall.marks
-    db.insert(mark_as_dict)
-    del(mark_as_dict["_id"])
-    return json.dumps(mark_as_dict), 201
+    db = Connection("localhost", 27017)
+    db.recall.marks.insert(body)
+    del(body["_id"])
+    return json.dumps(body), 201
 
 @app.route("/user/<email>", methods=["GET"])
 def user(email):
