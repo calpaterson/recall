@@ -133,6 +133,7 @@ def verify_email(email):
             "email_key"
             ])
     password_hash = bcrypt.hashpw(body["password"], config["password-salt"])
+    del body["password"]
     db = Connection("localhost", 27017).recall.users
     spec = {"email": email,
             "email_key": body["email_key"]}
