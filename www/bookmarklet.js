@@ -81,8 +81,7 @@ $(document).ready(
 		    var mark = {
 			"#": $("#comment-body").val(),
 			"~": unixtime_now(),
-			"@": "cal@calpaterson.com",
-			"%email": localStorage.getItem("email"),
+			"@": localStorage.getItem("email"),
 			"%password": localStorage.getItem("password")
 		    };
 		    sendMark(mark);
@@ -91,8 +90,7 @@ $(document).ready(
                                 "title": $("#hyperlink-title").val(),
                                 "hyperlink": $("#hyperlink-url").val(),
                                  "~": unixtime_now(),
-                                 "@": "cal@calpaterson.com",
-                                 "%email": localStorage.getItem("email"),
+                                 "@": localStorage.getItem("email"),
 				 "%password": localStorage.getItem("password")
                              });
                 } else {

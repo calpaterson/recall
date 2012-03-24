@@ -73,7 +73,7 @@ def is_authorised(body):
     db = Connection("localhost", 27017)
     password_hash = bcrypt.hashpw(body["%password"], config["password-salt"])
     user = db.recall.users.find_one(
-        {"email": body["%email"],
+        {"email": body["@"],
          "password_hash": password_hash})
     if user is None:
         return False
@@ -151,4 +151,4 @@ if __name__ == "__main__":
     except IndexError:
         print "ERROR: Need configuration file"
         exit(1)
-    app.run()
+    app.run(debug=True)
