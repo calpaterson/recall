@@ -187,7 +187,7 @@ $(document).ready(
 	    		    }
 	    		});
 	    	}
-	    )
+	    );
 	}
 
 	// Bookmarklet Modal
