@@ -159,23 +159,21 @@ $(document).ready(
 	var url_args = document.location.href.split("?")[1];
 	if (urlParams.hasOwnProperty("email_key")){
 	    var email_key = urlParams["email_key"];
-	    var email = urlParams["email"];
 	    $("#verify-email-modal").modal("show");
 	    var password = "password";
 	    $("#send-password").click(
 	    	function(){
 	    	    $.ajax(
-	    		recall_config["api-base-url"] + "/user/" + email,
+	    		recall_config["api-base-url"] + "/user/" + email_key,
 	    		{
 	    		    "type": "post",
 	    		    "data": JSON.stringify(
-	    			{"email_key": email_key,
-	    			 "email": email,
-	    			 "password": password}),
+	    			{"password": password}),
 	    		    "contentType": "application/json",
 	    		    "dataType": "json",
 	    		    complete : function(jqXHR, textStatus){
 	    			if (textStatus == "success"){
+				    var email = JSON.parse(jqXHR.responseText)["email"];
 	    			    localStorage.setItem("email", email);
 	    			    localStorage.setItem("password", password);
 	    			    $("#auth-status").text(
