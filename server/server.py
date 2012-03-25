@@ -18,6 +18,7 @@
 
 import json
 from sys import argv
+import os
 
 from flask import Flask, request, make_response, Response
 from pymongo import Connection
@@ -26,9 +27,30 @@ import pymongo
 import bcrypt
 import uuid
 
-config = None
+settings = {}
 
 app = Flask(__name__)
+
+def load_settings():
+    settings["RECALL_MONGODB_DB_NAME"] = os.environ.get(
+        "RECALL_MONGODB_DB_NAME", "recall")
+    settings["RECALL_MONGODB_HOST"] = os.environ.get(
+        "RECALL_MONGODB_HOST", "localhost")
+    settings["RECALL_MONGODB_PORT"] = os.environ.get(
+        "RECALL_MONGODB_PORT", 27017)
+    settings["RECALL_PASSWORD_SALT"] = os.environ.get(
+        "RECALL_PASSWORD_SALT", "$2a$12$tl2VDOPWJOuoJsnu6xQtWu")
+    settings["RECALL_API_HOSTNAME"] = os.environ.get(
+        "RECALL_API_HOSTNAME", "localhost:5000")
+    if settings["RECALL_PASSWORD_SALT"] == "salt" and\
+            not settings["IS_TEST"]:
+        print "ERROR: Using bogus salt"
+
+def get_db():
+    db_name = settings["RECALL_MONGODB_DB_NAME"]
+    return Connection(
+        settings["RECALL_MONGODB_HOST"],
+        settings["RECALL_MONGODB_PORT"])[db_name]
 
 def may_only_contain(dict_, whitelist):
     """Takes a dict and a whitelist of keys and removes all items in the dict
@@ -41,8 +63,8 @@ def may_only_contain(dict_, whitelist):
 
 @app.route("/mark/<email>/<time>", methods=["GET"])
 def get_mark(email, time):
-    db = Connection("localhost", 27017).recall.marks
-    mark = db.find_one({"@": email, "~": int(time)})
+    db = get_db()
+    mark = db.marks.find_one({"@": email, "~": int(time)})
     try:
         del(mark[u"_id"])
     except TypeError:
@@ -51,8 +73,8 @@ def get_mark(email, time):
 
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
-    db = Connection("localhost", 27017).recall.marks
-    rs = db.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
+    db = get_db()
+    rs = db.marks.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
@@ -61,8 +83,8 @@ def get_all_marks_by_email(email):
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
-    db = Connection("localhost", 27017).recall.marks
-    rs = db.find(sort=[("~", pymongo.DESCENDING)])
+    db = get_db()
+    rs = db.marks.find(sort=[("~", pymongo.DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
@@ -71,7 +93,7 @@ def get_all_marks():
 
 def is_authorised(body):
     db = Connection("localhost", 27017)
-    password_hash = bcrypt.hashpw(body["%password"], config["password-salt"])
+    password_hash = bcrypt.hashpw(body["%password"], settings["RECALL_PASSWORD_SALT"])
     user = db.recall.users.find_one(
         {"email": body["@"],
          "password_hash": password_hash})
@@ -86,7 +108,7 @@ def add_mark():
     if not is_authorised(body):
         return "", 403
     try:
-        body[u"url"] = "http://" + config["api-hostname"] \
+        body[u"url"] = "http://" + settings["RECALL_API_HOSTNAME"] \
             + "/mark/" \
             + body[u"@"] \
             + "/" + str(int(body[u"~"]))
@@ -99,7 +121,7 @@ def add_mark():
 
 @app.route("/user/<email>", methods=["GET"])
 def user(email):
-    users = Connection("localhost", 27017).recall.users
+    users = get_db().users
     user = users.find_one(email)
     if user is None:
         return "", 404
@@ -121,34 +143,32 @@ def request_invite():
     if "email" not in user_as_dict:
         return "", 400
     user_as_dict["email_key"] = str(uuid.uuid4())
-    db = Connection("localhost", 27017).recall.users
+    db = get_db().users
     db.ensure_index("email", unique=True)
     db.insert(user_as_dict, safe=True)
     return "", 202
 
-@app.route("/user/<email>", methods=["POST"])
-def verify_email(email):
+@app.route("/user/<email_key>", methods=["POST"])
+def verify_email(email_key):
     body = may_only_contain(json.loads(request.data), [
             "password",
-            "email_key"
             ])
-    password_hash = bcrypt.hashpw(body["password"], config["password-salt"])
+    password_hash = bcrypt.hashpw(
+        body["password"],
+        settings["RECALL_PASSWORD_SALT"])
     del body["password"]
-    db = Connection("localhost", 27017).recall.users
-    spec = {"email": email,
-            "email_key": body["email_key"]}
+
+    spec = {"email_key": email_key}
     update = {"$set": {"email_verified": True,
                        "password_hash": password_hash}}
-    success = db.update(spec, update, safe=True)["updatedExisting"]
+    db = get_db()
+    success = db.users.update(
+        spec, update, safe=True)["updatedExisting"]
     if success:
         return "", 201
     else:
         return "", 400
 
 if __name__ == "__main__":
-    try:
-        config = json.loads(open(argv[1]).read())
-    except IndexError:
-        print "ERROR: Need configuration file"
-        exit(1)
-    app.run(debug=True)
+    load_settings()
+    app.run()

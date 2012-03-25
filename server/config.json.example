@@ -1,3 +1,0 @@
-{ "api-hostname": "localhost:5000",
-  "email-verification-salt": "salt",
-  "password-salt": "salt"}
