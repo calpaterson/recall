@@ -34,9 +34,9 @@ cp $OPS_DIR/../server/server.py $BIN_DIR/recall-server
 find ./debian/ -name '*~' -exec rm '{}' ';'
 
 # Set version number correctly, package, then set it back to UNKNOWN
-mkdir -p $OPS_DIR/artifacts
+mkdir -p $OPS_DIR/artefacts
 sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/debian/DEBIAN/control
-fakeroot dpkg-deb --build debian $OPS_DIR/artifacts/recall.deb
+fakeroot dpkg-deb --build debian $OPS_DIR/artefacts/recall.deb
 sed -i "s/${VERSION}/0-UNKNOWN/" $OPS_DIR/debian/DEBIAN/control
 
 lintian artifacts/recall.deb
