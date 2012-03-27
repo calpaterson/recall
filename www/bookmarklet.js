@@ -81,18 +81,23 @@ $(document).ready(
 		    var mark = {
 			"#": $("#comment-body").val(),
 			"~": unixtime_now(),
-			"@": localStorage.getItem("email"),
-			"%password": localStorage.getItem("password")
+			"@": localStorage.getItem("email")
 		    };
+		    if ($("#comment-privacy").is(":checked")){
+			mark["%private"] = true;
+		    }
 		    sendMark(mark);
 		} else if (hyperlinkRegex.test(buttonClasses)){
-                    sendMark({
-                                "title": $("#hyperlink-title").val(),
-                                "hyperlink": $("#hyperlink-url").val(),
-                                 "~": unixtime_now(),
-                                 "@": localStorage.getItem("email"),
-				 "%password": localStorage.getItem("password")
-                             });
+		    var mark = {
+                        "title": $("#hyperlink-title").val(),
+                        "hyperlink": $("#hyperlink-url").val(),
+                        "~": unixtime_now(),
+                        "@": localStorage.getItem("email")
+                    };
+		    if ($("#comment-privacy").is(":checked")){
+			mark["%private"] = true;
+		    }
+                    sendMark(mark);
                 } else {
 		    $("#mark-alert-failure").fadeIn();		
 		}

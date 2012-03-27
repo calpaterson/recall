@@ -57,10 +57,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	    <textarea class="span4"
 		      autofocus="true"
 		      id="comment-body"></textarea>
-	    <div>
-	      <button class="comment-btn send-mark btn">
-		<i class="icon-ok"></i> Mark</button>
-	    </div>
+	    Private?:
+	    <input id="comment-privacy"
+		   type="checkbox"
+		   value="private"
+		   checked="false">
+	    <br/>
+	    <br/>
+	    <button class="comment-btn send-mark btn">
+	      <i class="icon-ok"></i> Mark</button>
 	  </div>
 	</div>
 
@@ -82,19 +87,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
 
 	<div class="tab-pane" id="hyperlink-tab">
-          <div class="well">
-	    <p>
-	      <label>Title</label>
-	      <input class="span4" type="text" id="hyperlink-title">
-	    </p>
-	    <p>
-	      <label>URL</label>
-	      <input class="span4" type="url" id="hyperlink-url">
-	    </p>
-	    <div>
-	      <button class="hyperlink-btn btn send-mark">
-		<i class="icon-ok"></i> Mark</button>
-	    </div>
+	  <div class="well">
+	    <label>Title</label>
+	    <input id="hyperlink-title"
+		   class="span4"
+		   type="text">
+	    <label>URL</label>
+	    <input id="hyperlink-url"
+		   class="span4"
+		   type="url">
+	    Private?:
+	    <input id="hyperlink-privacy"
+		   type="checkbox"
+		   value="private"
+		   checked="false">
+	    <br/>
+	    <br/>
+	    <button class="hyperlink-btn btn send-mark">
+	      <i class="icon-ok"></i> Mark</button>
 	  </div>
 	</div>
 
