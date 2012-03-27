@@ -47,9 +47,7 @@ def load_settings():
         settings["RECALL_DEBUG_MODE"] = False
     else:
         settings["RECALL_DEBUG_MODE"] = True
-        # print "RUNNING IN DEBUG MODE"
-    if settings["RECALL_PASSWORD_SALT"] == "salt" and\
-            not settings["IS_TEST"]:
+    if settings["RECALL_PASSWORD_SALT"] == "salt":
         print "ERROR: Using bogus salt"
 
 def get_db():
@@ -67,41 +65,82 @@ def may_only_contain(dict_, whitelist):
             d[k] = v
     return d
 
-@app.route("/mark/<email>/<time>", methods=["GET"])
-def get_mark(email, time):
-    db = get_db()
-    mark = db.marks.find_one({"@": email, "~": int(time)})
+@app.route("/mark", methods=["GET"])
+def get_all_marks():
+    spec = {"%private": False}
     try:
+        email = request.headers["X-Email"]
+        password = request.headers["X-Password"]
+        if is_authorised(email, password):
+            spec = {"$or": [
+                    {"@": email},
+                    {"%private": False}
+                    ]}
+    except KeyError:
+        pass
+    db = get_db()
+    rs = db.marks.find(
+        spec,
+        sort=[("~", pymongo.DESCENDING)])
+    marks = []
+    for mark in rs:
         del(mark[u"_id"])
-    except TypeError:
-        return "", 404
-    return json.dumps(mark)
+        marks.append(mark)
+    return json.dumps(marks)
 
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
+    spec = {"%private": False,
+            "@": email}
+    try:
+        email = request.headers["X-Email"]
+        password = request.headers["X-Password"]
+        if is_authorised(email, password):
+            spec = {"$or": [
+                    {"@": email},
+                    {"%private": False}
+                    ]}
+    except KeyError:
+        pass
     db = get_db()
-    rs = db.marks.find({"@": email}, sort=[("~", pymongo.DESCENDING)])
+    rs = db.marks.find(spec, sort=[("~", pymongo.DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
         marks.append(mark)
     return json.dumps(marks)
 
-@app.route("/mark", methods=["GET"])
-def get_all_marks():
+@app.route("/mark/<email>/<time>", methods=["GET"])
+def get_mark(email, time):
+    spec = {"%private": False,
+            "@": email,
+            "~": int(time)}
+    try:
+        email = request.headers["X-Email"]
+        password = request.headers["X-Password"]
+        if is_authorised(email, password):
+            spec = {"$or": [
+                    {"@": email},
+                    {"%private": False}
+                    ],
+                    "~": int(time)}
+    except KeyError:
+        pass
     db = get_db()
-    rs = db.marks.find(sort=[("~", pymongo.DESCENDING)])
-    marks = []
-    for mark in rs:
+    mark = db.marks.find_one(spec)
+    try:
         del(mark[u"_id"])
-        marks.append(mark)
-    return json.dumps(marks)
+    except TypeError:
+        return "No such mark found", 404
+    return json.dumps(mark), 200
 
-def is_authorised(body):
-    db = Connection("localhost", 27017)
-    password_hash = bcrypt.hashpw(body["%password"], settings["RECALL_PASSWORD_SALT"])
-    user = db.recall.users.find_one(
-        {"email": body["@"],
+def is_authorised(email, password):
+    db = get_db()
+    password_hash = bcrypt.hashpw(
+        password,
+        settings["RECALL_PASSWORD_SALT"])
+    user = db.users.find_one(
+        {"email": email,
          "password_hash": password_hash})
     if user is None:
         return False
@@ -111,18 +150,25 @@ def is_authorised(body):
 @app.route("/mark", methods=["POST"])
 def add_mark():
     body = json.loads(request.data)
-    if not is_authorised(body):
-        return "", 403
+    try:
+        if not is_authorised(
+            request.headers["X-Email"],
+            request.headers["X-Password"]):
+            return "Email or password or both does not match", 403
+    except KeyError:
+        return "You must include a %password", 400
     try:
         body[u"url"] = "http://" + settings["RECALL_API_HOSTNAME"] \
             + "/mark/" \
             + body[u"@"] \
             + "/" + str(int(body[u"~"]))
     except KeyError:
-        return "", 400
-    db = Connection("localhost", 27017)
-    db.recall.marks.insert(body)
-    del(body["_id"])
+        return "You must include at least @ and ~", 400
+    if "%private" not in body:
+        body["%private"] = False
+    db = get_db()
+    db.marks.insert(body)
+    del body["_id"]
     return json.dumps(body), 201
 
 @app.route("/user/<email>", methods=["GET"])
@@ -158,12 +204,12 @@ def request_invite():
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
     body = may_only_contain(json.loads(request.data), [
-            "password",
+            "%password",
             ])
     password_hash = bcrypt.hashpw(
-        body["password"],
+        body["%password"],
         settings["RECALL_PASSWORD_SALT"])
-    del body["password"]
+    del body["%password"]
 
     spec = {"email_key": email_key}
     update = {"$set": {"email_verified": int(time.time()),
