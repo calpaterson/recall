@@ -108,7 +108,6 @@ class ServerTests(unittest.TestCase):
             }
         expected_mark = {
             u"#": "Hello!",
-            u"%private": False,
             u"@": u"example@example.com",
             u"url": u"http://localhost/mark/example@example.com/0",
             u"~": 0,

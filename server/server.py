@@ -67,7 +67,7 @@ def may_only_contain(dict_, whitelist):
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
-    spec = {"%private": False}
+    spec = {"%private": {"$exists": False}}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
@@ -90,7 +90,7 @@ def get_all_marks():
 
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
-    spec = {"%private": False,
+    spec = {"%private": {"$exists": False},
             "@": email}
     try:
         email = request.headers["X-Email"]
@@ -112,7 +112,7 @@ def get_all_marks_by_email(email):
 
 @app.route("/mark/<email>/<time>", methods=["GET"])
 def get_mark(email, time):
-    spec = {"%private": False,
+    spec = {"%private": {"$exists": False},
             "@": email,
             "~": int(time)}
     try:
@@ -164,8 +164,6 @@ def add_mark():
             + "/" + str(int(body[u"~"]))
     except KeyError:
         return "You must include at least @ and ~", 400
-    if "%private" not in body:
-        body["%private"] = False
     db = get_db()
     db.marks.insert(body)
     del body["_id"]
