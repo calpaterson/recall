@@ -168,7 +168,7 @@ $(document).ready(
 	    		{
 	    		    "type": "post",
 	    		    "data": JSON.stringify(
-	    			{"password": password}),
+	    			{"%password": password}),
 	    		    "contentType": "application/json",
 	    		    "dataType": "json",
 	    		    complete : function(jqXHR, textStatus){
@@ -243,20 +243,30 @@ $(document).ready(
             return hyperlink;
         };
 
-        $.getJSON(recall_config["api-base-url"] + "/mark",
-                  function (data){
-                      $.each(
-                          data,
-                          function(_, elem){
-                              if(elem.hasOwnProperty('latitude')){
-                                  var loc = renderLocation(elem);
-                                  $("#marks").append(loc);
-			      } else if (elem.hasOwnProperty("hyperlink")){
-				  $("#marks").append(renderHyperlink(elem));
-                              } else {
-                                  $("#marks").append(renderComment(elem));        
-                              }
-                          });
-                  });
+	var renderMarks = function (data){
+            $.each(
+                data,
+                function(_, elem){
+                    if(elem.hasOwnProperty('latitude')){
+                        var loc = renderLocation(elem);
+                        $("#marks").append(loc);
+		    } else if (elem.hasOwnProperty("hyperlink")){
+			$("#marks").append(renderHyperlink(elem));
+                    } else {
+                        $("#marks").append(renderComment(elem));        
+                    }
+                });
+	};
+
+
+	$.ajax(recall_config["api-base-url"] + "/mark",
+	      {
+		  type: "get",
+		  headers: {"X-Email": localStorage.getItem("email"),
+			      "X-Password": localStorage.getItem("password")},
+		  contentType: "application/json",
+		  dataType: "json",
+		  complete: function(jqXHR, textStatus) { renderMarks(JSON.parse(jqXHR.responseText)); }
+	      });
     }
 );

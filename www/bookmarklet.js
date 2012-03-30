@@ -3,6 +3,7 @@
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
+
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
@@ -19,6 +20,8 @@ var sendMark = function(mark) {
 	recall_config["api-base-url"] + "/mark",
 	{
 	    type: 'post',
+	    headers: {"X-Email": localStorage.getItem("email"),
+		      "X-Password": localStorage.getItem("password")},
 	    data: JSON.stringify(mark),
 	    contentType: 'application/json',
 	    dataType: 'json',
