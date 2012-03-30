@@ -20,6 +20,7 @@ import json
 import time
 
 import mock
+import bcrypt
 from pymongo import Connection
 from werkzeug.datastructures import Headers
 
@@ -35,6 +36,7 @@ class ServerTests(unittest.TestCase):
         server.load_settings()
         server.settings["RECALL_MONGODB_DB_NAME"] = "test"
         server.settings["RECALL_API_HOSTNAME"] = "localhost"
+        server.settings["RECALL_PASSWORD_SALT"] = bcrypt.gensalt(0)
 
     def tearDown(self):
         self.db = server.get_db()
@@ -226,9 +228,9 @@ class ServerTests(unittest.TestCase):
             u"~": 0,
             }
 
-        actual_mark = json.loads(
-            self.client.get("/mark/example@example.com/0",
-                            headers=eg_headers).data)
+        response = self.client.get("/mark/example@example.com/0",
+                                   headers=eg_headers).data
+        actual_mark = json.loads(response)
         self.assertEqual(expected_mark, actual_mark)
 
         actual_mark = json.loads(

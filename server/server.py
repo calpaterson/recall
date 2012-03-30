@@ -66,7 +66,7 @@ def may_only_contain(dict_, whitelist):
     return d
 
 def json_error(message):
-    return {"error": message}
+    return json.dumps({"error": message})
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
@@ -134,7 +134,7 @@ def get_mark(email, time):
     try:
         del(mark[u"_id"])
     except TypeError:
-        return "No such mark found", 404
+        return json_error("No such mark found"), 404
     return json.dumps(mark), 200
 
 def is_authorised(email, password):
