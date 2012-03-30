@@ -29,8 +29,6 @@ import server
 class ServerTests(unittest.TestCase):
 
     def setUp(self):
-        self.start_time = time.time()
-
         server.app.testing = True
         self.client = server.app.test_client()
         server.load_settings()
@@ -42,9 +40,6 @@ class ServerTests(unittest.TestCase):
         self.db = server.get_db()
         self.db.marks.remove()
         self.db.users.remove()
-
-        total_time = time.time() - self.start_time
-        print "%s took: %.3f" % (self.id(), total_time)
 
     def _add_example_user(self, email, password):
         """Adds the user example@example.com/password"""
