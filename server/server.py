@@ -65,6 +65,9 @@ def may_only_contain(dict_, whitelist):
             d[k] = v
     return d
 
+def json_error(message):
+    return {"error": message}
+
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
     spec = {"%private": {"$exists": False}}

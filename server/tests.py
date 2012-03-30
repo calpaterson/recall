@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 #
@@ -16,6 +17,7 @@
 
 import unittest
 import json
+import time
 
 import mock
 from pymongo import Connection
@@ -24,11 +26,10 @@ from werkzeug.datastructures import Headers
 import server
 
 class ServerTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls._db = Connection()["test"]
 
     def setUp(self):
+        self.start_time = time.time()
+
         server.app.testing = True
         self.client = server.app.test_client()
         server.load_settings()
@@ -36,24 +37,29 @@ class ServerTests(unittest.TestCase):
         server.settings["RECALL_API_HOSTNAME"] = "localhost"
 
     def tearDown(self):
-        self.db = Connection()["test"]
+        self.db = server.get_db()
         self.db.marks.remove()
         self.db.users.remove()
 
-    def add_example_user(self):
+        total_time = time.time() - self.start_time
+        print "%s took: %.3f" % (self.id(), total_time)
+
+    def _add_example_user(self, email, password):
         """Adds the user example@example.com/password"""
-        self.client.post(
+        response = self.client.post(
             "/user",
             data=str(json.dumps({
-                        "pseudonym": "example",
-                        "email": "example@example.com"})))
+                        "pseudonym": email.split("@")[0],
+                        "email": email})))
+        assert response.status_code == 202
 
         db = server.get_db()
         email_key = db.users.find_one()["email_key"]
 
         response = self.client.post(
             "/user/" + email_key,
-            data=str(json.dumps({"%password": "password"})))
+            data=str(json.dumps({"%password": password})))
+        assert response.status_code == 201
 
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
@@ -96,11 +102,21 @@ class ServerTests(unittest.TestCase):
 
         self.assertIn("password_hash", db.users.find_one())
 
-    def test_addition_of_public_mark(self):
-        self.add_example_user()
+    def test_addition_of_public_mark_fails_without_password(self):
+        mark = {
+            "~": 0,
+            "@": "example@example.com",
+            "#": "Hello!"
+            }
+        response = self.client.post("/mark", data=str(json.dumps(mark)))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, "You must include a %password")
+
+    def test_add_and_get_public_mark(self):
+        self._add_example_user("example@example.com", "example")
         headers = Headers(
             {"X-Email": "example@example.com",
-             "X-Password": "password"})
+             "X-Password": "example"})
         mark = {
             "~": 0,
             "@": "example@example.com",
@@ -124,31 +140,17 @@ class ServerTests(unittest.TestCase):
 
         actual_mark = json.loads(
             self.client.get("/mark/example@example.com").data)[0]
-        self.assertEqual(
-            expected_mark, actual_mark,
-            msg="Contents of public mark not as expected")
+        self.assertEqual(expected_mark, actual_mark)
 
         actual_mark = json.loads(self.client.get("/mark").data)[0]
-        self.assertEqual(
-            expected_mark, actual_mark,
-            msg="Contents of public mark not as expected")
-
-    def test_addition_of_public_mark_fails_without_password(self):
-        mark = {
-            "~": 0,
-            "@": "example@example.com",
-            "#": "Hello!"
-            }
-        response = self.client.post("/mark", data=str(json.dumps(mark)))
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, "You must include a %password")
+        self.assertEqual(expected_mark, actual_mark)
 
 
-    def test_addition_of_private_mark(self):
-        self.add_example_user()
+    def test_add_and_get_private_mark(self):
+        self._add_example_user("example@example.com", "example")
         headers = Headers(
             {"X-Email": "example@example.com",
-             "X-Password": "password"})
+             "X-Password": "example"})
         mark = {
             "~": 0,
             "@": "example@example.com",
@@ -193,6 +195,51 @@ class ServerTests(unittest.TestCase):
                 "/mark/example@example.com/0",
                 headers=headers).data)
         self.assertEqual(expected_mark, marks)
+
+
+    def test_get_public_marks_of_others_while_authed(self):
+        example, example_pass = ("example@example.com", "example")
+        self._add_example_user(example, example_pass)
+        mark = {
+            "~": 0,
+            "@": example,
+            "#": "Hello!",
+            }
+        response = self.client.post(
+            "/mark",
+            data=str(json.dumps(mark)),
+            headers=Headers(
+                {"X-Email": example,
+                 "X-Password": example_pass}))
+        self.assertEqual(response.status_code, 201)
+
+
+        eg, eg_pass = ("eg@example.com", "eg")
+        self._add_example_user(eg, eg_pass)
+        eg_headers = Headers(
+            {"X-Email": eg,
+             "X-Password": eg_pass})
+        expected_mark = {
+            u"#": "Hello!",
+            u"@": u"example@example.com",
+            u"url": u"http://localhost/mark/example@example.com/0",
+            u"~": 0,
+            }
+
+        actual_mark = json.loads(
+            self.client.get("/mark/example@example.com/0",
+                            headers=eg_headers).data)
+        self.assertEqual(expected_mark, actual_mark)
+
+        actual_mark = json.loads(
+            self.client.get("/mark/example@example.com",
+                            headers=eg_headers).data)[0]
+        self.assertEqual(expected_mark, actual_mark)
+
+        actual_mark = json.loads(self.client.get(
+                "/mark", headers=eg_headers).data)[0]
+        self.assertEqual(expected_mark, actual_mark)
+
 
 if __name__ == "__main__":
     unittest.main()
