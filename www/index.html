@@ -21,16 +21,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <meta charset="utf-8">
     <title>Recall</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Recall is a decentralised social bookmarking service">
+    <meta name="description"
+	  content="Recall is a decentralised social bookmarking service">
     <meta name="author" content="Cal Paterson">
 
     <link href="third-party/bootstrap/css/bootstrap.css" rel="stylesheet">
     <style>
       body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+        padding-top: 60px;
       }
     </style>
-    <link href="third-party/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="third-party/bootstrap/css/bootstrap-responsive.css"
+	  rel="stylesheet">
     <link href="style.css" rol="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -44,7 +46,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <a class="btn btn-navbar" data-toggle="collapse"
+	     data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
@@ -53,20 +56,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
           <div class="nav-collapse">
             <ul class="nav">
 	      <li class="dropdown">
-		<a class="dropdown-toggle"
-		   data-toggle="dropdown"
-		   href="#">
+		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
 		  <b id="auth-status">Not Logged In</b>
 		  <b class="caret"></b>
 		</a>
 		<ul class="dropdown-menu">
-		  <li><a id="login-toggle-dropdown" href="#">Log in</a></li>
+		  <li>
+		    <a id="login-toggle-dropdown" href="#">Log in</a>
+		  </li>
 		</ul>
 	      </li>
-              <li><a id="toggle-hero-unit" href="#">About Recall</a></li>
-	      <li><a id="show-request-invite-modal" href="#">Request Invite</a></li>
-	      <li><a id="show-bookmarklet-modal" href="#">Bookmarklet</a></li>
-              <li><a href="mailto:cal@calpaterson.com">Email Author</a></li>
+              <li>
+		<a id="toggle-hero-unit" href="#">About Recall</a>
+	      </li>
+	      <li>
+		<a id="show-request-invite-modal" href="#">Request Invite
+		</a>
+	      </li>
+	      <li>
+		<a id="show-import-bookmarks-modal" href="#">Import Bookmarks
+		</a>
+	      </li>
+	      <li>
+		<a id="show-bookmarklet-modal" href="#">Bookmarklet</a>
+	      </li>
+              <li>
+		<a href="mailto:cal@calpaterson.com">Email Author</a>
+	      </li>
             </ul>
           </div>
         </div>
@@ -80,7 +96,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </div>
       <div class="modal-body">
 	<p>
-	  You can use the bookmarklet to mark from a web browser.  Drag the hyperlink below onto your bookmarks toolbar.
+	  You can use the bookmarklet to mark from a web browser.  Drag the
+	  hyperlink below onto your bookmarks toolbar.
 	</p>
 	<p>
 	  <a class="bookmarklet" id="bookmarklet" href="">Drag me!</a>
@@ -149,6 +166,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
 	<div class="alert" hidden="true" id="invite-request-alert-failure">
 	  <strong>Failure</strong> - something went wrong
+	</div>
+      </div>
+    </div>
+
+    <div id="import-bookmarks-modal" class="modal fade">
+      <div class="modal-header">
+	<a class="close" data-dismiss="modal">×</a>
+	<h3>Import Bookmarks<h3>
+      </div>
+      <div class="modal-body">
+	<p>
+	  Many web browsers and social bookmarking services allow you to
+	  export your bookmarks in an html formal (sometimes called "Netscape
+	  Navigator" format).  You can import this file to Recall.
+	</p>
+	<input id="bookmarks-file-input" type="file">
+	<div class="modal-footer">
+	  <button id="import-bookmarks" class="btn">Import</button>
 	</div>
       </div>
     </div>
@@ -222,5 +257,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <script src="third-party/bootstrap/js/bootstrap.js"></script>
     <script src="config.js"></script>
     <script src="recall.js"></script>
+    <script src="third-party/htmlparser.js"></script>
   </body>
 </html>

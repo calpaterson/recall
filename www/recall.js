@@ -206,6 +206,68 @@ $(document).ready(
 	      }
 	     );
 
+	// Import Bookmarks Modal
+	// ----------------------
+	$("#show-import-bookmarks-modal").click(
+	    function(){
+		$("#import-bookmarks-modal").modal();
+	    }
+	);
+
+	var netscapeElementToMark = function(element){
+	    var mark = {
+		"hyperlink": element.attributes["HREF"].nodeValue,
+		"~": element.attributes["ADD_DATE"].nodeValue,
+		"title": element.textContent,
+		"@": localStorage.getItem("email"),
+		"tags": element.attributes["TAGS"].nodeValue.split(",")
+	    };
+	    if (element.attributes["PRIVATE"].nodeValue === "1"){
+		mark["%private"] = true;
+	    }
+	    if (element.attributes["TOREAD"].nodeValue === "1"){
+		mark["unread"] == true;
+	    }
+	    return mark;
+	};
+
+	$("#import-bookmarks").click(
+	    function(){
+		var bookmarksFile = $("#bookmarks-file-input")[0].files[0];
+		var reader = new FileReader();
+		reader.onload = function(event){
+		    var contents = event.target.result;
+		    var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
+		    var matches = contents.match(bookmarkRegex);
+		    var bookmarks = [];
+		    for (var each in matches){
+			var dom = HTMLtoDOM(matches[each]);
+			var element = $(dom).find("a")[0];
+			bookmarks.push(netscapeElementToMark(element));
+		    }
+		    $.ajax(
+			recall_config["api-base-url"] + "/mark",
+			{
+			    type: 'post',
+			    headers: {"X-Email": localStorage.getItem("email"),
+				      "X-Password": localStorage.getItem("password")},
+			    data: JSON.stringify(bookmarks),
+			    contentType: 'application/json',
+			    dataType: 'json',
+			    complete: function(jqXHR, textStatus){
+				if (textStatus === "success"){
+				    window.close();
+				} else {
+				    alert("Failed");
+				}
+			    }
+			}
+		    );
+		};
+		reader.readAsText(bookmarksFile, "UTF-8");
+	    }
+	);
+
         // List of posts
         // -------------
         var getTime = function(elem){
