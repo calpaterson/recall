@@ -220,7 +220,7 @@ $(document).ready(
 		"~": element.attributes["ADD_DATE"].nodeValue,
 		"title": element.textContent,
 		"@": localStorage.getItem("email"),
-		"tags": element.attributes["TAGS"].nodeValue.split(",")
+		"tags": element.attributes["TAGS"].nodeValue.split("/ |,/g")
 	    };
 	    if (element.attributes["PRIVATE"].nodeValue === "1"){
 		mark["%private"] = true;
