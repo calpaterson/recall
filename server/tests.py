@@ -107,11 +107,9 @@ class ServerTests(unittest.TestCase):
         expected_data = {"error": "You must include authentication headers"}
         self.assertEqual(json.loads(response.data), expected_data)
 
-    def test_add_and_get_public_mark(self):
+    def test_create_public_mark(self):
         _, email, password = self._create_test_user()
-        headers = Headers(
-            {"X-Email": email,
-             "X-Password": password})
+        headers = Headers({"X-Email": email, "X-Password": password})
         mark = {
             "~": 0,
             "@": email,
@@ -123,22 +121,18 @@ class ServerTests(unittest.TestCase):
             u"%url": u"http://localhost/mark/" + email + "/0",
             u"~": 0,
             }
-        response = self.client.post(
-            "/mark",
-            data=str(json.dumps(mark)),
-            headers=headers)
+        post_data = json.dumps(mark)
+        response = self.client.post("/mark", data=post_data, headers=headers)
         self.assertEqual(response.status_code, 201)
 
-        actual_mark = json.loads(
-            self.client.get("/mark/"+ email +"/0").data)
+        actual_mark = json.loads(self.client.get("/mark/"+ email +"/0").data)
         self.assertEqual(expected_mark, actual_mark)
 
-        actual_mark = json.loads(
-            self.client.get("/mark/" + email).data)[0]
-        self.assertEqual(expected_mark, actual_mark)
+        actual_mark = json.loads(self.client.get("/mark/" + email).data)
+        self.assertEqual([expected_mark], actual_mark)
 
-        actual_mark = json.loads(self.client.get("/mark").data)[0]
-        self.assertEqual(expected_mark, actual_mark)
+        actual_mark = json.loads(self.client.get("/mark").data)
+        self.assertEqual([expected_mark], actual_mark)
 
 
     def test_add_and_get_private_mark(self):
