@@ -35,18 +35,22 @@ class ServerTests(unittest.TestCase):
         server.settings["RECALL_MONGODB_DB_NAME"] = "test"
         server.settings["RECALL_API_HOSTNAME"] = "localhost"
         server.settings["RECALL_PASSWORD_SALT"] = bcrypt.gensalt(0)
+        self.example_user_counter = 1
 
     def tearDown(self):
         self.db = server.get_db()
         self.db.marks.remove()
         self.db.users.remove()
 
-    def _add_example_user(self, email, password):
-        """Adds the user example@example.com/password"""
+    def _add_example_user(self):
+        pseudonym = "example" + str(self.example_user_counter)
+        email = pseudonym + "@example.com"
+        password = email
+        creation_document = {"pseudonym": pseudonym,
+                             "email": email}
         response = self.client.post(
-            "/user",
-            data=str(json.dumps({
-                        "pseudonym": email.split("@")[0],
+            "/user", data=str(json.dumps({
+                        "pseudonym": pseudonym,
                         "email": email})))
         assert response.status_code == 202
 
@@ -57,6 +61,8 @@ class ServerTests(unittest.TestCase):
             "/user/" + email_key,
             data=str(json.dumps({"%password": password})))
         assert response.status_code == 201
+        self.example_user_counter += 1
+        return pseudonym, email, password
 
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
@@ -112,19 +118,19 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(json.loads(response.data), expected_data)
 
     def test_add_and_get_public_mark(self):
-        self._add_example_user("example@example.com", "example")
+        _, email, password = self._add_example_user()
         headers = Headers(
-            {"X-Email": "example@example.com",
-             "X-Password": "example"})
+            {"X-Email": email,
+             "X-Password": password})
         mark = {
             "~": 0,
-            "@": "example@example.com",
+            "@": email,
             "#": "Hello!",
             }
         expected_mark = {
             u"#": "Hello!",
-            u"@": u"example@example.com",
-            u"%url": u"http://localhost/mark/example@example.com/0",
+            u"@": email,
+            u"%url": u"http://localhost/mark/" + email + "/0",
             u"~": 0,
             }
         response = self.client.post(
@@ -134,11 +140,11 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
         actual_mark = json.loads(
-            self.client.get("/mark/example@example.com/0").data)
+            self.client.get("/mark/"+ email +"/0").data)
         self.assertEqual(expected_mark, actual_mark)
 
         actual_mark = json.loads(
-            self.client.get("/mark/example@example.com").data)[0]
+            self.client.get("/mark/" + email).data)[0]
         self.assertEqual(expected_mark, actual_mark)
 
         actual_mark = json.loads(self.client.get("/mark").data)[0]
@@ -146,19 +152,19 @@ class ServerTests(unittest.TestCase):
 
 
     def test_add_and_get_private_mark(self):
-        self._add_example_user("example@example.com", "example")
+        _, email, password = self._add_example_user()
         headers = Headers(
-            {"X-Email": "example@example.com",
-             "X-Password": "example"})
+            {"X-Email": email,
+             "X-Password": password})
         mark = {
             "~": 0,
-            "@": "example@example.com",
+            "@": email,
             "%private": True
             }
         expected_mark = {
             u"~": 0,
-            u"@": u"example@example.com",
-            u"%url": u"http://localhost/mark/example@example.com/0",
+            u"@": email,
+            u"%url": u"http://localhost/mark/" + email + "/0",
             u"%private": True
             }
 
@@ -197,8 +203,7 @@ class ServerTests(unittest.TestCase):
 
 
     def test_get_public_marks_of_others_while_authed(self):
-        example, example_pass = ("example@example.com", "example")
-        self._add_example_user(example, example_pass)
+        _, example, example_pass = self._add_example_user()
         mark = {
             "~": 0,
             "@": example,
@@ -213,25 +218,24 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
 
-        eg, eg_pass = ("eg@example.com", "eg")
-        self._add_example_user(eg, eg_pass)
+        _, eg, eg_pass = self._add_example_user()
         eg_headers = Headers(
             {"X-Email": eg,
              "X-Password": eg_pass})
         expected_mark = {
             u"#": "Hello!",
-            u"@": u"example@example.com",
-            u"%url": u"http://localhost/mark/example@example.com/0",
+            u"@": example,
+            u"%url": u"http://localhost/mark/" + example + "/0",
             u"~": 0,
             }
 
-        response = self.client.get("/mark/example@example.com/0",
+        response = self.client.get("/mark/" + example + "/0",
                                    headers=eg_headers).data
         actual_mark = json.loads(response)
         self.assertEqual(expected_mark, actual_mark)
 
         actual_mark = json.loads(
-            self.client.get("/mark/example@example.com",
+            self.client.get("/mark/" + example,
                             headers=eg_headers).data)[0]
         self.assertEqual(expected_mark, actual_mark)
 
@@ -240,8 +244,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(expected_mark, actual_mark)
 
     def test_bulk_addition_of_marks(self):
-        example, example_pass = (u"example@example.com", u"example")
-        self._add_example_user(example, example_pass)
+        _, example, example_pass = self._add_example_user()
         marks = [
             {
                 u"~": 0,
