@@ -62,24 +62,18 @@ class ServerTests(unittest.TestCase):
 
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
-        response = self.client.post(
-            "/user",
-            data=str(json.dumps({
-                        "firstName": "joe",
-                        "surname": "bloggs",
-                        "email": "joe@bloggs.com"})))
-        self.assertEquals(expected_status_code, response.status_code,
-                          msg=response.data)
+        url = "/user"
+        post_data = json.dumps({"firstName": "Joe", "surname": "Bloggs",
+                                "email": "joe@bloggs.com"})
+        response = self.client.post(url, data=post_data)
+        self.assertEquals(expected_status_code, response.status_code)
 
     def test_request_invite_with_pseudonym(self):
         expected_status_code = 202
-        response = self.client.post(
-            "/user",
-            data=str(json.dumps({
-                        "pseudonym": "bloggs",
-                        "email": "joe@bloggs.com"})))
-        self.assertEqual(expected_status_code, response.status_code,
-                         msg=response.data)
+        url = "/user"
+        post_data = json.dumps({"pseudonym": "jb", "email": "jb@bloggs.com"})
+        response = self.client.post(url, data=post_data)
+        self.assertEqual(expected_status_code, response.status_code)
 
     def test_verify_email(self):
         self.client.post(
