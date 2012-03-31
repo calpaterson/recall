@@ -107,7 +107,9 @@ class ServerTests(unittest.TestCase):
             }
         response = self.client.post("/mark", data=str(json.dumps(mark)))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.data, "You must include a %password")
+
+        expected_data = {"error": "You must include authentication headers"}
+        self.assertEqual(json.loads(response.data), expected_data)
 
     def test_add_and_get_public_mark(self):
         self._add_example_user("example@example.com", "example")
@@ -122,7 +124,7 @@ class ServerTests(unittest.TestCase):
         expected_mark = {
             u"#": "Hello!",
             u"@": u"example@example.com",
-            u"url": u"http://localhost/mark/example@example.com/0",
+            u"%url": u"http://localhost/mark/example@example.com/0",
             u"~": 0,
             }
         response = self.client.post(
@@ -156,7 +158,7 @@ class ServerTests(unittest.TestCase):
         expected_mark = {
             u"~": 0,
             u"@": u"example@example.com",
-            u"url": u"http://localhost/mark/example@example.com/0",
+            u"%url": u"http://localhost/mark/example@example.com/0",
             u"%private": True
             }
 
@@ -219,7 +221,7 @@ class ServerTests(unittest.TestCase):
         expected_mark = {
             u"#": "Hello!",
             u"@": u"example@example.com",
-            u"url": u"http://localhost/mark/example@example.com/0",
+            u"%url": u"http://localhost/mark/example@example.com/0",
             u"~": 0,
             }
 
@@ -236,6 +238,36 @@ class ServerTests(unittest.TestCase):
         actual_mark = json.loads(self.client.get(
                 "/mark", headers=eg_headers).data)[0]
         self.assertEqual(expected_mark, actual_mark)
+
+    def test_bulk_addition_of_marks(self):
+        example, example_pass = (u"example@example.com", u"example")
+        self._add_example_user(example, example_pass)
+        marks = [
+            {
+                u"~": 0,
+                u"@": example,
+                u"#": u"Hello",
+            },
+            {
+                u"~": 1,
+                u"@": example,
+                u"#": u"Hello",
+                u"%private": True
+            }]
+
+        response = self.client.post(
+            "/mark",
+            data=str(json.dumps(marks)),
+            headers=Headers({"X-Email": example, "X-Password": example_pass}))
+        self.assertEqual(202, response.status_code)
+
+        response = self.client.get(
+            "/mark/" + example,
+            headers=Headers({"X-Email": example, "X-Password": example_pass}))
+        parsed_response = json.loads(response.data)
+        for mark in parsed_response:
+            del mark["%url"]
+        self.assertEqual(list(reversed(marks)), parsed_response)
 
 
 if __name__ == "__main__":

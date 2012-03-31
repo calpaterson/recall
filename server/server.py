@@ -68,6 +68,50 @@ def may_only_contain(dict_, whitelist):
 def json_error(message):
     return json.dumps({"error": message})
 
+def is_authorised(email, password):
+    db = get_db()
+    password_hash = bcrypt.hashpw(
+        password,
+        settings["RECALL_PASSWORD_SALT"])
+    user = db.users.find_one(
+        {"email": email,
+         "password_hash": password_hash})
+    if user is None:
+        return False
+    else:
+        return True
+
+@app.route("/mark", methods=["POST"])
+def add_mark():
+    def make_url(body):
+        return "http://" + settings["RECALL_API_HOSTNAME"] + "/mark/" \
+            + body[u"@"] + "/" + str(int(body[u"~"]))
+    def insert_mark(body):
+        body[u"%url"] = make_url(body)
+        db = get_db()
+        db.marks.insert(body)
+        del body["_id"]
+        return body
+
+    try:
+        if not is_authorised(
+            request.headers["X-Email"],
+            request.headers["X-Password"]):
+            return "Email or password or both does not match", 403
+    except KeyError:
+        return json_error("You must include authentication headers"), 400
+    body = json.loads(request.data)
+    try:
+        if type(body) == list:
+            for mark in body:
+                insert_mark(mark)
+            return "{}", 202
+        elif type(body) == dict:
+            body = insert_mark(body)
+            return json.dumps(body), 201
+    except KeyError:
+        return "You must include at least @ and ~", 400
+
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
     spec = {"%private": {"$exists": False}}
@@ -136,41 +180,6 @@ def get_mark(email, time):
     except TypeError:
         return json_error("No such mark found"), 404
     return json.dumps(mark), 200
-
-def is_authorised(email, password):
-    db = get_db()
-    password_hash = bcrypt.hashpw(
-        password,
-        settings["RECALL_PASSWORD_SALT"])
-    user = db.users.find_one(
-        {"email": email,
-         "password_hash": password_hash})
-    if user is None:
-        return False
-    else:
-        return True
-
-@app.route("/mark", methods=["POST"])
-def add_mark():
-    body = json.loads(request.data)
-    try:
-        if not is_authorised(
-            request.headers["X-Email"],
-            request.headers["X-Password"]):
-            return "Email or password or both does not match", 403
-    except KeyError:
-        return "You must include a %password", 400
-    try:
-        body[u"url"] = "http://" + settings["RECALL_API_HOSTNAME"] \
-            + "/mark/" \
-            + body[u"@"] \
-            + "/" + str(int(body[u"~"]))
-    except KeyError:
-        return "You must include at least @ and ~", 400
-    db = get_db()
-    db.marks.insert(body)
-    del body["_id"]
-    return json.dumps(body), 201
 
 @app.route("/user/<email>", methods=["GET"])
 def user(email):
