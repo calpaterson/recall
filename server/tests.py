@@ -46,22 +46,18 @@ class ServerTests(unittest.TestCase):
         pseudonym = "example" + str(self.example_user_counter)
         email = pseudonym + "@example.com"
         password = email
-        creation_document = {"pseudonym": pseudonym,
-                             "email": email}
-        response = self.client.post(
-            "/user", data=str(json.dumps({
-                        "pseudonym": pseudonym,
-                        "email": email})))
+        post_data = json.dumps({"pseudonym": pseudonym, "email": email})
+        response = self.client.post("/user", data=str(post_data))
         assert response.status_code == 202
+        self.example_user_counter += 1
 
         db = server.get_db()
         email_key = db.users.find_one()["email_key"]
 
-        response = self.client.post(
-            "/user/" + email_key,
-            data=str(json.dumps({"%password": password})))
+        post_data = json.dumps({"%password": password})
+        url = "/user/" + email_key
+        response = self.client.post(url, data=post_data)
         assert response.status_code == 201
-        self.example_user_counter += 1
         return pseudonym, email, password
 
     def test_request_invite_with_real_name(self):
