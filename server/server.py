@@ -22,9 +22,8 @@ import os
 import time
 
 from flask import Flask, request, make_response, Response
-from pymongo import Connection
+from pymongo import Connection, DESCENDING
 from werkzeug.routing import BaseConverter
-import pymongo
 import bcrypt
 import uuid
 
@@ -128,7 +127,7 @@ def get_all_marks():
     db = get_db()
     rs = db.marks.find(
         spec,
-        sort=[("~", pymongo.DESCENDING)])
+        sort=[("~", DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
@@ -150,7 +149,7 @@ def get_all_marks_by_email(email):
     except KeyError:
         pass
     db = get_db()
-    rs = db.marks.find(spec, sort=[("~", pymongo.DESCENDING)])
+    rs = db.marks.find(spec, sort=[("~", DESCENDING)])
     marks = []
     for mark in rs:
         del(mark[u"_id"])
