@@ -27,6 +27,7 @@ import server
 
 class ServerTests(unittest.TestCase):
 
+
     def setUp(self):
         server.app.testing = True
         self.client = server.app.test_client()
@@ -36,10 +37,12 @@ class ServerTests(unittest.TestCase):
         server.settings["RECALL_PASSWORD_SALT"] = bcrypt.gensalt(0)
         self.example_user_counter = 1
 
+
     def tearDown(self):
         self.db = server.get_db()
         self.db.marks.remove()
         self.db.users.remove()
+
 
     def _create_test_user(self):
         pseudonym = "example" + str(self.example_user_counter)
@@ -59,6 +62,7 @@ class ServerTests(unittest.TestCase):
         assert response.status_code == 201
         return pseudonym, email, password
 
+
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
         url = "/user"
@@ -67,12 +71,14 @@ class ServerTests(unittest.TestCase):
         response = self.client.post(url, data=post_data)
         self.assertEquals(expected_status_code, response.status_code)
 
+
     def test_request_invite_with_pseudonym(self):
         expected_status_code = 202
         url = "/user"
         post_data = json.dumps({"pseudonym": "jb", "email": "jb@bloggs.com"})
         response = self.client.post(url, data=post_data)
         self.assertEqual(expected_status_code, response.status_code)
+
 
     def test_verify_email(self):
         url = "/user"
@@ -100,6 +106,7 @@ class ServerTests(unittest.TestCase):
         expected_data = {"error": "You must include authentication headers"}
         self.assertEqual(json.loads(response.data), expected_data)
 
+
     def test_create_public_mark(self):
         _, email, password = self._create_test_user()
         headers = Headers({"X-Email": email, "X-Password": password})
@@ -126,6 +133,7 @@ class ServerTests(unittest.TestCase):
 
         actual_mark = json.loads(self.client.get("/mark").data)
         self.assertEqual([expected_mark], actual_mark)
+
 
     # TODO: Refactor
     def test_add_and_get_private_mark(self):
@@ -178,46 +186,35 @@ class ServerTests(unittest.TestCase):
                 headers=headers).data)
         self.assertEqual(expected_mark, marks)
 
-    # TODO: Refactor
+
     def test_get_public_marks_of_others_while_authed(self):
-        _, example, example_pass = self._create_test_user()
-        mark = {
-            "~": 0,
-            "@": example,
-            "#": "Hello!",
-            }
+        _, user1, password1 = self._create_test_user()
+        user1_headers = Headers({"X-Email": user1, "X-Password": password1})
+
+        post_data = json.dumps({"~": 0, "@": user1, "#": "Hello!"})
         response = self.client.post(
-            "/mark",
-            data=str(json.dumps(mark)),
-            headers=Headers(
-                {"X-Email": example,
-                 "X-Password": example_pass}))
+            "/mark", data=post_data, headers=user1_headers)
         self.assertEqual(response.status_code, 201)
 
-        _, eg, eg_pass = self._create_test_user()
-        eg_headers = Headers(
-            {"X-Email": eg,
-             "X-Password": eg_pass})
-        expected_mark = {
-            u"#": "Hello!",
-            u"@": example,
-            u"%url": u"http://localhost/mark/" + example + "/0",
-            u"~": 0,
-            }
+        _, user2, password2 = self._create_test_user()
+        user2_headers = Headers({"X-Email": user2, "X-Password": password2})
 
-        response = self.client.get("/mark/" + example + "/0",
-                                   headers=eg_headers).data
-        actual_mark = json.loads(response)
+        expected_mark = {u"#": "Hello!", u"@": user1,
+            u"%url": u"http://localhost/mark/" + user1 + "/0", u"~": 0}
+
+        response = self.client.get(
+            "/mark/" + user1 + "/0", headers=user2_headers)
+        actual_mark = json.loads(response.data)
         self.assertEqual(expected_mark, actual_mark)
 
-        actual_mark = json.loads(
-            self.client.get("/mark/" + example,
-                            headers=eg_headers).data)[0]
-        self.assertEqual(expected_mark, actual_mark)
+        response = self.client.get("/mark/" + user1, headers=user2_headers)
+        actual_marks = json.loads(response.data)
+        self.assertEqual([expected_mark], actual_marks)
 
-        actual_mark = json.loads(self.client.get(
-                "/mark", headers=eg_headers).data)[0]
-        self.assertEqual(expected_mark, actual_mark)
+        response = self.client.get("/mark", headers=user2_headers)
+        actual_marks = json.loads(response.data)
+        self.assertEqual([expected_mark], actual_marks)
+
 
     def test_bulk_addition_of_marks(self):
         _, example, example_pass = self._create_test_user()
