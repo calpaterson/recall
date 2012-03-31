@@ -42,7 +42,7 @@ class ServerTests(unittest.TestCase):
         self.db.marks.remove()
         self.db.users.remove()
 
-    def _add_example_user(self):
+    def _create_test_user(self):
         pseudonym = "example" + str(self.example_user_counter)
         email = pseudonym + "@example.com"
         password = email
@@ -114,7 +114,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(json.loads(response.data), expected_data)
 
     def test_add_and_get_public_mark(self):
-        _, email, password = self._add_example_user()
+        _, email, password = self._create_test_user()
         headers = Headers(
             {"X-Email": email,
              "X-Password": password})
@@ -148,7 +148,7 @@ class ServerTests(unittest.TestCase):
 
 
     def test_add_and_get_private_mark(self):
-        _, email, password = self._add_example_user()
+        _, email, password = self._create_test_user()
         headers = Headers(
             {"X-Email": email,
              "X-Password": password})
@@ -199,7 +199,7 @@ class ServerTests(unittest.TestCase):
 
 
     def test_get_public_marks_of_others_while_authed(self):
-        _, example, example_pass = self._add_example_user()
+        _, example, example_pass = self._create_test_user()
         mark = {
             "~": 0,
             "@": example,
@@ -214,7 +214,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
 
-        _, eg, eg_pass = self._add_example_user()
+        _, eg, eg_pass = self._create_test_user()
         eg_headers = Headers(
             {"X-Email": eg,
              "X-Password": eg_pass})
@@ -240,7 +240,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(expected_mark, actual_mark)
 
     def test_bulk_addition_of_marks(self):
-        _, example, example_pass = self._add_example_user()
+        _, example, example_pass = self._create_test_user()
         marks = [
             {
                 u"~": 0,
