@@ -19,7 +19,6 @@ import unittest
 import json
 import time
 
-import mock
 import bcrypt
 from pymongo import Connection
 from werkzeug.datastructures import Headers
@@ -76,32 +75,26 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(expected_status_code, response.status_code)
 
     def test_verify_email(self):
-        self.client.post(
-            "/user",
-            data=str(json.dumps({
-                        "pseudonym": "bloggs",
-                        "email": "joe@bloggs.com"})))
+        url = "/user"
+        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
+        self.client.post(url, data=post_data)
 
         db = server.get_db()
         email_key = db.users.find_one()["email_key"]
 
-        expected_status_code = 201
-        response = self.client.post(
-            "/user/" + email_key,
-            data=str(json.dumps({"%password": "password"})))
-        self.assertEqual(expected_status_code, response.status_code)
+        url = "/user/" + email_key
+        post_data = json.dumps({"%password": "password"})
+        response = self.client.post(url, data=post_data)
+        self.assertEqual(201, response.status_code)
 
-        self.assertNotIn("password", db.users.find_one())
+        user_in_db = db.users.find_one({"email": "j@bloggs.com"})
+        self.assertIn("password_hash", user_in_db)
+        self.assertNotIn("password", user_in_db)
 
-        self.assertIn("password_hash", db.users.find_one())
 
     def test_addition_of_public_mark_fails_without_password(self):
-        mark = {
-            "~": 0,
-            "@": "example@example.com",
-            "#": "Hello!"
-            }
-        response = self.client.post("/mark", data=str(json.dumps(mark)))
+        post_data = json.dumps({"~": 0, "@": "e@example.com", "#": "Hello!"})
+        response = self.client.post("/mark", data=post_data)
         self.assertEqual(response.status_code, 400)
 
         expected_data = {"error": "You must include authentication headers"}
@@ -134,7 +127,7 @@ class ServerTests(unittest.TestCase):
         actual_mark = json.loads(self.client.get("/mark").data)
         self.assertEqual([expected_mark], actual_mark)
 
-
+    # TODO: Refactor
     def test_add_and_get_private_mark(self):
         _, email, password = self._create_test_user()
         headers = Headers(
@@ -185,7 +178,7 @@ class ServerTests(unittest.TestCase):
                 headers=headers).data)
         self.assertEqual(expected_mark, marks)
 
-
+    # TODO: Refactor
     def test_get_public_marks_of_others_while_authed(self):
         _, example, example_pass = self._create_test_user()
         mark = {
@@ -228,6 +221,9 @@ class ServerTests(unittest.TestCase):
 
     def test_bulk_addition_of_marks(self):
         _, example, example_pass = self._create_test_user()
+        headers = Headers({"X-Email": example,
+                           "X-Password": example_pass})
+
         marks = [
             {
                 u"~": 0,
@@ -241,19 +237,17 @@ class ServerTests(unittest.TestCase):
                 u"%private": True
             }]
 
-        response = self.client.post(
-            "/mark",
-            data=str(json.dumps(marks)),
-            headers=Headers({"X-Email": example, "X-Password": example_pass}))
+        url = "/mark"
+        post_data = json.dumps(marks)
+        response = self.client.post(url, data=post_data, headers=headers)
         self.assertEqual(202, response.status_code)
 
-        response = self.client.get(
-            "/mark/" + example,
-            headers=Headers({"X-Email": example, "X-Password": example_pass}))
-        parsed_response = json.loads(response.data)
-        for mark in parsed_response:
+        expected_response_data = list(reversed(marks))
+        response = self.client.get("/mark/" + example, headers=headers)
+        actual_response_data = json.loads(response.data)
+        for mark in actual_response_data:
             del mark["%url"]
-        self.assertEqual(list(reversed(marks)), parsed_response)
+        self.assertEqual(actual_response_data, actual_response_data)
 
 
 if __name__ == "__main__":
