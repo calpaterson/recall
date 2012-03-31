@@ -135,56 +135,43 @@ class ServerTests(unittest.TestCase):
         self.assertEqual([expected_mark], actual_mark)
 
 
-    # TODO: Refactor
     def test_add_and_get_private_mark(self):
         _, email, password = self._create_test_user()
-        headers = Headers(
-            {"X-Email": email,
-             "X-Password": password})
-        mark = {
-            "~": 0,
-            "@": email,
-            "%private": True
-            }
+        headers = Headers({"X-Email": email, "X-Password": password})
+        mark = {"~": 0, "@": email, "%private": True, "#": "Hello"}
         expected_mark = {
             u"~": 0,
+            u"#": "Hello",
             u"@": email,
             u"%url": u"http://localhost/mark/" + email + "/0",
             u"%private": True
             }
 
-        response = self.client.post(
-            "/mark",
-            headers=headers,
-            data=str(json.dumps(mark)))
+        url = "/mark"
+        post_data = json.dumps(mark)
+        response = self.client.post(url, headers=headers, data=post_data)
         self.assertEqual(response.status_code, 201)
 
-        marks = json.loads(self.client.get("/mark").data)
-        self.assertEqual([], marks)
+        public_marks = json.loads(self.client.get("/mark").data)
+        self.assertEqual([], public_marks)
 
-        marks = json.loads(self.client.get(
-                "/mark",
-                headers=headers).data)
-        self.assertEqual([expected_mark], marks)
+        email_marks = json.loads(
+            self.client.get("/mark", headers=headers).data)
+        self.assertEqual([expected_mark], email_marks)
 
-        marks = json.loads(self.client.get(
-                "/mark/example@example.com").data)
-        self.assertEqual([], marks)
+        public_email_marks = json.loads(self.client.get("/mark/" + email).data)
+        self.assertEqual([], public_email_marks)
 
-        marks = json.loads(
-            self.client.get(
-                "/mark/example@example.com",
-                headers=headers).data)
-        self.assertEqual([expected_mark], marks)
+        private_email_marks = json.loads(
+            self.client.get("/mark/" + email, headers=headers).data)
+        self.assertEqual([expected_mark], private_email_marks)
 
-        response = self.client.get("/mark/example@example.com/0")
-        self.assertEqual(404, response.status_code)
+        specific_mark_response = self.client.get("/mark/" + email + "/0")
+        self.assertEqual(404, specific_mark_response.status_code)
 
-        marks = json.loads(
-            self.client.get(
-                "/mark/example@example.com/0",
-                headers=headers).data)
-        self.assertEqual(expected_mark, marks)
+        specific_mark_with_auth = json.loads(
+            self.client.get("/mark/" + email + "/0", headers=headers).data)
+        self.assertEqual(expected_mark, specific_mark_with_auth)
 
 
     def test_get_public_marks_of_others_while_authed(self):
@@ -244,7 +231,7 @@ class ServerTests(unittest.TestCase):
         actual_response_data = json.loads(response.data)
         for mark in actual_response_data:
             del mark["%url"]
-        self.assertEqual(actual_response_data, actual_response_data)
+        self.assertEqual(expected_response_data, actual_response_data)
 
 
 if __name__ == "__main__":
