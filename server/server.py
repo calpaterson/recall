@@ -121,7 +121,7 @@ def get_all_marks():
         if is_authorised(email, password):
             spec = {"$or": [
                     {"@": email},
-                    {"%private": False}
+                    {"%private": {"$exists": False}}
                     ]}
     except KeyError:
         pass
@@ -145,7 +145,7 @@ def get_all_marks_by_email(email):
         if is_authorised(email, password):
             spec = {"$or": [
                     {"@": email},
-                    {"%private": False}
+                    {"%private": {"$exists": False}}
                     ]}
     except KeyError:
         pass
@@ -168,7 +168,7 @@ def get_mark(email, time):
         if is_authorised(email, password):
             spec = {"$or": [
                     {"@": email},
-                    {"%private": False}
+                    {"%private": {"$exists" : False}}
                     ],
                     "~": int(time)}
     except KeyError:

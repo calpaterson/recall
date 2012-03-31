@@ -52,7 +52,7 @@ class ServerTests(unittest.TestCase):
         self.example_user_counter += 1
 
         db = server.get_db()
-        email_key = db.users.find_one()["email_key"]
+        email_key = db.users.find_one({"email": email})["email_key"]
 
         post_data = json.dumps({"%password": password})
         url = "/user/" + email_key
@@ -212,7 +212,6 @@ class ServerTests(unittest.TestCase):
                 {"X-Email": example,
                  "X-Password": example_pass}))
         self.assertEqual(response.status_code, 201)
-
 
         _, eg, eg_pass = self._create_test_user()
         eg_headers = Headers(
