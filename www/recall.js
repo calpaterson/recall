@@ -29,7 +29,79 @@ var urlParams = {};
 
 var loggedIn = function (){
     return localStorage.getItem("email") !== null;
-}
+};
+
+// List of posts
+// -------------
+var getTime = function(elem){
+    var then = new Date(elem['~'] * 1000);
+    return $.timeago(then);
+};
+
+var renderComment = function(elem){
+    var comment = $($("#comment-template")).clone();
+    comment.removeAttr("id");
+    comment.find(".who").text(elem["@"]);
+    comment.find(".what").text(elem["#"]);
+    comment.find(".when").text(getTime(elem));
+    return comment;
+};
+
+var renderLocation = function(elem){
+    var location = $($('#location-template').clone());
+    location.removeAttr("id");
+    location.find(".who").text(elem["@"]);
+    location.find(".when").text(getTime(elem));
+    location.find(".location-map")[0].src = 'https://maps.googleapis.com/maps/api/staticmap?center=' +
+        elem.latitude + ',' + elem.longitude + '&sensor=false&size=400x400&' +
+        'markers=color:red%7C' + elem.latitude + ',' + elem.longitude;
+    return location;
+};
+
+var renderHyperlink = function(elem){
+    var hyperlink = $($("#hyperlink-template")).clone();
+    hyperlink.removeAttr("id");
+    hyperlink.find(".who").text(elem["@"]);
+    $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem["hyperlink"]);
+    hyperlink.find(".title").text(elem.title);
+    hyperlink.find(".when").text(getTime(elem));
+    return hyperlink;
+};
+
+oldestMark = null;
+
+var renderMarks = function (data){
+    $.each(
+        data,
+        function(_, elem){
+	    oldestMark = elem["~"];
+            if(elem.hasOwnProperty('latitude')){
+                var loc = renderLocation(elem);
+                $("#marks").append(loc);
+	    } else if (elem.hasOwnProperty("hyperlink")){
+		$("#marks").append(renderHyperlink(elem));
+            } else {
+                $("#marks").append(renderComment(elem));        
+            }
+        });
+};
+
+var addMarks = function (before){
+    if (before == undefined){
+	before = 0;	
+    }
+    $.ajax(recall_config["api-base-url"] + "/mark",
+	   {
+	       type: "get",
+	       headers: {"X-Email": localStorage.getItem("email"),
+			 "X-Password": localStorage.getItem("password")},
+	       contentType: "application/json",
+	       dataType: "json",
+	       data: {"maximum": 50, "before": before},
+	       complete: function(jqXHR, textStatus) {
+		   renderMarks(JSON.parse(jqXHR.responseText)); }
+	   });
+};
 
 $(document).ready(
     function() {
@@ -217,7 +289,7 @@ $(document).ready(
 	var netscapeElementToMark = function(element){
 	    var mark = {
 		"hyperlink": element.attributes["HREF"].nodeValue,
-		"~": element.attributes["ADD_DATE"].nodeValue,
+		"~": parseInt(element.attributes["ADD_DATE"].nodeValue, 10),
 		"title": element.textContent,
 		"@": localStorage.getItem("email"),
 		"tags": element.attributes["TAGS"].nodeValue.split("/ |,/g")
@@ -249,8 +321,9 @@ $(document).ready(
 			recall_config["api-base-url"] + "/mark",
 			{
 			    type: 'post',
-			    headers: {"X-Email": localStorage.getItem("email"),
-				      "X-Password": localStorage.getItem("password")},
+			    headers: {
+				"X-Email": localStorage.getItem("email"),
+				"X-Password": localStorage.getItem("password")},
 			    data: JSON.stringify(bookmarks),
 			    contentType: 'application/json',
 			    dataType: 'json',
@@ -268,67 +341,12 @@ $(document).ready(
 	    }
 	);
 
-        // List of posts
-        // -------------
-        var getTime = function(elem){
-            var then = new Date(elem['~'] * 1000);
-            return $.timeago(then);
-        };
+	addMarks();
 
-        var renderComment = function(elem){
-            var comment = $($("#comment-template")).clone();
-	    comment.removeAttr("id");
-            comment.find(".who").text(elem["@"]);
-            comment.find(".what").text(elem["#"]);
-            comment.find(".when").text(getTime(elem));
-            return comment;
-        };
-
-        var renderLocation = function(elem){
-            var location = $($('#location-template').clone());
-	    location.removeAttr("id");
-            location.find(".who").text(elem["@"]);
-            location.find(".when").text(getTime(elem));
-            location.find(".location-map")[0].src = 'https://maps.googleapis.com/maps/api/staticmap?center=' +
-                elem.latitude + ',' + elem.longitude + '&sensor=false&size=400x400&' +
-                'markers=color:red%7C' + elem.latitude + ',' + elem.longitude;
-            return location;
-        };
-
-        var renderHyperlink = function(elem){
-            var hyperlink = $($("#hyperlink-template")).clone();
-	    hyperlink.removeAttr("id");
-            hyperlink.find(".who").text(elem["@"]);
-            $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem["hyperlink"]);
-	    hyperlink.find(".title").text(elem.title);
-            hyperlink.find(".when").text(getTime(elem));
-            return hyperlink;
-        };
-
-	var renderMarks = function (data){
-            $.each(
-                data,
-                function(_, elem){
-                    if(elem.hasOwnProperty('latitude')){
-                        var loc = renderLocation(elem);
-                        $("#marks").append(loc);
-		    } else if (elem.hasOwnProperty("hyperlink")){
-			$("#marks").append(renderHyperlink(elem));
-                    } else {
-                        $("#marks").append(renderComment(elem));        
-                    }
-                });
-	};
-
-
-	$.ajax(recall_config["api-base-url"] + "/mark",
-	      {
-		  type: "get",
-		  headers: {"X-Email": localStorage.getItem("email"),
-			      "X-Password": localStorage.getItem("password")},
-		  contentType: "application/json",
-		  dataType: "json",
-		  complete: function(jqXHR, textStatus) { renderMarks(JSON.parse(jqXHR.responseText)); }
-	      });
+	// More marks button
+	$("#more-btn").click(
+	    function(){
+		addMarks(oldestMark);
+	});
     }
 );

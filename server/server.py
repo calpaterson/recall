@@ -156,14 +156,14 @@ def add_mark():
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
-    maximum = 0
-    since = None
-    if request.data != "":
-        maximum = json.loads(request.data).get("maximum", 0)
-        since = json.loads(request.data).get("since", 0)
+    maximum = int(request.args.get("maximum", 0))
+    since = int(request.args.get("since", 0))
+    before = int(request.args.get("before", 0))
     spec = {"%private": {"$exists": False}}
-    if since is not None:
+    if since != 0:
         spec["~"] = {"$gt": since}
+    if before != 0:
+        spec["~"] = {"$lt": before}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
@@ -173,8 +173,10 @@ def get_all_marks():
                     {"%private": {"$exists": False}},
                     ],
                     }
-            if since is not None:
+            if since != 0:
                 spec["~"] = {"$gt": since}
+            if before != 0:
+                spec["~"] = {"$lt": before}
     except KeyError:
         pass
     db = get_db()
@@ -194,15 +196,15 @@ def get_all_marks():
 
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
-    maximum = 0
-    since = None
-    if request.data != "":
-        maximum = json.loads(request.data).get("maximum", 0)
-        since = json.loads(request.data).get("since", 0)
+    maximum = int(request.args.get("maximum", 0))
+    since = int(request.args.get("since", 0))
+    before = int(request.args.get("before", 0))
     spec = {"%private": {"$exists": False},
             "@": email}
-    if since is not None:
+    if since != 0:
         spec["~"] = {"$gt": since}
+    if before != 0:
+        spec["~"] = {"$lt": before}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
@@ -210,8 +212,10 @@ def get_all_marks_by_email(email):
             spec = {"$or": [
                     {"@": email},
                     {"%private": {"$exists": False}}]}
-            if since is not None:
+            if since != 0:
                 spec["~"] = {"$gt": since}
+            if before != 0:
+                spec["~"] = {"$lt": before}
     except KeyError:
         pass
     db = get_db()

@@ -306,15 +306,15 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps(marks)
         self.client.post(url, data=post_data, headers=headers)
 
-        get_data = json.dumps({"maximum": 2})
-        response = self.client.get(url, headers=headers, data=get_data)
+        url = "/mark?maximum=2"
+        response = self.client.get(url, headers=headers)
         response_data = json.loads(response.data)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([4, 3], mark_times)
 
-        url = "/mark/%s" % email
-        response = self.client.get(url, headers=headers, data=get_data)
+        url = "/mark/%s?maximum=2" % email
+        response = self.client.get(url, headers=headers)
         response_data = json.loads(response.data)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
@@ -330,20 +330,49 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps(marks)
         self.client.post(url, data=post_data, headers=headers)
 
-        get_data = json.dumps({"since": 1})
-        response = self.client.get(url, headers=headers, data=get_data)
+        url = "/mark?since=1"
+        response = self.client.get(url, headers=headers)
         response_data = json.loads(response.data)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([4, 3, 2], mark_times)
 
-        url = "/mark/%s" % email
-        get_data = json.dumps({"since": 1})
-        response = self.client.get(url, headers=headers, data=get_data)
+        url = "/mark/%s?since=1" % email
+        response = self.client.get(url, headers=headers)
         response_data = json.loads(response.data)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([4, 3, 2], mark_times)
+
+
+    def test_get_marks_before(self):
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+        marks = []
+        for time in xrange(0, 5):
+            marks.append({"@": email, "~": time})
+        url = "/mark"
+        post_data = json.dumps(marks)
+        self.client.post(url, data=post_data, headers=headers)
+
+        url = "/mark?before=3"
+        response = self.client.get(url, headers=headers)
+        response_data = json.loads(response.data)
+        self.assertEqual(200, response.status_code)
+        mark_times = map(lambda mark: mark["~"], response_data)
+        self.assertEqual([2, 1, 0], mark_times)
+
+        url = "/mark/%s?before=3" % email
+        response = self.client.get(url, headers=headers)
+        response_data = json.loads(response.data)
+        self.assertEqual(200, response.status_code)
+        mark_times = map(lambda mark: mark["~"], response_data)
+        self.assertEqual([2, 1, 0], mark_times)
+
+
+    @unittest.expectedFailure
+    def test_before_and_since(self):
+        self.fail()
 
 if __name__ == "__main__":
     unittest.main()
