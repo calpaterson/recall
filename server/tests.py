@@ -268,7 +268,7 @@ class ServerTests(unittest.TestCase):
         assertError(expected_response_pound, problematic_marks[2])
 
 
-    def test_trying_to_get_many_bookmarks_at_once_is_refused(self):
+    def test_trying_to_get_many_marks_at_once_is_refused(self):
         expected_mark_limit = server.settings["RECALL_MARK_LIMIT"] = 2
         _, email, password = self._create_test_user()
         headers = Headers({"X-Email": email, "X-Password": password})
@@ -295,6 +295,55 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(expected_response_data, response_data)
 
 
+    def test_get_limited_number_of_marks(self):
+        expected_mark_limit = server.settings["RECALL_MARK_LIMIT"] = 2
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+        marks = []
+        for time in xrange(0, 5):
+            marks.append({"@": email, "~": time})
+        url = "/mark"
+        post_data = json.dumps(marks)
+        self.client.post(url, data=post_data, headers=headers)
+
+        get_data = json.dumps({"maximum": 2})
+        response = self.client.get(url, headers=headers, data=get_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(200, response.status_code)
+        mark_times = map(lambda mark: mark["~"], response_data)
+        self.assertEqual([4, 3], mark_times)
+
+        url = "/mark/%s" % email
+        response = self.client.get(url, headers=headers, data=get_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(200, response.status_code)
+        mark_times = map(lambda mark: mark["~"], response_data)
+        self.assertEqual([4, 3], mark_times)
+
+    def test_get_marks_since(self):
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+        marks = []
+        for time in xrange(0, 5):
+            marks.append({"@": email, "~": time})
+        url = "/mark"
+        post_data = json.dumps(marks)
+        self.client.post(url, data=post_data, headers=headers)
+
+        get_data = json.dumps({"since": 1})
+        response = self.client.get(url, headers=headers, data=get_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(200, response.status_code)
+        mark_times = map(lambda mark: mark["~"], response_data)
+        self.assertEqual([4, 3, 2], mark_times)
+
+        url = "/mark/%s" % email
+        get_data = json.dumps({"since": 1})
+        response = self.client.get(url, headers=headers, data=get_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(200, response.status_code)
+        mark_times = map(lambda mark: mark["~"], response_data)
+        self.assertEqual([4, 3, 2], mark_times)
 
 if __name__ == "__main__":
     unittest.main()

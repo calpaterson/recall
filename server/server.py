@@ -156,21 +156,26 @@ def add_mark():
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
-    spec = {"%private": {"$exists": False}}
+    maximum = 0
+    since = 0
+    if request.data != "":
+        maximum = json.loads(request.data).get("maximum", 0)
+        since = json.loads(request.data).get("since", 0)
+    spec = {"%private": {"$exists": False}, "~": {"$gt": since}}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
         if is_authorised(email, password):
             spec = {"$or": [
                     {"@": email},
-                    {"%private": {"$exists": False}}
-                    ]}
+                    {"%private": {"$exists": False}},
+                    ],
+                    "~": {"$gt": since}
+                    }
     except KeyError:
         pass
     db = get_db()
-    rs = db.marks.find(
-        spec,
-        sort=[("~", DESCENDING)])
+    rs = db.marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
     marks = []
     counter = 0
     for mark in rs:
@@ -186,20 +191,26 @@ def get_all_marks():
 
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
+    maximum = 0
+    since = 0
+    if request.data != "":
+        maximum = json.loads(request.data).get("maximum", 0)
+        since = json.loads(request.data).get("since", 0)
     spec = {"%private": {"$exists": False},
-            "@": email}
+            "@": email,
+            "~": {"$gt": since}}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
         if is_authorised(email, password):
             spec = {"$or": [
                     {"@": email},
-                    {"%private": {"$exists": False}}
-                    ]}
+                    {"%private": {"$exists": False}}],
+                    "~": {"$gt": since}}
     except KeyError:
         pass
     db = get_db()
-    rs = db.marks.find(spec, sort=[("~", DESCENDING)])
+    rs = db.marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
     marks = []
     counter = 0
     for mark in rs:
