@@ -128,7 +128,7 @@ $(document).ready(
 
 	$("#send-invite").click(
 	    function(){
-		var form = $(this).closest("form");
+		var form = $("#request-invite-pseudo-form");
 		var user = {"@": form.children("#email-input").val()};
 		if (form.find("select").val() === "Real Name"){
 		    user["firstName"] = form.find("#first-name-input").val();
