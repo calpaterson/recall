@@ -64,6 +64,7 @@ def load_settings():
         "RECALL_PASSWORD_SALT", "$2a$12$tl2VDOPWJOuoJsnu6xQtWu")
     settings["RECALL_API_HOSTNAME"] = os.environ.get(
         "RECALL_API_HOSTNAME", "localhost:5000")
+    settings["RECALL_MARK_LIMIT"] = os.environ.get("RECALL_MARK_LIMIT", 100)
     if os.environ.get("RECALL_DEBUG_MODE") == "false":
         settings["RECALL_DEBUG_MODE"] = False
     else:
@@ -171,9 +172,16 @@ def get_all_marks():
         spec,
         sort=[("~", DESCENDING)])
     marks = []
+    counter = 0
     for mark in rs:
         del(mark[u"_id"])
         marks.append(mark)
+        counter += 1
+        if counter > settings["RECALL_MARK_LIMIT"]:
+            raise HTTPException(
+                "May not request more than %s marks at once"
+                % settings["RECALL_MARK_LIMIT"],
+                413)
     return json.dumps(marks)
 
 @app.route("/mark/<email>", methods=["GET"])
@@ -193,9 +201,13 @@ def get_all_marks_by_email(email):
     db = get_db()
     rs = db.marks.find(spec, sort=[("~", DESCENDING)])
     marks = []
+    counter = 0
     for mark in rs:
         del(mark[u"_id"])
         marks.append(mark)
+        counter += 1
+        if counter > settings["RECALL_MARK_LIMIT"]:
+            raise HTTPException("May not request that many marks at once", 413)
     return json.dumps(marks)
 
 @app.route("/mark/<email>/<time>", methods=["GET"])

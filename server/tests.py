@@ -268,5 +268,31 @@ class ServerTests(unittest.TestCase):
         assertError(expected_response_pound, problematic_marks[2])
 
 
+    def test_trying_to_get_many_bookmarks_at_once_is_refused(self):
+        expected_mark_limit = server.settings["RECALL_MARK_LIMIT"] = 2
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+        marks = []
+        for time in xrange(0, expected_mark_limit + 1):
+            marks.append({"@": email, "~": time})
+        url = "/mark"
+        post_data = json.dumps(marks)
+        self.client.post(url, data=post_data, headers=headers)
+
+        response = self.client.get(url, headers=headers)
+        response_data = json.loads(response.data)
+        expected_response_data = {
+            "error": "May not request more than %s marks at once" %
+            expected_mark_limit}
+        self.assertEqual(413, response.status_code)
+        self.assertEqual(expected_response_data, response_data)
+
+        url = "/mark/%s" % email
+        response = self.client.get(url, headers=headers)
+        self.assertEqual(413, response.status_code)
+        self.assertEqual(expected_response_data, response_data)
+
+
+
 if __name__ == "__main__":
     unittest.main()
