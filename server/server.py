@@ -157,11 +157,13 @@ def add_mark():
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
     maximum = 0
-    since = 0
+    since = None
     if request.data != "":
         maximum = json.loads(request.data).get("maximum", 0)
         since = json.loads(request.data).get("since", 0)
-    spec = {"%private": {"$exists": False}, "~": {"$gt": since}}
+    spec = {"%private": {"$exists": False}}
+    if since is not None:
+        spec["~"] = {"$gt": since}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
@@ -170,8 +172,9 @@ def get_all_marks():
                     {"@": email},
                     {"%private": {"$exists": False}},
                     ],
-                    "~": {"$gt": since}
                     }
+            if since is not None:
+                spec["~"] = {"$gt": since}
     except KeyError:
         pass
     db = get_db()
@@ -192,21 +195,23 @@ def get_all_marks():
 @app.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
     maximum = 0
-    since = 0
+    since = None
     if request.data != "":
         maximum = json.loads(request.data).get("maximum", 0)
         since = json.loads(request.data).get("since", 0)
     spec = {"%private": {"$exists": False},
-            "@": email,
-            "~": {"$gt": since}}
+            "@": email}
+    if since is not None:
+        spec["~"] = {"$gt": since}
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
         if is_authorised(email, password):
             spec = {"$or": [
                     {"@": email},
-                    {"%private": {"$exists": False}}],
-                    "~": {"$gt": since}}
+                    {"%private": {"$exists": False}}]}
+            if since is not None:
+                spec["~"] = {"$gt": since}
     except KeyError:
         pass
     db = get_db()
