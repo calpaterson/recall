@@ -105,7 +105,7 @@ class ServerTests(unittest.TestCase):
         response = self.client.post("/mark", data=post_data)
         self.assertEqual(response.status_code, 400)
 
-        expected_data = {"error": "You must include authentication headers"}
+        expected_data = {"human_readable": "You must include authentication headers"}
         self.assertEqual(json.loads(response.data), expected_data)
 
 
@@ -258,11 +258,11 @@ class ServerTests(unittest.TestCase):
             {"~": 0, "@": email, u"£problem": True},
             ]
         expected_response_dollar = {
-                u"error": u"Mark keys may not be prefixed with $ or £",
-                u"source": u"$problem"}
+                u"human_readable": u"Mark keys may not be prefixed with $ or £",
+                u"machine_readable": u"$problem"}
         expected_response_pound = {
-                u"error": u"Mark keys may not be prefixed with $ or £",
-                u"source": u"£problem"}
+                u"human_readable": u"Mark keys may not be prefixed with $ or £",
+                u"machine_readable": u"£problem"}
         assertError(expected_response_dollar, problematic_marks[0])
         assertError(expected_response_dollar, problematic_marks[1])
         assertError(expected_response_pound, problematic_marks[2])
@@ -282,13 +282,15 @@ class ServerTests(unittest.TestCase):
         response = self.client.get(url, headers=headers)
         response_data = json.loads(response.data)
         expected_response_data = {
-            "error": "May not request more than %s marks at once" %
-            expected_mark_limit}
+            u"human_readable": u"May not request more than %s marks at once" %
+            expected_mark_limit,
+            "machine_readable": expected_mark_limit}
         self.assertEqual(413, response.status_code)
         self.assertEqual(expected_response_data, response_data)
 
         url = "/mark/%s" % email
         response = self.client.get(url, headers=headers)
+        response_data = json.loads(response.data)
         self.assertEqual(413, response.status_code)
         self.assertEqual(expected_response_data, response_data)
 

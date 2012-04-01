@@ -40,9 +40,9 @@ class HTTPException(Exception):
 
 def handle_exception(exception):
     def json_error(message):
-        document = {"error": message}
+        document = {"human_readable": message}
         if exception.source is not None:
-            document["source"] = exception.source
+            document["machine_readable"] = exception.source
         return json.dumps(document)
 
     if not isinstance(exception, HTTPException):
@@ -181,7 +181,7 @@ def get_all_marks():
             raise HTTPException(
                 "May not request more than %s marks at once"
                 % settings["RECALL_MARK_LIMIT"],
-                413)
+                413, source=settings["RECALL_MARK_LIMIT"])
     return json.dumps(marks)
 
 @app.route("/mark/<email>", methods=["GET"])
@@ -207,7 +207,10 @@ def get_all_marks_by_email(email):
         marks.append(mark)
         counter += 1
         if counter > settings["RECALL_MARK_LIMIT"]:
-            raise HTTPException("May not request that many marks at once", 413)
+            raise HTTPException(
+                "May not request more than %s marks at once"
+                % settings["RECALL_MARK_LIMIT"],
+                413, source=settings["RECALL_MARK_LIMIT"])
     return json.dumps(marks)
 
 @app.route("/mark/<email>/<time>", methods=["GET"])
