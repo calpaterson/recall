@@ -298,10 +298,15 @@ $(document).ready(
 	);
 
 	var netscapeElementToMark = function(element){
+	    var htmlDecode = function(text){
+		var div = document.createElement("div");
+		div.innerHTML = text;
+		return div.textContent;
+	    };
 	    var mark = {
 		"hyperlink": element.attributes["HREF"].nodeValue,
 		"~": parseInt(element.attributes["ADD_DATE"].nodeValue, 10),
-		"title": element.textContent,
+		"title": htmlDecode(element.textContent),
 		"@": localStorage.getItem("email"),
 		"tags": element.attributes["TAGS"].nodeValue.split(/ |,/g)
 	    };
@@ -309,7 +314,7 @@ $(document).ready(
 		mark["%private"] = true;
 	    }
 	    if (element.attributes["TOREAD"].nodeValue === "1"){
-		mark["unread"] == true;
+		mark["unread"] = true;
 	    }
 	    return mark;
 	};
