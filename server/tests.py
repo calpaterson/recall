@@ -122,6 +122,7 @@ class ServerTests(unittest.TestCase):
             u"@": email,
             u"%url": u"http://localhost/mark/" + email + "/0",
             u"~": 0,
+            u"£created": 0
             }
         post_data = json.dumps(mark)
         response = self.client.post("/mark", data=post_data, headers=headers)
@@ -146,7 +147,8 @@ class ServerTests(unittest.TestCase):
             u"#": "Hello",
             u"@": email,
             u"%url": u"http://localhost/mark/" + email + "/0",
-            u"%private": True
+            u"%private": True,
+            u"£created": 0
             }
 
         url = "/mark"
@@ -189,7 +191,8 @@ class ServerTests(unittest.TestCase):
         user2_headers = Headers({"X-Email": user2, "X-Password": password2})
 
         expected_mark = {u"#": "Hello!", u"@": user1,
-            u"%url": u"http://localhost/mark/" + user1 + "/0", u"~": 0}
+                         u"%url": u"http://localhost/mark/" + user1 + "/0",
+                         u"~": 0, u"£created": 0}
 
         response = self.client.get(
             "/mark/" + user1 + "/0", headers=user2_headers)
@@ -233,6 +236,7 @@ class ServerTests(unittest.TestCase):
         actual_response_data = json.loads(response.data)
         for mark in actual_response_data:
             del mark["%url"]
+            del mark[u"£created"]
         self.assertEqual(expected_response_data, actual_response_data)
 
 

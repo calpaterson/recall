@@ -101,6 +101,12 @@ def may_only_contain(dict_, whitelist):
 def json_error(message):
     return json.dumps({"error": message})
 
+def get_unixtime():
+    if app.testing:
+        return 0
+    else:
+        return int(time.time())
+
 def is_authorised(email, password):
     db = get_db()
     password_hash = bcrypt.hashpw(
@@ -122,6 +128,7 @@ def add_mark():
     def insert_mark(body):
         has_no_problematic_keys(body)
         body[u"%url"] = make_url(body)
+        body[u"£created"] = get_unixtime()
         db = get_db()
         db.marks.insert(body)
         del body["_id"]
@@ -239,7 +246,7 @@ def request_invite():
     if "email" not in body:
         return "You must provide an email field", 400
     body["email_key"] = str(uuid.uuid4())
-    body["registered"] = int(time.time())
+    body["registered"] = get_unixtime()
     db = get_db().users
     db.ensure_index("email", unique=True)
     db.insert(body, safe=True)
@@ -256,7 +263,7 @@ def verify_email(email_key):
     del body["%password"]
 
     spec = {"email_key": email_key}
-    update = {"$set": {"email_verified": int(time.time()),
+    update = {"$set": {"email_verified": get_unixtime(),
                        "password_hash": password_hash}}
     db = get_db()
     success = db.users.update(
