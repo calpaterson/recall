@@ -33,16 +33,16 @@ settings = {}
 app = Flask(__name__)
 
 class HTTPException(Exception):
-    def __init__(self, message, status_code, source=None):
+    def __init__(self, message, status_code, machine_readable=None):
         self.message = message
         self.status_code = status_code
-        self.source = source
+        self.machine_readable = machine_readable
 
 def handle_exception(exception):
     def json_error(message):
         document = {"human_readable": message}
-        if exception.source is not None:
-            document["machine_readable"] = exception.source
+        if exception.machine_readable is not None:
+            document["machine_readable"] = exception.machine_readable
         return json.dumps(document)
 
     if not isinstance(exception, HTTPException):
@@ -84,7 +84,7 @@ def has_no_problematic_keys(mark):
             if key.startswith("$") or key.startswith(u"£"):
                 raise HTTPException(
                     "Mark keys may not be prefixed with $ or £", 400,
-                    source=key)
+                    machine_readable=key)
             if isinstance(current[key], dict):
                 mark_queue.insert(0, current[key])
         if mark_queue == []:
@@ -181,7 +181,7 @@ def get_all_marks():
             raise HTTPException(
                 "May not request more than %s marks at once"
                 % settings["RECALL_MARK_LIMIT"],
-                413, source=settings["RECALL_MARK_LIMIT"])
+                413, machine_readable=settings["RECALL_MARK_LIMIT"])
     return json.dumps(marks)
 
 @app.route("/mark/<email>", methods=["GET"])
@@ -210,7 +210,7 @@ def get_all_marks_by_email(email):
             raise HTTPException(
                 "May not request more than %s marks at once"
                 % settings["RECALL_MARK_LIMIT"],
-                413, source=settings["RECALL_MARK_LIMIT"])
+                413, machine_readable=settings["RECALL_MARK_LIMIT"])
     return json.dumps(marks)
 
 @app.route("/mark/<email>/<time>", methods=["GET"])
