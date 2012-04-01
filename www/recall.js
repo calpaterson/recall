@@ -103,6 +103,17 @@ var addMarks = function (before){
 	   });
 };
 
+var updateNavbarUser = function(){
+    // Auth Status ("Not Logged In"/"foo@example.com")
+    if (loggedIn()){
+	$("#auth-status").text(localStorage.getItem("email"));
+	$("#login-toggle-dropdown").text("Logout");
+    } else {
+	$("#auth-status").text("Not Logged In");
+	$("#login-toggle-dropdown").text("Login");
+    }
+}
+
 $(document).ready(
     function() {
         // Brand
@@ -113,13 +124,7 @@ $(document).ready(
             }
         );
 
-	// Auth Status ("Not Logged In"/"foo@example.com")
-	if (loggedIn()){
-	    $("#auth-status").text(localStorage.getItem("email"));
-	    $("#login-toggle-dropdown").text("Logout");
-	} else {
-	    $("#login-toggle-dropdown").text("Login");
-	}
+	updateNavbarUser();
 
 	$("#send-login").click(
 	    function(){
@@ -127,6 +132,7 @@ $(document).ready(
 		    "email", $("#login-email-input").val());
 		localStorage.setItem(
 		    "password", $("login-password-input").val());
+		updateNavbarUser();
 		$("#login-modal").modal("hide");
 	    }
 	);
@@ -138,6 +144,7 @@ $(document).ready(
 		    localStorage.removeItem("email");
 		    localStorage.removeItem("password");
 		    $("#login-toggle-dropdown").text("Login");
+		    updateNavbarUser();
 		} else {
 		    $("#login-modal").modal();
 		    $("#login-toggle-dropdown").text("Logout");
