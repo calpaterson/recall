@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 #
@@ -232,6 +234,34 @@ class ServerTests(unittest.TestCase):
         for mark in actual_response_data:
             del mark["%url"]
         self.assertEqual(expected_response_data, actual_response_data)
+
+
+    def test_marks_with_reserved_keys_refused(self):
+        def assertError(expected_response_data, mark):
+            url = "/mark"
+            post_data = json.dumps(mark)
+            response = self.client.post(url, data=post_data, headers=headers)
+            response_data = json.loads(response.data)
+            self.assertEqual(400, response.status_code, msg=post_data)
+            self.assertEqual(expected_response_data, response_data)
+
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+
+        problematic_marks = [
+            {"~": 0, "@": email, "$problem": True},
+            {"~": 0, "@": email, "submap": {"$problem": True}},
+            {"~": 0, "@": email, u"£problem": True},
+            ]
+        expected_response_dollar = {
+                u"error": u"Mark keys may not be prefixed with $ or £",
+                u"source": u"$problem"}
+        expected_response_pound = {
+                u"error": u"Mark keys may not be prefixed with $ or £",
+                u"source": u"£problem"}
+        assertError(expected_response_dollar, problematic_marks[0])
+        assertError(expected_response_dollar, problematic_marks[1])
+        assertError(expected_response_pound, problematic_marks[2])
 
 
 if __name__ == "__main__":

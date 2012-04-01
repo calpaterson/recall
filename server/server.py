@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
@@ -31,6 +32,27 @@ settings = {}
 
 app = Flask(__name__)
 
+class HTTPException(Exception):
+    def __init__(self, message, status_code, source=None):
+        self.message = message
+        self.status_code = status_code
+        self.source = source
+
+def handle_exception(exception):
+    def json_error(message):
+        document = {"error": message}
+        if exception.source is not None:
+            document["source"] = exception.source
+        return json.dumps(document)
+
+    if not isinstance(exception, HTTPException):
+        print exception
+        return json_error("Unknown exception: "), 500
+    else:
+        return json_error(exception.message), exception.status_code
+
+app.handle_exception = handle_exception
+
 def load_settings():
     settings["RECALL_MONGODB_DB_NAME"] = os.environ.get(
         "RECALL_MONGODB_DB_NAME", "recall")
@@ -46,8 +68,6 @@ def load_settings():
         settings["RECALL_DEBUG_MODE"] = False
     else:
         settings["RECALL_DEBUG_MODE"] = True
-    if settings["RECALL_PASSWORD_SALT"] == "salt":
-        print "ERROR: Using bogus salt"
 
 def get_db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
@@ -55,9 +75,23 @@ def get_db():
         settings["RECALL_MONGODB_HOST"],
         settings["RECALL_MONGODB_PORT"])[db_name]
 
+def has_no_problematic_keys(mark):
+    mark_queue = []
+    current = mark
+    while True:
+        for key in current:
+            if key.startswith("$") or key.startswith(u"£"):
+                raise HTTPException(
+                    "Mark keys may not be prefixed with $ or £", 400,
+                    source=key)
+            if isinstance(current[key], dict):
+                mark_queue.insert(0, current[key])
+        if mark_queue == []:
+            return
+        else:
+            current = mark_queue.pop()
+
 def may_only_contain(dict_, whitelist):
-    """Takes a dict and a whitelist of keys and removes all items in the dict
-    not in the whitelist"""
     d = {}
     for k, v in dict_.items():
         if k in whitelist:
@@ -86,6 +120,7 @@ def add_mark():
         return "http://" + settings["RECALL_API_HOSTNAME"] + "/mark/" \
             + body[u"@"] + "/" + str(int(body[u"~"]))
     def insert_mark(body):
+        has_no_problematic_keys(body)
         body[u"%url"] = make_url(body)
         db = get_db()
         db.marks.insert(body)
@@ -98,13 +133,13 @@ def add_mark():
             request.headers["X-Password"]):
             return "Email or password or both does not match", 403
     except KeyError:
-        return json_error("You must include authentication headers"), 400
+        raise HTTPException("You must include authentication headers", 400)
     body = json.loads(request.data)
     try:
         if type(body) == list:
             for mark in body:
                 insert_mark(mark)
-            return "{}", 202
+            return "null", 202
         elif type(body) == dict:
             body = insert_mark(body)
             return json.dumps(body), 201
