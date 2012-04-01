@@ -126,18 +126,22 @@ $(document).ready(
 
 	updateNavbarUser();
 
+
+	// Login modal
+	// -----------
 	$("#send-login").click(
 	    function(){
 		localStorage.setItem(
 		    "email", $("#login-email-input").val());
 		localStorage.setItem(
-		    "password", $("login-password-input").val());
+		    "password", $("#login-password-input").val());
 		updateNavbarUser();
 		$("#login-modal").modal("hide");
 	    }
 	);
 
-	// Login toggle dropdown
+	// Login dropdown
+	// --------------
 	$("#login-toggle-dropdown").click(
 	    function(event){
 		if (loggedIn()){
