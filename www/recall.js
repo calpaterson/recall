@@ -303,7 +303,7 @@ $(document).ready(
 		"~": parseInt(element.attributes["ADD_DATE"].nodeValue, 10),
 		"title": element.textContent,
 		"@": localStorage.getItem("email"),
-		"tags": element.attributes["TAGS"].nodeValue.split("/ |,/g")
+		"tags": element.attributes["TAGS"].nodeValue.split(/ |,/g)
 	    };
 	    if (element.attributes["PRIVATE"].nodeValue === "1"){
 		mark["%private"] = true;
