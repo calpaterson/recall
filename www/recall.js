@@ -303,18 +303,26 @@ $(document).ready(
 		div.innerHTML = text;
 		return div.textContent;
 	    };
+	    if (!element.attributes.hasOwnProperty("ADD_DATE")){
+		// This is not a bookmark, or the bookmark has no date
+		return null;
+	    }
 	    var mark = {
 		"hyperlink": element.attributes["HREF"].nodeValue,
 		"~": parseInt(element.attributes["ADD_DATE"].nodeValue, 10),
 		"title": htmlDecode(element.textContent),
 		"@": localStorage.getItem("email"),
-		"tags": element.attributes["TAGS"].nodeValue.split(/ |,/g)
+		// "tags": element.attributes["TAGS"].nodeValue.split(/ |,/g)
 	    };
-	    if (element.attributes["PRIVATE"].nodeValue === "1"){
-		mark["%private"] = true;
+	    if (element.attributes.hasOwnProperty("PRIVATE")){
+		if (element.attributes["PRIVATE"].nodeValue === "1"){
+		    mark["%private"] = true;
+		}
 	    }
-	    if (element.attributes["TOREAD"].nodeValue === "1"){
-		mark["unread"] = true;
+	    if (element.attributes.hasOwnProperty("TOREAD")){
+		if (element.attributes["TOREAD"].nodeValue === "1"){
+		    mark["unread"] = true;
+		}
 	    }
 	    return mark;
 	};
@@ -331,7 +339,10 @@ $(document).ready(
 		    for (var each in matches){
 			var dom = HTMLtoDOM(matches[each]);
 			var element = $(dom).find("a")[0];
-			bookmarks.push(netscapeElementToMark(element));
+			var bookmark = netscapeElementToMark(element);
+			if (bookmark){
+			    bookmarks.push(bookmark);
+			}
 		    }
 		    $.ajax(
 			recall_config["api-base-url"] + "/mark",
