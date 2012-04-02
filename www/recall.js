@@ -356,7 +356,7 @@ $(document).ready(
 			    dataType: 'json',
 			    complete: function(jqXHR, textStatus){
 				if (textStatus === "success"){
-				    window.close();
+				    $("#import-bookmarks-modal").modal("hide");
 				} else {
 				    alert("Failed");
 				}
