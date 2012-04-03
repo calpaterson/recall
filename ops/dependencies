@@ -15,7 +15,7 @@ def exit_1_with_message(message):
     exit(1)
 
 def assert_presence_of_binary_on_path(name):
-    exit_value = os.system("which " + name)
+    exit_value = os.system("which " + name + ">> /dev/null")
     assert exit_value == 0
 
 def assert_presence_of_file(path):
@@ -28,6 +28,16 @@ def main():
     except AssertionError:
         exit_1_with_message(
             "Need nginx - install nginx-light")
+
+    try:
+        assert_presence_of_binary_on_path("lessc")
+        assert_presence_of_binary_on_path("uglifyjs")
+    except AssertionError:
+        exit_1_with_message(
+            "Need to install lessc and uglifyjs.  There aren't normally\n" +
+            "distro packages, you will have to install nodejs, and then:\n" +
+            "do `npm install less`, `npm install uglify-js`.  Then you'll\n" +
+            "have to put them on your $PATH.  I know this sucks.")
 
     try:
         assert_presence_of_binary_on_path("lintian")

@@ -22,6 +22,10 @@ cp $PROJECT_ROOT/LICENCE $DOC_DIR/copyright
 touch $DOC_DIR/changelog.Debian
 gzip --best $DOC_DIR/changelog.Debian
 
+# Build bootstrap
+cd $PROJECT_ROOT/www/third-party/bootstrap
+make
+
 # Copy www to /usr/share/recall
 cp -R $OPS_DIR/../www $OPS_DIR/debian/usr/share/recall/
 
@@ -31,13 +35,16 @@ mkdir -p $BIN_DIR/
 cp $OPS_DIR/../server/server.py $BIN_DIR/recall-server
 
 # Remove *~ files from debian directory
-find ./debian/ -name '*~' -exec rm '{}' ';'
+find $OPS_DIR/debian/ -name '*~' -exec rm '{}' ';'
 
 # Set version number correctly, package, then set it back to UNKNOWN
+cd $OPS_DIR
 mkdir -p $OPS_DIR/artefacts
 sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/debian/DEBIAN/control
 fakeroot dpkg-deb --build debian $OPS_DIR/artefacts/recall.deb
 sed -i "s/${VERSION}/0-UNKNOWN/" $OPS_DIR/debian/DEBIAN/control
 
-lintian artifacts/recall.deb
-dpkg-name artifacts/recall.deb
+lintian $OPS_DIR/artefacts/recall.deb
+dpkg-name $OPS_DIR/artefacts/recall.deb
+
+cd $PROJECT_ROOT
