@@ -17,22 +17,22 @@
 
 var sendMark = function(mark) {
     $.ajax(
-	recall_config["api-base-url"] + "/mark",
-	{
-	    type: 'post',
-	    headers: {"X-Email": localStorage.getItem("email"),
-		      "X-Password": localStorage.getItem("password")},
-	    data: JSON.stringify(mark),
-	    contentType: 'application/json',
-	    dataType: 'json',
-	    complete: function(jqXHR, textStatus){
-		if (textStatus === "success"){
-		    window.close();
-		} else {
-		    $("#mark-alert-failure").fadeIn();
-		}
-	    }
-	}
+        recall_config["api-base-url"] + "/mark",
+        {
+            type: 'post',
+            headers: {"X-Email": localStorage.getItem("email"),
+                      "X-Password": localStorage.getItem("password")},
+            data: JSON.stringify(mark),
+            contentType: 'application/json',
+            dataType: 'json',
+            complete: function(jqXHR, textStatus){
+                if (textStatus === "success"){
+                    window.close();
+                } else {
+                    $("#mark-alert-failure").fadeIn();
+                }
+            }
+        }
     );
 };
 
@@ -42,68 +42,68 @@ var unixtime_now = function() {
 
 $(document).ready(
     function(){
-	// Remembering tab position
-	// ------------------------
-	var bookmarkletTabSelection = localStorage.getItem(
-	    "bookmarklet-tab-selection");
-	if (bookmarkletTabSelection){
-	    $(".active").removeClass("active");
-	    $(bookmarkletTabSelection).addClass("active");
-	    $(bookmarkletTabSelection + "-tab").addClass("active");
-	};
+        // Remembering tab position
+        // ------------------------
+        var bookmarkletTabSelection = localStorage.getItem(
+            "bookmarklet-tab-selection");
+        if (bookmarkletTabSelection){
+            $(".active").removeClass("active");
+            $(bookmarkletTabSelection).addClass("active");
+            $(bookmarkletTabSelection + "-tab").addClass("active");
+        }
 
-	$(".tab").click(
-	    function(event){
-		localStorage.setItem("bookmarklet-tab-selection",
-				     $(event.target).attr("href"));
- 	    });
+        $(".tab").click(
+            function(event){
+                localStorage.setItem("bookmarklet-tab-selection",
+                                     $(event.target).attr("href"));
+            });
 
-	// Preloading hyperlink fields if possible
-	// ---------------------------------------
-	var url = location.href;
-	var banana_split = url.split("&");
-	for (var i = 1; i < banana_split.length; i++){
-	    var sub_split = banana_split[i].split("=");
-	    if (sub_split[0] === "title"){
-		$("#hyperlink-title").val(decodeURIComponent(sub_split[1]));
-	    } else if (sub_split[0] === "url"){
-		$("#hyperlink-url").val(decodeURIComponent(sub_split[1]));
-	    }
-	};
+        // Preloading hyperlink fields if possible
+        // ---------------------------------------
+        var url = location.href;
+        var banana_split = url.split("&");
+        for (var i = 1; i < banana_split.length; i++){
+            var sub_split = banana_split[i].split("=");
+            if (sub_split[0] === "title"){
+                $("#hyperlink-title").val(decodeURIComponent(sub_split[1]));
+            } else if (sub_split[0] === "url"){
+                $("#hyperlink-url").val(decodeURIComponent(sub_split[1]));
+            }
+        }
 
-	// Sending the mark
-	// ----------------
-	$("button.send-mark").click(
-	    function(event){
-		var commentRegex = /comment/;
-		var locationRegex = /location/;
-		var hyperlinkRegex = /hyperlink/;
-		
-		var buttonClasses = $(event.target).attr("class");
-		if (commentRegex.test(buttonClasses)){
-		    var mark = {
-			"#": $("#comment-body").val(),
-			"~": unixtime_now(),
-			"@": localStorage.getItem("email")
-		    };
-		    if ($("#comment-privacy").is(":checked")){
-			mark["%private"] = true;
-		    }
-		    sendMark(mark);
-		} else if (hyperlinkRegex.test(buttonClasses)){
-		    var mark = {
+        // Sending the mark
+        // ----------------
+        $("button.send-mark").click(
+            function(event){
+                var commentRegex = /comment/;
+                var locationRegex = /location/;
+                var hyperlinkRegex = /hyperlink/;
+                
+                var buttonClasses = $(event.target).attr("class");
+                if (commentRegex.test(buttonClasses)){
+                    var commentMark = {
+                        "#": $("#comment-body").val(),
+                        "~": unixtime_now(),
+                        "@": localStorage.getItem("email")
+                    };
+                    if ($("#comment-privacy").is(":checked")){
+                        commentMark["%private"] = true;
+                    }
+                    sendCommentMark(commentMark);
+                } else if (hyperlinkRegex.test(buttonClasses)){
+                    var hyperlinkMark = {
                         "title": $("#hyperlink-title").val(),
                         "hyperlink": $("#hyperlink-url").val(),
                         "~": unixtime_now(),
                         "@": localStorage.getItem("email")
                     };
-		    if ($("#comment-privacy").is(":checked")){
-			mark["%private"] = true;
-		    }
-                    sendMark(mark);
+                    if ($("#comment-privacy").is(":checked")){
+                        hyperlinkMark["%private"] = true;
+                    }
+                    sendHyperlinkMark(hyperlinkMark);
                 } else {
-		    $("#mark-alert-failure").fadeIn();		
-		}
-	    });
+                    $("#mark-alert-failure").fadeIn();          
+                }
+            });
     }
 );
