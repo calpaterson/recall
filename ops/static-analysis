@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
+
+hint $PROJECT_ROOT/www/*js $PROJECT_ROOT/www/bookmarklet-trampoline
+pychecker --stdlib $PROJECT_ROOT server/*py

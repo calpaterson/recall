@@ -40,6 +40,18 @@ def main():
             "have to put them on your $PATH.  I know this sucks.")
 
     try:
+        assert_presence_of_binary_on_path("pychecker")
+    except AssertionError:
+        exit_1_with_message(
+            "Need to install pychecker - aptitude install pychecker")
+
+    try:
+        assert_presence_of_binary_on_path("hint")
+    except AssertionError:
+        exit_1_with_message(
+            "Need to install jshint (jsHINT not jsLINT) - npm install jshint")
+
+    try:
         assert_presence_of_binary_on_path("lintian")
     except AssertionError:
         exit_1_with_message(
