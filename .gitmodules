@@ -7,3 +7,6 @@
 [submodule "www/third-party/jquery"]
 	path = www/third-party/jquery
 	url = git@github.com:jquery/jquery
+[submodule "www/third-party/jquery-timeago"]
+	path = www/third-party/jquery-timeago
+	url = git://github.com/rmm5t/jquery-timeago.git
