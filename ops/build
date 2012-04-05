@@ -26,6 +26,10 @@ gzip --best $DOC_DIR/changelog.Debian
 cd $PROJECT_ROOT/www/third-party/bootstrap
 make
 
+# Build jquery
+cd $PROJECT_ROOT/www/third-party/jquery
+make
+
 # Copy www to /usr/share/recall
 cp -R $OPS_DIR/../www $OPS_DIR/debian/usr/share/recall/
 
