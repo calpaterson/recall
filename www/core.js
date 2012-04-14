@@ -38,17 +38,24 @@ core = (
 		core.start(moduleName);
 	    }
 	};
-	core.stop = function (){
-	    // Stop a module
-	};
-	core.subscribe = function (module, messageType){
+	core.subscribe = function (moduleName, messageType, handler){
    	    // Subscribe a module to a message
+	    if(!modules[moduleName].hasOwnProperty("subscriptions")){
+		modules[moduleName].subscriptions = {};
+	    }
+	    modules[moduleName].subscriptions[messageType] = handler;
+	    
 	};
-	core.publish = function (message){
+	core.publish = function (messageType, messageData){
 	    // Publish a message
-	};
-	core.unsubscribe = function (module, messageType){
-	    // Unsubscribe a module from a message
+	    for (var moduleName in modules){
+		var subscriptions = modules[moduleName].subscriptions;
+		for (subscription in subscriptions){
+		    if(subscription === messageType){
+			subscriptions[subscription](messageData);
+		    }
+		}
+	    }
 	};
 	core.dom = {
 	    // Domain object model

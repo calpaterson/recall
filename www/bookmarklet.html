@@ -43,47 +43,67 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div id="error-area" hidden="true">
     </div>
 
-    <div id="bookmarklet" class="container tabbable">
-      <!-- Tab bar -->
-      <ul class="nav nav-tabs"> 
-        <li id="hyperlink-tab">
-          <a href="#hyperlink-tab-content"
-	     class="tab" data-toggle="tab">Hyperlink</a>
-        </li>
-        <li id="comment-tab">
-          <a href="#comment-tab-content"
-	     class="tab" data-toggle="tab">Comment</a>
-        </li>
-      </ul>
+    <div id="bookmarklet">
 
-      <!-- Tab contents -->
-      <div class="tab-content">
-	<div class="tab-pane" id="comment-tab-content">
-          <div class="well">
-            <textarea id="comment-body" class="span4" autofocus="true">
-            </textarea>
-          </div>
-        </div>
-        <div class="tab-pane" id="hyperlink-tab-content">
-          <div class="well">
-            <label>Title</label>
-            <input id="hyperlink-title" class="span4" type="text">
-            <label>URL</label>
-            <input id="hyperlink-url" class="span4" type="url">
-          </div>
-        </div>
+      <!-- Login view -->
+      <div id="login" hidden="true">
+	<p>
+	<h3>Please Login</h3>
+	</p>
+	<p>
+	<input id="login-email-input" type="text"
+	       placeholder="Enter email address here">
+	<input id="login-password-input" type="password"
+	       placeholder="Enter password here">
+	</p>
+	<p>
+	  <button class="btn btn-primary" id="login-button">Login</button>
+	</p>
       </div>
 
-      <!-- Footer containing button -->
-      <div id="bookmarklet-footer">
-	<p>
-          Private?:
-          <input id="private" type="checkbox" value="private"
-		 checked="false">
-	</p>
-	<button id="mark-button" class="btn">
-          <i class="icon-ok"></i> Mark
-	</button>
+      <!-- Form view -->
+      <div id="form" class="tabbable" hidden="true">
+	<!-- Tab bar -->
+	<ul class="nav nav-tabs"> 
+          <li id="hyperlink-tab">
+            <a href="#hyperlink-tab-content"
+	       class="tab" data-toggle="tab">Hyperlink</a>
+          </li>
+          <li id="comment-tab">
+            <a href="#comment-tab-content"
+	       class="tab" data-toggle="tab">Comment</a>
+          </li>
+	</ul>
+
+	<!-- Tab contents -->
+	<div class="tab-content">
+	  <div class="tab-pane" id="comment-tab-content">
+            <div class="well">
+              <textarea id="comment-body" class="span4" autofocus="true">
+              </textarea>
+            </div>
+          </div>
+          <div class="tab-pane" id="hyperlink-tab-content">
+            <div class="well">
+              <label>Title</label>
+              <input id="hyperlink-title" class="span4" type="text">
+              <label>URL</label>
+              <input id="hyperlink-url" class="span4" type="url">
+            </div>
+          </div>
+	</div>
+
+	<!-- Footer containing button -->
+	<div id="bookmarklet-footer">
+	  <p>
+            Private?:
+            <input id="private" type="checkbox" value="private"
+		   checked="false">
+	  </p>
+	  <button id="mark-button" class="btn">
+            <i class="icon-ok"></i> Mark
+	  </button>
+	</div>
       </div>
     </div>
     
@@ -91,9 +111,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <script src="third-party/bootstrap/js/bootstrap-alert.js"></script>
     <script src="third-party/bootstrap/js/bootstrap-button.js"></script>
     <script src="third-party/bootstrap/js/bootstrap-tab.js"></script>
+    <script src="config.js"></script>
     <script src="core.js"></script>
     <script src="sandbox.js"></script>
-    <script src="config.js"></script>
+    <script src="services.js"></script>
     <script src="bookmarklet.js"></script>
   </body>
 </html>
