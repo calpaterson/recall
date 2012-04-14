@@ -21,12 +21,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <meta charset="utf-8">
     <title>Recall : New Bookmark</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Recall is a decentralised social bookmarking service">
+    <meta name="description"
+          content="Recall is a decentralised social bookmarking service">
     <meta name="author" content="Cal Paterson">
     
-    <!-- Le styles -->
-    <link href="third-party/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <link href="third-party/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="third-party/bootstrap/docs/assets/css/bootstrap.css"
+          rel="stylesheet">
+    <link href="third-party/bootstrap/docs/assets/css/bootstrap-responsive.css"
+          rel="stylesheet">
     <link href="style.css" rol="stylesheet">
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
@@ -37,87 +39,59 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   </head>
 
   <body>
-    <div class="tabbable">
-      <ul class="nav nav-tabs">
-	<li id="comment-tab-tab">
-	  <a href="#comment-tab" class="tab" data-toggle="tab">Comment</a>
-	</li>
-	<!--
-	    <li>
-	      <a href="#2" data-toggle="tab">Location</a>
-	    </li> -->
-	<li id="hyperlink-tab-tab">
-	  <a href="#hyperlink-tab" class="tab" data-toggle="tab">Hyperlink</a>
-	</li>
-      </ul>
-      <div class="tab-content">
 
-	<div class="tab-pane active" id="comment-tab">
-          <div class="well">
-	    <textarea class="span4"
-		      autofocus="true"
-		      id="comment-body"></textarea>
-	    Private?:
-	    <input id="comment-privacy"
-		   type="checkbox"
-		   value="private"
-		   checked="false">
-	    <br/>
-	    <br/>
-	    <button class="comment-btn send-mark btn">
-	      <i class="icon-ok"></i> Mark</button>
-	  </div>
-	</div>
+    <div id="error-area">
+    </div>
 
-	<div class="tab-pane" id="2">
-          <div class="well">
-	    <p>
-	      <label>Latitude</label>
-	      <input class="span4" type="number" placeholder="0.0">
-	    </p>
-	    <p>
-	      <label>Longitude</label>
-	      <input class="span4" type="number" placeholder="0.1">
-	    </p>
-	    <div>
-	      <button class="location-btn btn send-mark">
-		<i class="icon-ok"></i> Mark</button>
-	    </div>
-	  </div>
-	</div>
-
-	<div class="tab-pane" id="hyperlink-tab">
-	  <div class="well">
-	    <label>Title</label>
-	    <input id="hyperlink-title"
-		   class="span4"
-		   type="text">
-	    <label>URL</label>
-	    <input id="hyperlink-url"
-		   class="span4"
-		   type="url">
-	    Private?:
-	    <input id="hyperlink-privacy"
-		   type="checkbox"
-		   value="private"
-		   checked="false">
-	    <br/>
-	    <br/>
-	    <button class="hyperlink-btn btn send-mark">
-	      <i class="icon-ok"></i> Mark</button>
-	  </div>
-	</div>
-
-	<div class="alert" hidden="true" id="mark-alert-failure">
-	  <!-- <a class="close" data-dismiss="alert">×</a> -->
-	  <strong>Failure</strong> - something went wrong
+    <div id="bookmarklet">
+      <div class="tabbable">
+	<ul class="nav nav-tabs">
+          <li id="comment-tab-tab">
+            <a href="#comment-tab" class="tab" data-toggle="tab">Comment</a>
+          </li>
+          <li id="hyperlink-tab-tab">
+            <a href="#hyperlink-tab"
+	       class="tab" data-toggle="tab">Hyperlink</a>
+          </li>
+	</ul>
+	
+	<div class="tab-content">
+	  <div class="tab-pane" id="comment-tab">
+            <div class="well">
+              <textarea id="comment-body" class="span4" autofocus="true">
+              </textarea>
+            </div>
+          </div>
+          <div class="tab-pane" id="hyperlink-tab">
+            <div class="well">
+              <label>Title</label>
+              <input id="hyperlink-title" class="span4" type="text">
+              <label>URL</label>
+              <input id="hyperlink-url" class="span4" type="url">
+            </div>
+          </div>
 	</div>
 	
       </div>
+      
+      <div id="bookmarklet-footer">
+	<p>
+          Private?:
+          <input id="private" type="checkbox" value="private"
+		 checked="false">
+	</p>
+	<button id="mark-button" class="btn">
+          <i class="icon-ok"></i> Mark
+	</button>
+      </div>
     </div>
-
-    <script src="third-party/jquery.js"></script>
-    <script src="third-party/bootstrap/js/bootstrap.js"></script>
+    
+    <script src="third-party/jquery/dist/jquery.js"></script>
+    <script src="third-party/bootstrap/js/bootstrap-alert.js"></script>
+    <script src="third-party/bootstrap/js/bootstrap-button.js"></script>
+    <script src="third-party/bootstrap/js/bootstrap-tab.js"></script>
+    <script src="core.js"></script>
+    <script src="sandbox.js"></script>
     <script src="config.js"></script>
     <script src="bookmarklet.js"></script>
   </body>

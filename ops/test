@@ -4,3 +4,5 @@ set -e
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 python ${OPS_DIR}/../server/tests.py
+
+# jasmine-node ${OPS_DIR}/../www/bookmarkletSpec.js

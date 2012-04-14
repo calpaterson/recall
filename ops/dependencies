@@ -46,10 +46,16 @@ def main():
             "Need to install pychecker - aptitude install pychecker")
 
     try:
-        assert_presence_of_binary_on_path("hint")
+        assert_presence_of_binary_on_path("jshint")
     except AssertionError:
         exit_1_with_message(
             "Need to install jshint (jsHINT not jsLINT) - npm install jshint")
+
+    try:
+        assert_presence_of_binary_on_path("jasmine-node")
+    except AssertionError:
+        exit_1_with_message(
+            "Need to install jasmine-node - npm install jasmine-node")
 
     try:
         assert_presence_of_binary_on_path("lintian")
