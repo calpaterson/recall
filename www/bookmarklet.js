@@ -25,10 +25,10 @@ bookmarklet = function(){
 	if (bookmarkletTabSelection){
             sandbox.find(".active").removeClass("active");
             sandbox.find(bookmarkletTabSelection).addClass("active");
-            sandbox.find(bookmarkletTabSelection + "-tab").addClass("active");
+            sandbox.find(bookmarkletTabSelection.slice(0, -8)).addClass("active");
         } else {
+	    sandbox.find("#hyperlink-tab-content").addClass("active");
 	    sandbox.find("#hyperlink-tab").addClass("active");
-	    sandbox.find("#hyperlink-tab-tab").addClass("active");
 	}
     };
 
@@ -61,9 +61,9 @@ bookmarklet = function(){
 	    mark["%private"] = true;
 	}
 	mark["@"] = localStorage.getItem("email");
-	if (sandbox.find("#comment-tab-tab").hasClass("active")){
+	if (sandbox.find("#comment-tab-content").hasClass("active")){
 	    mark["#"] = sandbox.find("#comment-body").val();
-	} else if (sandbox.find("#hyperlink-tab-tab").hasClass("active")){
+	} else if (sandbox.find("#hyperlink-tab-content").hasClass("active")){
 	    mark.title = sandbox.find("#hyperlink-title").val();
 	    mark.hyperlink = sandbox.find("#hyperlink-url").val();
 	}

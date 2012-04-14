@@ -40,40 +40,41 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
   <body>
 
-    <div id="error-area">
+    <div id="error-area" hidden="true">
     </div>
 
-    <div id="bookmarklet">
-      <div class="tabbable">
-	<ul class="nav nav-tabs">
-          <li id="comment-tab-tab">
-            <a href="#comment-tab" class="tab" data-toggle="tab">Comment</a>
-          </li>
-          <li id="hyperlink-tab-tab">
-            <a href="#hyperlink-tab"
-	       class="tab" data-toggle="tab">Hyperlink</a>
-          </li>
-	</ul>
-	
-	<div class="tab-content">
-	  <div class="tab-pane" id="comment-tab">
-            <div class="well">
-              <textarea id="comment-body" class="span4" autofocus="true">
-              </textarea>
-            </div>
+    <div id="bookmarklet" class="container tabbable">
+      <!-- Tab bar -->
+      <ul class="nav nav-tabs"> 
+        <li id="hyperlink-tab">
+          <a href="#hyperlink-tab-content"
+	     class="tab" data-toggle="tab">Hyperlink</a>
+        </li>
+        <li id="comment-tab">
+          <a href="#comment-tab-content"
+	     class="tab" data-toggle="tab">Comment</a>
+        </li>
+      </ul>
+
+      <!-- Tab contents -->
+      <div class="tab-content">
+	<div class="tab-pane" id="comment-tab-content">
+          <div class="well">
+            <textarea id="comment-body" class="span4" autofocus="true">
+            </textarea>
           </div>
-          <div class="tab-pane" id="hyperlink-tab">
-            <div class="well">
-              <label>Title</label>
-              <input id="hyperlink-title" class="span4" type="text">
-              <label>URL</label>
-              <input id="hyperlink-url" class="span4" type="url">
-            </div>
+        </div>
+        <div class="tab-pane" id="hyperlink-tab-content">
+          <div class="well">
+            <label>Title</label>
+            <input id="hyperlink-title" class="span4" type="text">
+            <label>URL</label>
+            <input id="hyperlink-url" class="span4" type="url">
           </div>
-	</div>
-	
+        </div>
       </div>
-      
+
+      <!-- Footer containing button -->
       <div id="bookmarklet-footer">
 	<p>
           Private?:
