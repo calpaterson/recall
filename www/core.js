@@ -30,7 +30,7 @@ core = (
 	    // Start a module
 	    var controller = modules[moduleName].controller;
 	    modules[moduleName].instance = controller(
-		SANDBOX_FACTORY.make(this, moduleName));
+		makeSandbox(this, moduleName));
 	};
 	core.startAll = function(){
 	    // Start all modules
