@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
-PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
-jshint $PROJECT_ROOT/www/*js $PROJECT_ROOT/www/bookmarklet-trampoline
-pychecker --stdlib $PROJECT_ROOT server/*py
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
+JSHINTRC=`realpath $PROJECT_ROOT/ops/jshintrc`
+
+jshint $PROJECT_ROOT/www/*js $PROJECT_ROOT/www/bookmarklet-trampoline --config $JSHINTRC
+pychecker -Q --stdlib $PROJECT_ROOT/server/*py

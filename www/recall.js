@@ -62,7 +62,7 @@ var renderHyperlink = function(elem){
     var hyperlink = $($("#hyperlink-template")).clone();
     hyperlink.removeAttr("id");
     hyperlink.find(".who").text(elem["@"]);
-    $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem["hyperlink"]);
+    $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem.hyperlink);
     hyperlink.find(".title").text(elem.title);
     hyperlink.find(".when").text(getTime(elem));
     return hyperlink;
@@ -74,12 +74,12 @@ var renderMarks = function (data){
     $.each(
         data,
         function(_, elem){
-	    oldestMark = elem["~"];
+            oldestMark = elem["~"];
             if(elem.hasOwnProperty('latitude')){
                 var loc = renderLocation(elem);
                 $("#marks").append(loc);
-	    } else if (elem.hasOwnProperty("hyperlink")){
-		$("#marks").append(renderHyperlink(elem));
+            } else if (elem.hasOwnProperty("hyperlink")){
+                $("#marks").append(renderHyperlink(elem));
             } else {
                 $("#marks").append(renderComment(elem));        
             }
@@ -87,32 +87,32 @@ var renderMarks = function (data){
 };
 
 var addMarks = function (before){
-    if (before == undefined){
-	before = 0;	
+    if (before === undefined){
+        before = 0;     
     }
     $.ajax(recall_config["api-base-url"] + "/mark",
-	   {
-	       type: "get",
-	       headers: {"X-Email": localStorage.getItem("email"),
-			 "X-Password": localStorage.getItem("password")},
-	       contentType: "application/json",
-	       dataType: "json",
-	       data: {"maximum": 50, "before": before},
-	       complete: function(jqXHR, textStatus) {
-		   renderMarks(JSON.parse(jqXHR.responseText)); }
-	   });
+           {
+               type: "get",
+               headers: {"X-Email": localStorage.getItem("email"),
+                         "X-Password": localStorage.getItem("password")},
+               contentType: "application/json",
+               dataType: "json",
+               data: {"maximum": 50, "before": before},
+               complete: function(jqXHR, textStatus) {
+                   renderMarks(JSON.parse(jqXHR.responseText)); }
+           });
 };
 
 var updateNavbarUser = function(){
     // Auth Status ("Not Logged In"/"foo@example.com")
     if (loggedIn()){
-	$("#auth-status").text(localStorage.getItem("email"));
-	$("#login-toggle-dropdown").text("Logout");
+        $("#auth-status").text(localStorage.getItem("email"));
+        $("#login-toggle-dropdown").text("Logout");
     } else {
-	$("#auth-status").text("Not Logged In");
-	$("#login-toggle-dropdown").text("Login");
+        $("#auth-status").text("Not Logged In");
+        $("#login-toggle-dropdown").text("Login");
     }
-}
+};
 
 $(document).ready(
     function() {
@@ -124,37 +124,37 @@ $(document).ready(
             }
         );
 
-	updateNavbarUser();
+        updateNavbarUser();
 
 
-	// Login modal
-	// -----------
-	$("#send-login").click(
-	    function(){
-		localStorage.setItem(
-		    "email", $("#login-email-input").val());
-		localStorage.setItem(
-		    "password", $("#login-password-input").val());
-		updateNavbarUser();
-		$("#login-modal").modal("hide");
-	    }
-	);
+        // Login modal
+        // -----------
+        $("#send-login").click(
+            function(){
+                localStorage.setItem(
+                    "email", $("#login-email-input").val());
+                localStorage.setItem(
+                    "password", $("#login-password-input").val());
+                updateNavbarUser();
+                $("#login-modal").modal("hide");
+            }
+        );
 
-	// Login dropdown
-	// --------------
-	$("#login-toggle-dropdown").click(
-	    function(event){
-		if (loggedIn()){
-		    localStorage.removeItem("email");
-		    localStorage.removeItem("password");
-		    $("#login-toggle-dropdown").text("Login");
-		    updateNavbarUser();
-		} else {
-		    $("#login-modal").modal();
-		    $("#login-toggle-dropdown").text("Logout");
-		}
-	    }
-	);
+        // Login dropdown
+        // --------------
+        $("#login-toggle-dropdown").click(
+            function(event){
+                if (loggedIn()){
+                    localStorage.removeItem("email");
+                    localStorage.removeItem("password");
+                    $("#login-toggle-dropdown").text("Login");
+                    updateNavbarUser();
+                } else {
+                    $("#login-modal").modal();
+                    $("#login-toggle-dropdown").text("Logout");
+                }
+            }
+        );
         
         // Hero Unit
         // ---------
@@ -189,191 +189,190 @@ $(document).ready(
             }
         );
 
-	// Request Invite Modal
-	// --------------------
-	$("#show-request-invite-modal").click(
-	    function(){
-		$("#request-invite-modal").modal();
-	    });
+        // Request Invite Modal
+        // --------------------
+        $("#show-request-invite-modal").click(
+            function(){
+                $("#request-invite-modal").modal();
+            });
 
-	$("#name-type-select").change(
-	    function(){
-		var selection = $(this).children(":selected").html();
-		if (selection === "Real Name"){
-		    $("#pseudonym-div").hide();
-		    $("#real-name-div").show();
-		} else if (selection === "Pseudonym"){
-		    $("#real-name-div").hide();
-		    $("#pseudonym-div").show();
-		}
-	    }
-	);
+        $("#name-type-select").change(
+            function(){
+                var selection = $(this).children(":selected").html();
+                if (selection === "Real Name"){
+                    $("#pseudonym-div").hide();
+                    $("#real-name-div").show();
+                } else if (selection === "Pseudonym"){
+                    $("#real-name-div").hide();
+                    $("#pseudonym-div").show();
+                }
+            }
+        );
 
-	$("#send-invite").click(
-	    function(){
-		var form = $("#request-invite-pseudo-form");
-		var user = {"@": form.children("#email-input").val()};
-		if (form.find("select").val() === "Real Name"){
-		    user["firstName"] = form.find("#first-name-input").val();
-		    user["surname"] = form.find("#surname-input").val();
-		} else {
-		    user["pseudonym"] = form.find("#pseudonym-input").val();
-		}
-		user["email"] = form.find("#email-input").val();
-		$.ajax(
-		    recall_config["api-base-url"] + "/user",
-		{
-		    type: "post",
-		    data: JSON.stringify(user),
-		    contentType: "application/json",
-		    dataType: "json",
-		    complete: function(jqXHR, textStatus){
-			if (textStatus === "success"){
-			    $("#invite-request-alert-success").fadeIn();
-			} else {
-			    $("#invite-request-alert-failure").fadeIn();
-			}
-		    }
-		});
-	    });
+        $("#send-invite").click(
+            function(){
+                var form = $("#request-invite-pseudo-form");
+                var user = {"@": form.children("#email-input").val()};
+                if (form.find("select").val() === "Real Name"){
+                    user.firstName = form.find("#first-name-input").val();
+                    user.surname = form.find("#surname-input").val();
+                } else {
+                    user.pseudonym = form.find("#pseudonym-input").val();
+                }
+                user.email = form.find("#email-input").val();
+                $.ajax(
+                    recall_config["api-base-url"] + "/user",
+                {
+                    type: "post",
+                    data: JSON.stringify(user),
+                    contentType: "application/json",
+                    dataType: "json",
+                    complete: function(jqXHR, textStatus){
+                        if (textStatus === "success"){
+                            $("#invite-request-alert-success").fadeIn();
+                        } else {
+                            $("#invite-request-alert-failure").fadeIn();
+                        }
+                    }
+                });
+            });
 
-	// Email Address Verification Modal
-	// --------------------------------
-	var url_args = document.location.href.split("?")[1];
-	if (urlParams.hasOwnProperty("email_key")){
-	    var email_key = urlParams["email_key"];
-	    $("#verify-email-modal").modal("show");
-	    var password = "password";
-	    $("#send-password").click(
-	    	function(){
-	    	    $.ajax(
-	    		recall_config["api-base-url"] + "/user/" + email_key,
-	    		{
-	    		    "type": "post",
-	    		    "data": JSON.stringify(
-	    			{"%password": password}),
-	    		    "contentType": "application/json",
-	    		    "dataType": "json",
-	    		    complete : function(jqXHR, textStatus){
-	    			if (textStatus == "success"){
-				    var email = JSON.parse(jqXHR.responseText)["email"];
-	    			    localStorage.setItem("email", email);
-	    			    localStorage.setItem("password", password);
-	    			    $("#auth-status").text(
-	    				localStorage.getItem("email"));
-				    $("#verify-email-modal").modal("hide");
-	    			} else {
-	    			    alert("failure to verify email address");
-	    			}
-	    		    }
-	    		});
-	    	}
-	    );
-	}
+        // Email Address Verification Modal
+        // --------------------------------
+        var url_args = document.location.href.split("?")[1];
+        if (urlParams.hasOwnProperty("email_key")){
+            var email_key = urlParams.email_key;
+            $("#verify-email-modal").modal("show");
+            var password = "password";
+            $("#send-password").click(
+                function(){
+                    $.ajax(
+                        recall_config["api-base-url"] + "/user/" + email_key,
+                        {
+                            "type": "post",
+                            "data": JSON.stringify(
+                                {"%password": password}),
+                            "contentType": "application/json",
+                            "dataType": "json",
+                            complete : function(jqXHR, textStatus){
+                                if (textStatus == "success"){
+                                    var email = JSON.parse(jqXHR.responseText).email;
+                                    localStorage.setItem("email", email);
+                                    localStorage.setItem("password", password);
+                                    $("#auth-status").text(
+                                        localStorage.getItem("email"));
+                                    $("#verify-email-modal").modal("hide");
+                                } else {
+                                    alert("failure to verify email address");
+                                }
+                            }
+                        });
+                }
+            );
+        }
 
-	// Bookmarklet Modal
-	// -----------------
-	$('#show-bookmarklet-modal').click(
-	    function(){
-		$('#bookmarklet-modal').modal();
-	    }
-	);
+        // Bookmarklet Modal
+        // -----------------
+        $('#show-bookmarklet-modal').click(
+            function(){
+                $('#bookmarklet-modal').modal();
+            }
+        );
 
-	$.get("/bookmarklet-trampoline", function(data){
-		  var bookmarklet = data.replace(
-			  /BASE_API_URL/,
-		      recall_config["api-base-url"]);
-		  $("#bookmarklet").attr(
-		      "href",
-		      "javascript:" + bookmarklet);
-	      }
-	     );
+        $.get("/bookmarklet-trampoline", function(data){
+                  var bookmarklet = data.replace(
+                          /BASE_API_URL/,
+                      recall_config["api-base-url"]);
+                  $("#bookmarklet").attr(
+                      "href",
+                      "javascript:" + bookmarklet);
+              }
+             );
 
-	// Import Bookmarks Modal
-	// ----------------------
-	$("#show-import-bookmarks-modal").click(
-	    function(){
-		$("#import-bookmarks-modal").modal();
-	    }
-	);
+        // Import Bookmarks Modal
+        // ----------------------
+        $("#show-import-bookmarks-modal").click(
+            function(){
+                $("#import-bookmarks-modal").modal();
+            }
+        );
 
-	var netscapeElementToMark = function(element){
-	    var htmlDecode = function(text){
-		var div = document.createElement("div");
-		div.innerHTML = text;
-		return div.textContent;
-	    };
-	    if (!element.attributes.hasOwnProperty("ADD_DATE")){
-		// This is not a bookmark, or the bookmark has no date
-		return null;
-	    }
-	    var mark = {
-		"hyperlink": element.attributes["HREF"].nodeValue,
-		"~": parseInt(element.attributes["ADD_DATE"].nodeValue, 10),
-		"title": htmlDecode(element.textContent),
-		"@": localStorage.getItem("email"),
-		// "tags": element.attributes["TAGS"].nodeValue.split(/ |,/g)
-	    };
-	    if (element.attributes.hasOwnProperty("PRIVATE")){
-		if (element.attributes["PRIVATE"].nodeValue === "1"){
-		    mark["%private"] = true;
-		}
-	    }
-	    if (element.attributes.hasOwnProperty("TOREAD")){
-		if (element.attributes["TOREAD"].nodeValue === "1"){
-		    mark["unread"] = true;
-		}
-	    }
-	    return mark;
-	};
+        var netscapeElementToMark = function(element){
+            var htmlDecode = function(text){
+                var div = document.createElement("div");
+                div.innerHTML = text;
+                return div.textContent;
+            };
+            if (!element.attributes.hasOwnProperty("ADD_DATE")){
+                // This is not a bookmark, or the bookmark has no date
+                return null;
+            }
+            var mark = {
+                "hyperlink": element.attributes.HREF.nodeValue,
+                "~": parseInt(element.attributes.ADD_DATE.nodeValue, 10),
+                "title": htmlDecode(element.textContent),
+                "@": localStorage.getItem("email")
+            };
+            if (element.attributes.hasOwnProperty("PRIVATE")){
+                if (element.attributes.PRIVATE.nodeValue === "1"){
+                    mark["%private"] = true;
+                }
+            }
+            if (element.attributes.hasOwnProperty("TOREAD")){
+                if (element.attributes.TOREAD.nodeValue === "1"){
+                    mark.unread = true;
+                }
+            }
+            return mark;
+        };
 
-	$("#import-bookmarks").click(
-	    function(){
-		var bookmarksFile = $("#bookmarks-file-input")[0].files[0];
-		var reader = new FileReader();
-		reader.onload = function(event){
-		    var contents = event.target.result;
-		    var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
-		    var matches = contents.match(bookmarkRegex);
-		    var bookmarks = [];
-		    for (var each in matches){
-			var dom = HTMLtoDOM(matches[each]);
-			var element = $(dom).find("a")[0];
-			var bookmark = netscapeElementToMark(element);
-			if (bookmark){
-			    bookmarks.push(bookmark);
-			}
-		    }
-		    $.ajax(
-			recall_config["api-base-url"] + "/mark",
-			{
-			    type: 'post',
-			    headers: {
-				"X-Email": localStorage.getItem("email"),
-				"X-Password": localStorage.getItem("password")},
-			    data: JSON.stringify(bookmarks),
-			    contentType: 'application/json',
-			    dataType: 'json',
-			    complete: function(jqXHR, textStatus){
-				if (textStatus === "success"){
-				    $("#import-bookmarks-modal").modal("hide");
-				} else {
-				    alert("Failed");
-				}
-			    }
-			}
-		    );
-		};
-		reader.readAsText(bookmarksFile, "UTF-8");
-	    }
-	);
+        $("#import-bookmarks").click(
+            function(){
+                var bookmarksFile = $("#bookmarks-file-input")[0].files[0];
+                var reader = new FileReader();
+                reader.onload = function(event){
+                    var contents = event.target.result;
+                    var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
+                    var matches = contents.match(bookmarkRegex);
+                    var bookmarks = [];
+                    for (var each in matches){
+                        var dom = HTMLtoDOM(matches[each]);
+                        var element = $(dom).find("a")[0];
+                        var bookmark = netscapeElementToMark(element);
+                        if (bookmark){
+                            bookmarks.push(bookmark);
+                        }
+                    }
+                    $.ajax(
+                        recall_config["api-base-url"] + "/mark",
+                        {
+                            type: 'post',
+                            headers: {
+                                "X-Email": localStorage.getItem("email"),
+                                "X-Password": localStorage.getItem("password")},
+                            data: JSON.stringify(bookmarks),
+                            contentType: 'application/json',
+                            dataType: 'json',
+                            complete: function(jqXHR, textStatus){
+                                if (textStatus === "success"){
+                                    $("#import-bookmarks-modal").modal("hide");
+                                } else {
+                                    alert("Failed");
+                                }
+                            }
+                        }
+                    );
+                };
+                reader.readAsText(bookmarksFile, "UTF-8");
+            }
+        );
 
-	addMarks();
+        addMarks();
 
-	// More marks button
-	$("#more-btn").click(
-	    function(){
-		addMarks(oldestMark);
-	});
+        // More marks button
+        $("#more-btn").click(
+            function(){
+                addMarks(oldestMark);
+        });
     }
 );

@@ -52,6 +52,13 @@ def main():
             "Need to install jshint (jsHINT not jsLINT) - npm install jshint")
 
     try:
+        assert_presence_of_binary_on_path("realpath")
+    except AssertionError:
+        exit_1_with_message(
+            "Need realpath to get around a bug in jslint - " +
+            "aptitude install realpath")
+
+    try:
         assert_presence_of_binary_on_path("jasmine-node")
     except AssertionError:
         exit_1_with_message(
