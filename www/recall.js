@@ -14,6 +14,149 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+core.add(
+    "navbar",
+    function(){
+        var sandbox;
+
+        var displayUserNavbar = function(){
+            
+        };
+
+        var displayVisitorNavbar = function(){
+            var vistorNavEs = sandbox.find("#visitor-nav-stager").children();
+            var navbarList = sandbox.find("#navbar-list")[0];
+            for(var i = 0; i < vistorNavEs.length; i++){
+                var original = vistorNavEs[i];
+                var copy = original.cloneNode(true);
+                copy.children[0].id = original.children[0].id.slice(0, -10);
+                navbarList.appendChild(copy);
+            }
+            sandbox.bind("#navbar-log-in", "click", function(message){
+                             sandbox.publish("show-login-form");
+                         });
+            sandbox.bind("#navbar-request-invite", "click", function(message){
+                             sandbox.publish("show-request-invite-form");
+                         });
+        };
+
+        var displayNavbar = function(message){
+            if (message){
+                displayUserNavbar();
+            } else {
+                displayVisitorNavbar();
+            }
+        };
+        
+        return function(sandbox_){
+            sandbox = sandbox_;
+            sandbox.subscribe("logged-in", displayNavbar);
+            sandbox.publish("logged-in?");
+        };
+    }());
+
+core.add(
+    "login-form",
+    function(){
+        var sandbox;
+
+        var send = function(){
+            sandbox.publish(
+            "login", {
+                "email": sandbox.find("#login-form-email")[0].value,
+                "password": sandbox.find("#login-form-password")[0].value
+            });
+            return false;
+        };
+
+        var nevermind = function(message){
+            hide();
+            return false;
+        };
+
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+        };
+
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+        };
+
+        var complete = function(message){
+            hide();
+        };
+        
+        return function(sandbox_){
+            sandbox = sandbox_;
+            sandbox.bind("#login-form-submit", "click", send);
+            sandbox.bind("#login-form-nevermind", "click", nevermind);
+            sandbox.subscribe("logged-in", complete);
+            sandbox.subscribe("show-login-form", show);
+        };
+    }());
+
+core.add(
+    "request-invite-form",
+    function(){
+        var sandbox;
+
+        var typeShowing = "#r-i-real-name";
+
+        var send = function(){
+            var data = {
+                "email": sandbox.find("#r-i-email")[0].value
+            };
+            var typeSelect = sandbox.find("#r-i-type")[0];
+            if (typeSelect.selectedIndex === 0){
+                data.firstName = sandbox.find("#r-i-first-name")[0].value;
+                data.surname = sandbox.find("#r-i-surname")[0].value;           
+            } else if (typeSelect.selectedIndex === 1){
+                data.pseudonym = sandbox.find("#r-i-pseudonym")[0].value;
+            }
+            // FIXME: This is a breach of the division
+            $.ajax(recall_config["api-base-url"] + "/user",
+                {
+                    type: "post",
+                    data: JSON.stringify(data),
+                    contentType: "application/json",
+                    dataType: "json"
+                }
+            );      
+            return false;
+        };
+
+        var changeType = function(event){
+            var realNameID = "#r-i-real-name";
+            var pseudonymID = "#r-i-pseudonym-div";
+            if (typeShowing === realNameID){
+                sandbox.find(realNameID)[0].hidden = true;
+                sandbox.find(pseudonymID)[0].hidden = false;
+                typeShowing = pseudonymID;
+            } else if (typeShowing === pseudonymID){
+                sandbox.find(pseudonymID)[0].hidden = true;
+                sandbox.find(realNameID)[0].hidden = false;
+                typeShowing = realNameID;
+            }
+        };
+
+        var nevermind = function(message){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+        };
+        
+        return function(sandbox_){
+            sandbox = sandbox_;
+            sandbox.bind("#r-i-submit", "click", send);
+            sandbox.bind("#r-i-nevermind", "click", nevermind);
+            sandbox.bind("#r-i-type", "change", changeType);
+            sandbox.subscribe("show-request-invite-form", show);
+        };
+    }());
+
 // Temporary code stolen from http://stackoverflow.com/a/2880929
 var urlParams = {};
 (function () {
@@ -103,30 +246,9 @@ var addMarks = function (before){
            });
 };
 
-var updateNavbarUser = function(){
-    // Auth Status ("Not Logged In"/"foo@example.com")
-    if (loggedIn()){
-        $("#auth-status").text(localStorage.getItem("email"));
-        $("#login-toggle-dropdown").text("Logout");
-    } else {
-        $("#auth-status").text("Not Logged In");
-        $("#login-toggle-dropdown").text("Login");
-    }
-};
 
 $(document).ready(
     function() {
-        // Brand
-        // -----
-        $('#brand').click(
-            function(){
-                $(document).reload();
-            }
-        );
-
-        updateNavbarUser();
-
-
         // Login modal
         // -----------
         $("#send-login").click(
@@ -139,103 +261,6 @@ $(document).ready(
                 $("#login-modal").modal("hide");
             }
         );
-
-        // Login dropdown
-        // --------------
-        $("#login-toggle-dropdown").click(
-            function(event){
-                if (loggedIn()){
-                    localStorage.removeItem("email");
-                    localStorage.removeItem("password");
-                    $("#login-toggle-dropdown").text("Login");
-                    updateNavbarUser();
-                } else {
-                    $("#login-modal").modal();
-                    $("#login-toggle-dropdown").text("Logout");
-                }
-            }
-        );
-        
-        // Hero Unit
-        // ---------
-        if (localStorage.getItem("show-hero-unit") === null){
-            $("#hero-unit").hide();
-        }
-        $('#toggle-hero-unit').click(
-            function(){
-                var show = localStorage.getItem("show-hero-unit");
-                if (show === "true"){
-                    $("#hero-unit").fadeOut();
-                    localStorage.removeItem("show-hero-unit");
-                } else if (show === null){
-                    $("#hero-unit").fadeIn();
-                    localStorage.setItem("show-hero-unit", "true");
-                }
-            }
-        );
-        $('#hide-hero-unit-btn').click(
-            function(){
-                localStorage.removeItem("show-hero-unit");
-                $('#hero-unit').fadeOut();          
-            });
-        $('#learn-more-btn').click(
-            function (){
-                $("#learn-more-btn").fadeOut();
-                $('#hero-initial').fadeOut(
-                    null,
-                    function (){
-                        $('#learn-more').fadeIn();
-                    });
-            }
-        );
-
-        // Request Invite Modal
-        // --------------------
-        $("#show-request-invite-modal").click(
-            function(){
-                $("#request-invite-modal").modal();
-            });
-
-        $("#name-type-select").change(
-            function(){
-                var selection = $(this).children(":selected").html();
-                if (selection === "Real Name"){
-                    $("#pseudonym-div").hide();
-                    $("#real-name-div").show();
-                } else if (selection === "Pseudonym"){
-                    $("#real-name-div").hide();
-                    $("#pseudonym-div").show();
-                }
-            }
-        );
-
-        $("#send-invite").click(
-            function(){
-                var form = $("#request-invite-pseudo-form");
-                var user = {"@": form.children("#email-input").val()};
-                if (form.find("select").val() === "Real Name"){
-                    user.firstName = form.find("#first-name-input").val();
-                    user.surname = form.find("#surname-input").val();
-                } else {
-                    user.pseudonym = form.find("#pseudonym-input").val();
-                }
-                user.email = form.find("#email-input").val();
-                $.ajax(
-                    recall_config["api-base-url"] + "/user",
-                {
-                    type: "post",
-                    data: JSON.stringify(user),
-                    contentType: "application/json",
-                    dataType: "json",
-                    complete: function(jqXHR, textStatus){
-                        if (textStatus === "success"){
-                            $("#invite-request-alert-success").fadeIn();
-                        } else {
-                            $("#invite-request-alert-failure").fadeIn();
-                        }
-                    }
-                });
-            });
 
         // Email Address Verification Modal
         // --------------------------------

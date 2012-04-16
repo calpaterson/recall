@@ -64,7 +64,11 @@ core = (
                 if (module.length > 1){
                     throw "#" + moduleName + " is used more than once";
                 }
-                return $(module).find(selector);
+                if (selector !== undefined){
+                    return $(module).find(selector);   
+                } else {
+                    return $(module);
+                }
             },
             bind: function(element, event, handler){
                 $(element).bind(event, handler);

@@ -25,10 +25,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	  content="Recall is a decentralised social bookmarking service">
     <meta name="author" content="Cal Paterson">
 
-    <link href="third-party/bootstrap/docs/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="third-party/bootstrap/docs/assets/css/bootstrap.css"
+	  rel="stylesheet">
     <style>
       body {
-        padding-top: 60px;
+      padding-top: 60px;
       }
     </style>
     <link href="third-party/bootstrap/docs/assets/css/bootstrap-responsive.css"
@@ -37,225 +38,107 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
-      <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+	<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
   </head>
 
   <body>
 
-    <div class="navbar navbar-fixed-top">
+    <div id="navbar" class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
+
+          <!-- Icon when collapsed -->
           <a class="btn btn-navbar" data-toggle="collapse"
-	     data-target=".nav-collapse">
+             data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">Recall</a>
-          <div class="nav-collapse">
-            <ul class="nav">
-	      <li class="dropdown">
-		<a class="dropdown-toggle" data-toggle="dropdown" href="#">
-		  <b id="auth-status">Not Logged In</b>
-		  <b class="caret"></b>
-		</a>
-		<ul class="dropdown-menu">
-		  <li>
-		    <a id="login-toggle-dropdown" href="#">Log in</a>
-		  </li>
-		</ul>
-	      </li>
-              <li>
-		<a id="toggle-hero-unit" href="#">About Recall</a>
-	      </li>
-	      <li>
-		<a id="show-request-invite-modal" href="#">Request Invite
-		</a>
-	      </li>
-	      <li>
-		<a id="show-import-bookmarks-modal" href="#">Import Bookmarks
-		</a>
-	      </li>
-	      <li>
-		<a id="show-bookmarklet-modal" href="#">Bookmarklet</a>
-	      </li>
-              <li>
-		<a href="mailto:cal@calpaterson.com">Email Author</a>
-	      </li>
-            </ul>
-          </div>
+
+          <ul id="navbar-list" class="nav nav-collapse">
+            <li>
+              <a class="brand" href="#">Recall</a>
+            </li>
+            <li>
+              <a href="#">About</a>
+            </li>
+          </ul>
+        </div>
+        <div id="visitor-nav-stager" hidden="true">
+          <li class="visitor-nav">
+            <a id="navbar-request-invite-in-stager" href="#">Request Invite</a>
+          </li>
+          <li class="visitor-nav">
+            <a id="navbar-log-in-in-stager" href="#">Log In</a>
+          </li>
         </div>
       </div>
     </div>
 
-    <div id="bookmarklet-modal" class="modal fade">
-      <div class="modal-header">
-	<a class="close" data-dismiss="modal">×</a>
-	<h3>Using the Recall Bookmarklet</h3>
-      </div>
-      <div class="modal-body">
-	<p>
-	  You can use the bookmarklet to mark from a web browser.  Drag the
-	  hyperlink below onto your bookmarks toolbar.
-	</p>
-	<p>
-	  <a class="bookmarklet" id="bookmarklet" href="">Drag me!</a>
-	</p>
-      </div>
-    </div>
-
-    <div id="verify-email-modal" class="modal fade">
-      <div class="modal-header">
-	<a class="close" data-dismiss="modal">×</a>
-	<h3>The Final Step: Set Your Password</h3>
-      </div>
-      <div class="modal-body">
-	<input id="password-input" type="password" placeholder="Enter password here">
-      </div>
-      <div class="modal-footer">
-	<button class="btn btn-primary" id="send-password">Set Password</button>
-      </div>
-    </div>
-
-    <div id="login-modal" class="modal fade">
-      <div class="modal-header">
-	<a class="close" data-dismiss="modal">×</a>
-	<h3>Login</h3>
-      </div>
-      <div class="modal-body">
-	<input id="login-email-input" type="email" placeholder="Enter email address here">
-	<input id="login-password-input" type="password" placeholder="Enter password here">
-      </div>
-      <div class="modal-footer">
-	<button class="btn btn-primary" id="send-login">Login</button>
-      </div>
-    </div>
-
-    <div id="request-invite-modal" class="modal fade">
-      <div class="modal-header">
-	<a class="close" data-dismiss="modal">×</a>
-	<h3>Requesting an Invite</h3>
-      </div>
-      <div class="modal-body">
-	<p>
-	  Recall is currently in invite-only alpha testing!  That's because things are still being written,
-	  but you can ask to be invited, and I'll get back to you :)
-	</p>
-	<div id="request-invite-pseudo-form">
-	  <select id="name-type-select">
-	    <option>Real Name</option>
-	    <option>Pseudonym</option>
-	  </select>
-	  <div id="real-name-div">
-	    <input class="name-input" id="first-name-input" type="text" placeholder="Enter first name here">
-	    <input class="name-input" id="surname-input" type="text" placeholder="Enter surname here">
-	  </div>
-	  <div id="pseudonym-div" hidden="true">
-	    <input type="text" id="pseudonym-input" placeholder="Enter pseudonym here">
-	  </div>
-	  <input type="email" id="email-input" placeholder="Enter email address here">
-	  <div>
-	    <button class="btn btn-primary" id="send-invite">Request an Invite</button>
-	  </div>
-	</div>
-      </div>
-      <div class="modal-footer">
-	<div class="alert alert-success" hidden="true" id="invite-request-alert-success">
-	  <strong>Thanks!</strong> - we'll get back to you soon!
-	</div>
-	<div class="alert" hidden="true" id="invite-request-alert-failure">
-	  <strong>Failure</strong> - something went wrong
-	</div>
-      </div>
-    </div>
-
-    <div id="import-bookmarks-modal" class="modal fade">
-      <div class="modal-header">
-	<a class="close" data-dismiss="modal">×</a>
-	<h3>Import Bookmarks<h3>
-      </div>
-      <div class="modal-body">
-	<p>
-	  Many web browsers and social bookmarking services allow you to
-	  export your bookmarks in an html formal (sometimes called "Netscape
-	  Navigator" format).  You can import this file to Recall.
-	</p>
-	<input id="bookmarks-file-input" type="file">
-	<div class="modal-footer">
-	  <button id="import-bookmarks" class="btn">Import</button>
-	</div>
-      </div>
-    </div>
-
     <div class="container">
-      <div class="hero-unit" id="hero-unit">      
-	<div id="hero-initial">
-	  <h1>Hello, World!</h1>
-	  <p>
-	    Recall is a social bookmarking service, but there's more to it than that...
-	  </p>
+      
+      <div id="login-form" class="row" hidden="true">
+	<div class="offset4 span4">
+	  <form class="well form-vertical">
+	    <label>Email</label>
+	    <input id="login-form-email" type="email"
+		   placeholder="Enter email address here">
+	    <label>Password</label>
+	    <input id="login-form-password" type="password"
+		   placeholder="Enter password here">
+	    <br/>
+	    <button id="login-form-submit" class="btn btn-primary"
+		    type="submit">Login</button>
+	    <button id="login-form-nevermind" class="btn"
+		    type="submit">Nevermind</button>
+	  </form>
 	</div>
-	<div id="learn-more" hidden="true">
-	  <h1>Recall is a bit different</h1>
-	  <p>
-	    <strong>Decentralised</strong> - Anyone can run a server and host all or part of what is being shared by the world
+      </div>
+
+      <div id="request-invite-form" class="row" hidden="true">
+	<div class="offset4 span4">
+	  <form class="well form-vertical">
+    	    <select id="r-i-type">
+    	      <option>Use my real name</option>
+    	      <option>Use a pseudonym</option>
+    	    </select>
+
+    	    <div id="r-i-real-name">
+	      <label>First Name</label>
+    	      <input id="r-i-first-name" type="text"
+		     placeholder="Enter first name here">
+	      <label>Surname</label>
+    	      <input id="r-i-surname" type="text"
+		     placeholder="Enter surname here">
+    	    </div>
+    	    <div id="r-i-pseudonym-div" hidden="true">
+	      <label>Pseudonym</label>
+    	      <input id="r-i-pseudonym" type="text"
+		     placeholder="Enter pseudonym here">
+	    </div>
+
+	    <label>Email Address (Will be public)</label>
+	    <input id="r-i-email" type="text"
+		   placeholder="Enter email address here">
 	    <br/>
-	    <strong>Liberal</strong> - No one controls the <em>content</em> of bookmarks.  No one controls the <em>types</em> of bookmarks.
-	    <br/>
-	    <strong>(Maybe) Private</strong> - Keep your bookmarks private, even from the people running the server!
-	    <br/>
-	    <br/>
-	    But it's still being worked on, and <strong>hardly anything works yet!</strong>
-	  </p>
-	</div>
-	<div id="hero-buttons">
-	  <p>
-	    <a class="btn btn-large" id="hide-hero-unit-btn">
-	      Hide
-	    </a>
-	    <a class="btn btn-info btn-large" id="learn-more-btn">
-	      Learn more
-	    </a>
-	  </p>
+	    <button id="r-i-submit" class="btn btn-primary"
+		    type="submit">Request An Invite</button>
+	    <button id="r-i-nevermind" class="btn"
+		    type="submit">Nevermind</button>
+	  </form>
 	</div>
       </div>
       
-      <div id="marks">
+      <div class="row">
+	<div class="offset4 span4">
+	  <h1 class="well">End of Page</h1>
+	</div>
       </div>
-      <center class="row show-grid">
-	<button id="more-btn"
-		class="btn btn-primary span8 offset2 well">More</button>
-      </center>
+      
+    <!-- End of container -->
     </div>
-
-    <div id="templates" hidden="true">
-
-      <div id="location-template" class="row show-grid">      
-	<div class="mark location span8 offset2 well">
-	  <p>
-	    <strong><span class="who">An unknown stranger</span></strong>, <span class="when">some time ago</span>:
-	  </p>
-	  <center>
-	    <img class="location-map"/>
-	  </center>
-	</div>
-      </div>
-
-      <div id="comment-template" class="row show-grid">      
-	<div class="mark comment span8 offset2 well">
-	  <strong><span class="who">An unknown stranger</span></strong> said <em>"<span class="what">something</span>"</em>, <span class="when">some time ago</span>
-	</div>
-      </div>
-
-      <div id="hyperlink-template" class="row show-grid">      
-	<div class="mark hyperlink span8 offset2 well">
-	  <strong><span class="who">An unknown stranger</span></strong> bookmarked <a class="hyperlink-url"><span class="title">some hyperlink</span></a>, <span class="when">some time ago</span>
-	</div>
-      </div>
-
-    </div>
-
+    
     <!-- Javascript -->
     <script src="third-party/jquery/dist/jquery.js"></script>
     <script src="third-party/jquery-timeago/jquery.timeago.js"></script>
@@ -272,7 +155,113 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <script src="third-party/bootstrap/js/bootstrap-typeahead.js"></script>
     <script src="third-party/bootstrap/js/bootstrap-popover.js"></script>
     <script src="config.js"></script>
+    <script src="core.js"></script>
+    <script src="sandbox.js"></script>
+    <script src="services.js"></script>
     <script src="recall.js"></script>
     <script src="third-party/htmlparser.js"></script>
   </body>
 </html>
+
+    <!-- <div id="bookmarklet-modal" class="modal fade"> -->
+    <!--   <div class="modal-header"> -->
+    <!-- 	<a class="close" data-dismiss="modal">×</a> -->
+    <!-- 	<h3>Using the Recall Bookmarklet</h3> -->
+    <!--   </div> -->
+    <!--   <div class="modal-body"> -->
+    <!-- 	<p> -->
+    <!-- 	  You can use the bookmarklet to mark from a web browser.  Drag the -->
+    <!-- 	  hyperlink below onto your bookmarks toolbar. -->
+    <!-- 	</p> -->
+    <!-- 	<p> -->
+    <!-- 	  <a class="bookmarklet" id="bookmarklet" href="">Drag me!</a> -->
+    <!-- 	</p> -->
+    <!--   </div> -->
+    <!-- </div> -->
+
+    <!-- <div id="verify-email-modal" class="modal fade"> -->
+    <!--   <div class="modal-header"> -->
+    <!-- 	<a class="close" data-dismiss="modal">×</a> -->
+    <!-- 	<h3>The Final Step: Set Your Password</h3> -->
+    <!--   </div> -->
+    <!--   <div class="modal-body"> -->
+    <!-- 	<input id="password-input" type="password" placeholder="Enter password here"> -->
+    <!--   </div> -->
+    <!--   <div class="modal-footer"> -->
+    <!-- 	<button class="btn btn-primary" id="send-password">Set Password</button> -->
+    <!--   </div> -->
+    <!-- </div> -->
+
+
+
+    <!-- <div id="import-bookmarks-modal" class="modal fade"> -->
+    <!--   <div class="modal-header"> -->
+    <!-- 	<a class="close" data-dismiss="modal">×</a> -->
+    <!-- 	<h3>Import Bookmarks<h3> -->
+    <!--   </div> -->
+    <!--   <div class="modal-body"> -->
+    <!-- 	<p> -->
+    <!-- 	  Many web browsers and social bookmarking services allow you to -->
+    <!-- 	  export your bookmarks in an html formal (sometimes called "Netscape -->
+    <!-- 	  Navigator" format).  You can import this file to Recall. -->
+    <!-- 	</p> -->
+    <!-- 	<input id="bookmarks-file-input" type="file"> -->
+    <!-- 	<div class="modal-footer"> -->
+    <!-- 	  <button id="import-bookmarks" class="btn">Import</button> -->
+    <!-- 	</div> -->
+    <!--   </div> -->
+    <!-- </div> -->
+     
+    <!-- <div id="marks"> -->
+    <!-- </div> -->
+
+    <!-- <div id="templates" hidden="true"> -->
+
+    <!--   <div id="location-template" class="row show-grid">       -->
+    <!-- 	<div class="mark location span8 offset2 well"> -->
+    <!-- 	  <p> -->
+    <!-- 	    <strong><span class="who">An unknown stranger</span></strong>, <span class="when">some time ago</span>: -->
+    <!-- 	  </p> -->
+    <!-- 	  <center> -->
+    <!-- 	    <img class="location-map"/> -->
+    <!-- 	  </center> -->
+    <!-- 	</div> -->
+    <!--   </div> -->
+
+    <!--   <div id="comment-template" class="row show-grid">       -->
+    <!-- 	<div class="mark comment span8 offset2 well"> -->
+    <!-- 	  <strong><span class="who">An unknown stranger</span></strong> said <em>"<span class="what">something</span>"</em>, <span class="when">some time ago</span> -->
+    <!-- 	</div> -->
+    <!--   </div> -->
+
+    <!--   <div id="hyperlink-template" class="row show-grid">       -->
+    <!-- 	<div class="mark hyperlink span8 offset2 well"> -->
+    <!-- 	  <strong><span class="who">An unknown stranger</span></strong> bookmarked <a class="hyperlink-url"><span class="title">some hyperlink</span></a>, <span class="when">some time ago</span> -->
+    <!-- 	</div> -->
+    <!--   </div> -->
+
+    <!-- </div> -->
+
+    <!-- <\!-- Javascript -\-> -->
+    <!-- <script src="third-party/jquery/dist/jquery.js"></script> -->
+    <!-- <script src="third-party/jquery-timeago/jquery.timeago.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-alert.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-button.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-carousel.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-collapse.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-dropdown.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-modal.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-scrollspy.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-tab.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-tooltip.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-transition.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-typeahead.js"></script> -->
+    <!-- <script src="third-party/bootstrap/js/bootstrap-popover.js"></script> -->
+    <!-- <script src="config.js"></script> -->
+    <!-- <script src="core.js"></script> -->
+    <!-- <script src="sandbox.js"></script> -->
+    <!-- <script src="services.js"></script> -->
+    <!-- <script src="recall.js"></script> -->
+    <!-- <script src="third-party/htmlparser.js"></script> -->
+<!--   </body> -->
+<!-- </html> -->
