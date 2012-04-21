@@ -25,7 +25,11 @@ gzip --best $DOC_DIR/changelog.Debian
 
 # Build bootstrap
 cd $PROJECT_ROOT/www/third-party/bootstrap
-make
+if [ ! -d css ]; then
+    mkdir css
+fi
+lessc less/bootstrap.less > css/bootstrap.css
+lessc less/responsive.less > css/bootstrap-responsive.css
 
 # Build jquery
 cd $PROJECT_ROOT/www/third-party/jquery

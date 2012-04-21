@@ -25,14 +25,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	  content="Recall is a decentralised social bookmarking service">
     <meta name="author" content="Cal Paterson">
 
-    <link href="third-party/bootstrap/docs/assets/css/bootstrap.css"
+    <link href="third-party/bootstrap/css/bootstrap.css"
 	  rel="stylesheet">
     <style>
       body {
       padding-top: 60px;
       }
     </style>
-    <link href="third-party/bootstrap/docs/assets/css/bootstrap-responsive.css"
+    <link href="third-party/bootstrap/css/bootstrap-responsive.css"
 	  rel="stylesheet">
     <link href="style.css" rol="stylesheet">
 
@@ -130,6 +130,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
       </div>
       
+      <div id="view-of-marks">
+	<div id="list-of-marks">
+	</div>
+	<div id="templates" hidden="true">
+	  <div id="comment-template" class="row show-grid">
+    	    <div class="mark comment span8 offset2 well">
+    	      <strong>
+		<span class="who">An unknown stranger</span>
+	      </strong> said
+	      <em>"<span class="what">something</span>"</em>,
+	      <span class="when">some time ago</span>
+    	    </div>
+	  </div>
+
+	  <div id="hyperlink-template" class="row show-grid">
+    	    <div class="mark hyperlink span8 offset2 well">
+    	      <strong><span class="who">An unknown stranger</span></strong> bookmarked <a class="hyperlink-url"><span class="title">some hyperlink</span></a>, <span class="when">some time ago</span>
+    	    </div>
+	  </div>
+      </div>
+
       <div class="row">
 	<div class="offset4 span4">
 	  <h1 class="well">End of Page</h1>
@@ -212,33 +233,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <!--   </div> -->
     <!-- </div> -->
      
-    <!-- <div id="marks"> -->
-    <!-- </div> -->
 
-    <!-- <div id="templates" hidden="true"> -->
 
-    <!--   <div id="location-template" class="row show-grid">       -->
-    <!-- 	<div class="mark location span8 offset2 well"> -->
-    <!-- 	  <p> -->
-    <!-- 	    <strong><span class="who">An unknown stranger</span></strong>, <span class="when">some time ago</span>: -->
-    <!-- 	  </p> -->
-    <!-- 	  <center> -->
-    <!-- 	    <img class="location-map"/> -->
-    <!-- 	  </center> -->
-    <!-- 	</div> -->
-    <!--   </div> -->
 
-    <!--   <div id="comment-template" class="row show-grid">       -->
-    <!-- 	<div class="mark comment span8 offset2 well"> -->
-    <!-- 	  <strong><span class="who">An unknown stranger</span></strong> said <em>"<span class="what">something</span>"</em>, <span class="when">some time ago</span> -->
-    <!-- 	</div> -->
-    <!--   </div> -->
-
-    <!--   <div id="hyperlink-template" class="row show-grid">       -->
-    <!-- 	<div class="mark hyperlink span8 offset2 well"> -->
-    <!-- 	  <strong><span class="who">An unknown stranger</span></strong> bookmarked <a class="hyperlink-url"><span class="title">some hyperlink</span></a>, <span class="when">some time ago</span> -->
-    <!-- 	</div> -->
-    <!--   </div> -->
 
     <!-- </div> -->
 
