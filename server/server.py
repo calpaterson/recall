@@ -41,12 +41,12 @@ class HTTPException(Exception):
 def handle_exception(exception):
     def json_error(message):
         document = {"human_readable": message}
-        if "machine_readable" in exception:
+        if hasattr(exception, "machine_readable") and \
+                exception.machine_readable is not None:
             document["machine_readable"] = exception.machine_readable
         return json.dumps(document)
 
     if not isinstance(exception, HTTPException):
-        print exception
         return json_error("Unknown exception: "), 500
     else:
         return json_error(exception.message), exception.status_code
