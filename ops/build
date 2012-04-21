@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
+set -x
 
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT=$OPS_DIR/..
