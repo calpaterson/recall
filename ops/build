@@ -8,7 +8,7 @@ PROJECT_ROOT=$OPS_DIR/..
 # If Jenkin's build number available, use that, otherwise DEV
 if [ $BUILD_NUMBER ]
 then
-    VERSION=BUILD_NUMBER
+    VERSION=$BUILD_NUMBER
 else
     VERSION=0-DEV
 fi
