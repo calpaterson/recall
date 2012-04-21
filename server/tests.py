@@ -296,7 +296,6 @@ class ServerTests(unittest.TestCase):
 
 
     def test_get_limited_number_of_marks(self):
-        expected_mark_limit = server.settings["RECALL_MARK_LIMIT"] = 2
         _, email, password = self._create_test_user()
         headers = Headers({"X-Email": email, "X-Password": password})
         marks = []

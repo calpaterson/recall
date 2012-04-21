@@ -157,6 +157,17 @@ core.add(
         };
     }());
 
+core.add(
+    "view-of-marks",
+    function()
+    {
+        var sandbox;
+
+        return function(sandbox_){
+            sandbox = sandbox_;
+        };
+    }());
+
 // Temporary code stolen from http://stackoverflow.com/a/2880929
 var urlParams = {};
 (function () {
@@ -190,21 +201,11 @@ var renderComment = function(elem){
     return comment;
 };
 
-var renderLocation = function(elem){
-    var location = $($('#location-template').clone());
-    location.removeAttr("id");
-    location.find(".who").text(elem["@"]);
-    location.find(".when").text(getTime(elem));
-    location.find(".location-map")[0].src = 'https://maps.googleapis.com/maps/api/staticmap?center=' +
-        elem.latitude + ',' + elem.longitude + '&sensor=false&size=400x400&' +
-        'markers=color:red%7C' + elem.latitude + ',' + elem.longitude;
-    return location;
-};
-
 var renderHyperlink = function(elem){
     var hyperlink = $($("#hyperlink-template")).clone();
     hyperlink.removeAttr("id");
     hyperlink.find(".who").text(elem["@"]);
+
     $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem.hyperlink);
     hyperlink.find(".title").text(elem.title);
     hyperlink.find(".when").text(getTime(elem));
