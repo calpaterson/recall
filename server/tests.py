@@ -368,6 +368,19 @@ class ServerTests(unittest.TestCase):
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([2, 1, 0], mark_times)
 
+    def test_user_able_to_check_authentication(self):
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+
+        response = self.client.get("/user/%s" % email)
+        response_data = json.loads(response.data)
+        self.assertNotIn("self", response_data)
+        self.assertEquals(200, response.status_code)
+
+        response = self.client.get("/user/%s" % email, headers=headers)
+        response_data = json.loads(response.data)
+        self.assertTrue(response_data.get("self", False))
+
 
     @unittest.expectedFailure
     def test_before_and_since(self):

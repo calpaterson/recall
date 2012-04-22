@@ -108,8 +108,14 @@ def get_unixtime():
     else:
         return int(time.time())
 
-def is_authorised(email, password):
+def is_authorised(require_attempt=False):
     db = get_db()
+    email = request.headers.get("X-Email", None)
+    password = request.headers.get("X-Password", None)
+    if email is None or password is None:
+        if require_attempt:
+            raise HTTPException("You must include authentication headers", 400)
+        return False
     password_hash = bcrypt.hashpw(
         password,
         settings["RECALL_PASSWORD_SALT"])
@@ -119,7 +125,8 @@ def is_authorised(email, password):
     if user is None:
         return False
     else:
-        return True
+        return user
+
 
 @app.route("/mark", methods=["POST"])
 def add_mark():
@@ -135,13 +142,8 @@ def add_mark():
         del body["_id"]
         return body
 
-    try:
-        if not is_authorised(
-            request.headers["X-Email"],
-            request.headers["X-Password"]):
-            return "Email or password or both does not match", 403
-    except KeyError:
-        raise HTTPException("You must include authentication headers", 400)
+    if not is_authorised(require_attempt=True):
+        raise HTTPException("Email or password or both do not match", 403)
     body = json.loads(request.data)
     try:
         if type(body) == list:
@@ -165,11 +167,10 @@ def get_all_marks():
     if before != 0:
         spec["~"] = {"$lt": before}
     try:
-        email = request.headers["X-Email"]
-        password = request.headers["X-Password"]
-        if is_authorised(email, password):
+        user = is_authorised()
+        if user:
             spec = {"$or": [
-                    {"@": email},
+                    {"@": user["email"]},
                     {"%private": {"$exists": False}},
                     ],
                     }
@@ -206,11 +207,10 @@ def get_all_marks_by_email(email):
     if before != 0:
         spec["~"] = {"$lt": before}
     try:
-        email = request.headers["X-Email"]
-        password = request.headers["X-Password"]
-        if is_authorised(email, password):
+        user = is_authorised()
+        if user:
             spec = {"$or": [
-                    {"@": email},
+                    {"@": user["email"]},
                     {"%private": {"$exists": False}}]}
             if since != 0:
                 spec["~"] = {"$gt": since}
@@ -239,11 +239,10 @@ def get_mark(email, time):
             "@": email,
             "~": int(time)}
     try:
-        email = request.headers["X-Email"]
-        password = request.headers["X-Password"]
-        if is_authorised(email, password):
+        user = is_authorised()
+        if user:
             spec = {"$or": [
-                    {"@": email},
+                    {"@": user["email"]},
                     {"%private": {"$exists" : False}}
                     ],
                     "~": int(time)}
@@ -260,15 +259,18 @@ def get_mark(email, time):
 @app.route("/user/<email>", methods=["GET"])
 def user(email):
     users = get_db().users
-    user = users.find_one(email)
+    user = users.find_one({"email": email})
     if user is None:
         return "", 404
-    else:
-        return may_only_contain(user, [
-                "pseudonym",
-                "firstName",
-                "surname",
-                "email"])
+
+    return_value = may_only_contain(user, [
+            "pseudonym",
+            "firstName",
+            "surname",
+            "email"])
+    if is_authorised() == user:
+        return_value["self"] = True
+    return json.dumps(return_value), 200
 
 @app.route("/user", methods=["POST"])
 def request_invite():
