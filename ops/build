@@ -60,6 +60,5 @@ cd $PROJECT_ROOT
 
 if [ $BUILD_NUMBER ]
 then
-    git tag $BUILD_NUMBER
     git push --tags
 fi
