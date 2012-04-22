@@ -163,8 +163,39 @@ core.add(
     {
         var sandbox;
 
+	var contents;
+
+	var showMark = function(mark){
+	    sandbox.append(markToElement(mark));
+	};
+
+	var humanTime = function(unixtime){
+	    var then = new Date(unixtime * 1000);
+	    return $.timeago(then); // FIXME
+	};
+
+	var markToElement = function(mark){
+	    if (mark.hasOwnProperty("hyperlink")){
+		var hyperlink = sandbox.find("#hyperlink-template")[0].cloneNode(true);
+		hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
+		sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
+		sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
+		sandbox.find(hyperlink, ".title").innerText = mark.title;
+		sandbox.offdom.find(hyperlink, ".when")[0].innerText = humanTime(mark["~"]);
+		return hyperlink;
+	    } else {
+		var comment = sandbox.find("#comment-template")[0].cloneNode(true);
+		comment.id = "mark-" + mark["@"] + "-" + mark["~"];
+		sandbox.offdom.find(comment, ".who")[0].innerText = mark["@"];
+		sandbox.offdom.find(comment, ".what")[0].innerText = mark["#"];
+		sandbox.offdom.find(comment, ".when")[0].innerText = humanTime(mark["~"]);
+		return comment;
+	    }
+	};
+
         return function(sandbox_){
             sandbox = sandbox_;
+	    sandbox.subscribe("mark", showMark);
         };
     }());
 
@@ -181,88 +212,9 @@ var urlParams = {};
        urlParams[d(e[1])] = d(e[2]);
 })();
 
-var loggedIn = function (){
-    return localStorage.getItem("email") !== null;
-};
-
-// List of posts
-// -------------
-var getTime = function(elem){
-    var then = new Date(elem['~'] * 1000);
-    return $.timeago(then);
-};
-
-var renderComment = function(elem){
-    var comment = $($("#comment-template")).clone();
-    comment.removeAttr("id");
-    comment.find(".who").text(elem["@"]);
-    comment.find(".what").text(elem["#"]);
-    comment.find(".when").text(getTime(elem));
-    return comment;
-};
-
-var renderHyperlink = function(elem){
-    var hyperlink = $($("#hyperlink-template")).clone();
-    hyperlink.removeAttr("id");
-    hyperlink.find(".who").text(elem["@"]);
-
-    $(hyperlink.find(".hyperlink-url")[0]).attr("href", elem.hyperlink);
-    hyperlink.find(".title").text(elem.title);
-    hyperlink.find(".when").text(getTime(elem));
-    return hyperlink;
-};
-
-oldestMark = null;
-
-var renderMarks = function (data){
-    $.each(
-        data,
-        function(_, elem){
-            oldestMark = elem["~"];
-            if(elem.hasOwnProperty('latitude')){
-                var loc = renderLocation(elem);
-                $("#marks").append(loc);
-            } else if (elem.hasOwnProperty("hyperlink")){
-                $("#marks").append(renderHyperlink(elem));
-            } else {
-                $("#marks").append(renderComment(elem));        
-            }
-        });
-};
-
-var addMarks = function (before){
-    if (before === undefined){
-        before = 0;     
-    }
-    $.ajax(recall_config["api-base-url"] + "/mark",
-           {
-               type: "get",
-               headers: {"X-Email": localStorage.getItem("email"),
-                         "X-Password": localStorage.getItem("password")},
-               contentType: "application/json",
-               dataType: "json",
-               data: {"maximum": 50, "before": before},
-               complete: function(jqXHR, textStatus) {
-                   renderMarks(JSON.parse(jqXHR.responseText)); }
-           });
-};
-
 
 $(document).ready(
     function() {
-        // Login modal
-        // -----------
-        $("#send-login").click(
-            function(){
-                localStorage.setItem(
-                    "email", $("#login-email-input").val());
-                localStorage.setItem(
-                    "password", $("#login-password-input").val());
-                updateNavbarUser();
-                $("#login-modal").modal("hide");
-            }
-        );
-
         // Email Address Verification Modal
         // --------------------------------
         var url_args = document.location.href.split("?")[1];
@@ -296,25 +248,6 @@ $(document).ready(
                 }
             );
         }
-
-        // Bookmarklet Modal
-        // -----------------
-        $('#show-bookmarklet-modal').click(
-            function(){
-                $('#bookmarklet-modal').modal();
-            }
-        );
-
-        $.get("/bookmarklet-trampoline", function(data){
-                  var bookmarklet = data.replace(
-                          /BASE_API_URL/,
-                      recall_config["api-base-url"]);
-                  $("#bookmarklet").attr(
-                      "href",
-                      "javascript:" + bookmarklet);
-              }
-             );
-
         // Import Bookmarks Modal
         // ----------------------
         $("#show-import-bookmarks-modal").click(
@@ -392,13 +325,5 @@ $(document).ready(
                 reader.readAsText(bookmarksFile, "UTF-8");
             }
         );
-
-        addMarks();
-
-        // More marks button
-        $("#more-btn").click(
-            function(){
-                addMarks(oldestMark);
-        });
     }
 );

@@ -35,7 +35,9 @@ core.add(
         var sandbox;
         
         var email, password;
-        
+
+	
+	
         var sendMark = function(mark){
             var serialisedMark = JSON.stringify(mark);
             sandbox.asynchronous(
@@ -60,10 +62,31 @@ core.add(
             email = data.email;
             password = data.password;
         };
+
+	var loadRecentMarks = function(){
+	    sandbox.asynchronous(
+		function(status, content){
+		    var marks = JSON.parse(content);
+		    for (var index in marks){
+			sandbox.publish("mark", marks[index]);
+		    }
+		},
+		"get",
+		recall_config["api-base-url"] + "/mark",
+		{"maximum": 50}, // FIXME
+		"application/json",
+		{"X-Email": email,
+                 "X-Password": password});
+	};
+
+	var whenLoggedIn = function(data){
+	    storeEmailAndPassword(data);
+	    loadRecentMarks();
+	};
         
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("new-mark", sendMark);
-            sandbox.subscribe("logged-in", storeEmailAndPassword);
+            sandbox.subscribe("logged-in", whenLoggedIn);
         };
     }());

@@ -70,8 +70,16 @@ core = (
                     return $(module);
                 }
             },
-            bind: function(element, event, handler){
+            bind: function(element, event, handler){ // FIXME Should take moduleName
                 $(element).bind(event, handler);
+            },
+            append: function(moduleName, element){
+                $("#" + moduleName).append(element);
+            }
+        };
+        core.offdom = {
+            find: function(element, selector){
+                return $(element).find(selector);
             }
         };
         core.asynchronous = function(handler, verb, url, data, mime, headers){
