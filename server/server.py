@@ -47,7 +47,7 @@ def handle_exception(exception):
         return json.dumps(document)
 
     if not isinstance(exception, HTTPException):
-        return json_error("Unknown exception: "), 500
+        return json_error("Unknown exception: " + exception.message), 500
     else:
         return json_error(exception.message), exception.status_code
 
@@ -62,8 +62,8 @@ def load_settings():
         "RECALL_MONGODB_PORT", 27017)
     settings["RECALL_PASSWORD_SALT"] = os.environ.get(
         "RECALL_PASSWORD_SALT", "$2a$12$tl2VDOPWJOuoJsnu6xQtWu")
-    settings["RECALL_API_HOSTNAME"] = os.environ.get(
-        "RECALL_API_HOSTNAME", "localhost:5000")
+    settings["RECALL_API_BASE_URL"] = os.environ.get(
+        "RECALL_API_HOSTNAME", "https://localhost:5000")
     settings["RECALL_MARK_LIMIT"] = os.environ.get("RECALL_MARK_LIMIT", 100)
     if os.environ.get("RECALL_DEBUG_MODE") == "false":
         settings["RECALL_DEBUG_MODE"] = False
@@ -127,11 +127,15 @@ def is_authorised(require_attempt=False):
     else:
         return user
 
+def make_mark_url(time):
+    return settings["RECALL_API_BASE_URL"] + "/mark/" \
+        + body[u"@"] + "/" + str(int(body[u"~"]))
 
 @app.route("/mark", methods=["POST"])
+
 def add_mark():
     def make_url(body):
-        return "http://" + settings["RECALL_API_HOSTNAME"] + "/mark/" \
+        return settings["RECALL_API_BASE_URL"] + "/mark/" \
             + body[u"@"] + "/" + str(int(body[u"~"]))
     def insert_mark(body):
         has_no_problematic_keys(body)

@@ -37,6 +37,7 @@ class ServerTests(unittest.TestCase):
         server.settings["RECALL_MONGODB_DB_NAME"] = "test"
         server.settings["RECALL_API_HOSTNAME"] = "localhost"
         server.settings["RECALL_PASSWORD_SALT"] = bcrypt.gensalt(0)
+        server.settings["RECALL_API_BASE_URL"] = "http://test"
         self.example_user_counter = 1
 
 
@@ -120,7 +121,7 @@ class ServerTests(unittest.TestCase):
         expected_mark = {
             u"#": "Hello!",
             u"@": email,
-            u"%url": u"http://localhost/mark/" + email + "/0",
+            u"%url": u"http://test/mark/" + email + "/0",
             u"~": 0,
             u"£created": 0
             }
@@ -146,7 +147,7 @@ class ServerTests(unittest.TestCase):
             u"~": 0,
             u"#": "Hello",
             u"@": email,
-            u"%url": u"http://localhost/mark/" + email + "/0",
+            u"%url": u"http://test/mark/" + email + "/0",
             u"%private": True,
             u"£created": 0
             }
@@ -191,7 +192,7 @@ class ServerTests(unittest.TestCase):
         user2_headers = Headers({"X-Email": user2, "X-Password": password2})
 
         expected_mark = {u"#": "Hello!", u"@": user1,
-                         u"%url": u"http://localhost/mark/" + user1 + "/0",
+                         u"%url": u"http://test/mark/" + user1 + "/0",
                          u"~": 0, u"£created": 0}
 
         response = self.client.get(
