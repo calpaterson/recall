@@ -127,19 +127,15 @@ def is_authorised(require_attempt=False):
     else:
         return user
 
-def make_mark_url(time):
+def make_mark_url(mark):
     return settings["RECALL_API_BASE_URL"] + "/mark/" \
-        + body[u"@"] + "/" + str(int(body[u"~"]))
+        + mark[u"@"] + "/" + str(int(mark["~"]))
 
 @app.route("/mark", methods=["POST"])
 
 def add_mark():
-    def make_url(body):
-        return settings["RECALL_API_BASE_URL"] + "/mark/" \
-            + body[u"@"] + "/" + str(int(body[u"~"]))
     def insert_mark(body):
         has_no_problematic_keys(body)
-        body[u"%url"] = make_url(body)
         body[u"£created"] = get_unixtime()
         db = get_db()
         db.marks.insert(body)
@@ -191,6 +187,7 @@ def get_all_marks():
     for mark in rs:
         del(mark[u"_id"])
         marks.append(mark)
+        mark[u"%url"] = make_mark_url(mark)
         counter += 1
         if counter > settings["RECALL_MARK_LIMIT"]:
             raise HTTPException(
@@ -229,6 +226,7 @@ def get_all_marks_by_email(email):
     for mark in rs:
         del(mark[u"_id"])
         marks.append(mark)
+        mark[u"%url"] = make_mark_url(mark)
         counter += 1
         if counter > settings["RECALL_MARK_LIMIT"]:
             raise HTTPException(
@@ -256,6 +254,7 @@ def get_mark(email, time):
     mark = db.marks.find_one(spec)
     try:
         del(mark[u"_id"])
+        mark[u"%url"] = make_mark_url(mark)
     except TypeError:
         return json_error("No such mark found"), 404
     return json.dumps(mark), 200
