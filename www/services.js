@@ -1,3 +1,20 @@
+// Recall is a program for storing bookmarks of different things
+// Copyright (C) 2012  Cal Paterson
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 core.add(
     "authorisationService",
     function(){
@@ -5,9 +22,25 @@ core.add(
         
         var isLoggedIn = function(){
             if (sandbox.has("email") && sandbox.has("password")){
-                sandbox.publish("logged-in",
-                                {email: sandbox.get("email"),
-                                 password: sandbox.get("password")});
+                var email = sandbox.get("email");
+                var password = sandbox.get("password");
+                sandbox.asynchronous(
+                    function(status, content){
+                        var user = JSON.parse(content);
+                        if (user.hasOwnProperty("self")){
+                            sandbox.publish("logged-in",
+                                            {email: email,
+                                             password: password});
+                        } else {
+                            sandbox.publish("logged-in", false);
+                        }
+                    },
+                    "get",
+                    recall_config["api-base-url"] + "/user/" + email,
+                    {},
+                    "application/json",
+                    {"X-Email": email,
+                     "X-Password": password});
             } else {
                 sandbox.publish("logged-in", false);
             }
@@ -16,8 +49,7 @@ core.add(
         var login = function(data){
             sandbox.set("email", data.email);
             sandbox.set("password", data.password);
-            sandbox.publish("logged-in", {email: data.email,
-                                          password: data.password});
+            isLoggedIn();
         };
         
         return function(sandbox_){
