@@ -163,39 +163,39 @@ core.add(
     {
         var sandbox;
 
-	var contents;
+        var contents;
 
-	var showMark = function(mark){
-	    sandbox.append(markToElement(mark));
-	};
+        var showMark = function(mark){
+            sandbox.append(markToElement(mark));
+        };
 
-	var humanTime = function(unixtime){
-	    var then = new Date(unixtime * 1000);
-	    return $.timeago(then); // FIXME
-	};
+        var humanTime = function(unixtime){
+            var then = new Date(unixtime * 1000);
+            return $.timeago(then); // FIXME
+        };
 
-	var markToElement = function(mark){
-	    if (mark.hasOwnProperty("hyperlink")){
-		var hyperlink = sandbox.find("#hyperlink-template")[0].cloneNode(true);
-		hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
-		sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
-		sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
-		sandbox.find(hyperlink, ".title").innerText = mark.title;
-		sandbox.offdom.find(hyperlink, ".when")[0].innerText = humanTime(mark["~"]);
-		return hyperlink;
-	    } else {
-		var comment = sandbox.find("#comment-template")[0].cloneNode(true);
-		comment.id = "mark-" + mark["@"] + "-" + mark["~"];
-		sandbox.offdom.find(comment, ".who")[0].innerText = mark["@"];
-		sandbox.offdom.find(comment, ".what")[0].innerText = mark["#"];
-		sandbox.offdom.find(comment, ".when")[0].innerText = humanTime(mark["~"]);
-		return comment;
-	    }
-	};
+        var markToElement = function(mark){
+            if (mark.hasOwnProperty("hyperlink")){
+                var hyperlink = sandbox.find("#hyperlink-template")[0].cloneNode(true);
+                hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
+                sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
+                sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
+                sandbox.find(hyperlink, ".title").innerText = mark.title;
+                sandbox.offdom.find(hyperlink, ".when")[0].innerText = humanTime(mark["~"]);
+                return hyperlink;
+            } else {
+                var comment = sandbox.find("#comment-template")[0].cloneNode(true);
+                comment.id = "mark-" + mark["@"] + "-" + mark["~"];
+                sandbox.offdom.find(comment, ".who")[0].innerText = mark["@"];
+                sandbox.offdom.find(comment, ".what")[0].innerText = mark["#"];
+                sandbox.offdom.find(comment, ".when")[0].innerText = humanTime(mark["~"]);
+                return comment;
+            }
+        };
 
         return function(sandbox_){
             sandbox = sandbox_;
-	    sandbox.subscribe("mark", showMark);
+            sandbox.subscribe("mark", showMark);
         };
     }());
 

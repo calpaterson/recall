@@ -17,27 +17,40 @@
 
 makeSandbox = function(core, moduleName) {      
     var interface_ = {};
+
+    // DOM
     interface_.find = function (selector){
-        // Return a dom element
         return core.dom.queryWithin(moduleName, selector);
     };
     interface_.bind = function (element, event, handler){
-        // Call handler when event happens to element
         core.dom.bind(element, event, handler);
     };
+    interface_.append = function(element){
+        core.dom.append(moduleName, element);
+    };
+
+    // Off-DOM
+    interface_.offdom = {
+        find: function(element, selector){
+            return core.offdom.find(element, selector);
+        }
+    };
+
+    // Events
     interface_.publish = function (messageType, messageData){
-        // Publish a message
         core.publish(messageType, messageData);
     };
     interface_.subscribe = function (messageType, handler){
-        // Subscribe to a type of message
         core.subscribe(moduleName, messageType, handler);
     };
+
+    // XHR
     interface_.asynchronous = function(handler, verb, url, data, mime,
                                        headers){
-        // Make an XHR
         core.asynchronous(handler, verb, url, data, mime, headers);
     };
+
+    // Storage
     interface_.get = function(key){
         return localStorage.getItem(moduleName + "$" + key);
     };
