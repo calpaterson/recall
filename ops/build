@@ -5,7 +5,7 @@ set -x
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT=$OPS_DIR/..
 
-# If Jenkin's build number available, use that, otherwise DEV
+# If Jenkin's build number is available, use that, otherwise DEV
 if [ $BUILD_NUMBER ]
 then
     VERSION=$BUILD_NUMBER
@@ -57,3 +57,9 @@ lintian $OPS_DIR/artefacts/recall.deb
 dpkg-name $OPS_DIR/artefacts/recall.deb
 
 cd $PROJECT_ROOT
+
+if [ $BUILD_NUMBER ]
+then
+    git tag $BUILD_NUMBER
+    git push --tags
+fi
