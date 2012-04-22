@@ -68,17 +68,18 @@ core.add(
         
         var email, password;
 
-        
-        
-        var sendMark = function(mark){
+        var send = function(mark){
             var serialisedMark = JSON.stringify(mark);
             sandbox.asynchronous(
                 function(status, content){
-                    if (status !== 201){
+                    if (status === 201){
+                        sandbox.publish("mark-sent");
+                    } else if (status === 202){
+                        var message = "Your bookmarks have been imported" +
+                            " (reload the page to see them)";
+                        sandbox.publish("info", message);
+                    } else{
                         sandbox.publish("error", "Problem while sending mark");
-                        alert(content);
-                    } else {
-                        sandbox.publish("mark-sent");   
                     }
                 },
                 "post",
@@ -118,7 +119,8 @@ core.add(
         
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("new-mark", sendMark);
+            sandbox.subscribe("new-mark", send);
+            sandbox.subscribe("new-marks", send);
             sandbox.subscribe("logged-in", whenLoggedIn);
         };
     }());

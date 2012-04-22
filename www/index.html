@@ -77,6 +77,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     </div>
 
     <div class="container">
+
+      <div id="problem-box">
+	<div id="info-template" class="alert alert-success" hidden="true">
+	  <a class="close" data-dismiss="alert">×</a>
+	  <span class="info-contents"></span>
+	</div>
+      </div>
       
       <div id="login-form" class="row" hidden="true">
 	<div class="offset4 span4">
@@ -129,7 +136,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	  </form>
 	</div>
       </div>
-      
+
+      <div id="mark-importer" class="row well" hidden="true">
+      	<h3>Import Your Old Bookmarks From a Web Browser or Social
+	  Bookmarking Service</h3>
+      	<p>
+
+      	  Many web browsers and social bookmarking services allow you to
+      	  export your bookmarks in an html formal (sometimes called "Netscape
+      	  Navigator" format).  You can import this file to Recall.
+      	</p>
+      	<form class="form-vertical">
+      	  <input id="m-i-bookmarks-file-input" type="file">
+      	  <br/>
+	  <button id="m-i-import" class="btn btn-primary"
+		  type="submit">Import</button>
+	  <button id="m-i-nevermind" class="btn"
+		  type="submit">Nevermind</button>
+      	</form>
+      </div>
+    
       <div id="view-of-marks">
 	<div id="list-of-marks">
 	</div>
@@ -144,14 +170,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	      <span class="when">some time ago</span>
     	    </div>
 	  </div>
-
+	  
 	  <div id="hyperlink-template" class="row show-grid">
     	    <div class="mark hyperlink span8 offset2">
 	      <span class="who">An unknown stranger</span>
 	      bookmarked
 	      <strong>
 		<a class="hyperlink-url">
-		  <span class="title">some hyperlink</span>
+		  <span class="hyperlink-title">some hyperlink</span>
 		</a>
 	      </strong>,
 	      <span class="when">some time ago</span>
@@ -218,23 +244,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
-    <!-- <div id="import-bookmarks-modal" class="modal fade"> -->
-    <!--   <div class="modal-header"> -->
-    <!-- 	<a class="close" data-dismiss="modal">×</a> -->
-    <!-- 	<h3>Import Bookmarks<h3> -->
-    <!--   </div> -->
-    <!--   <div class="modal-body"> -->
-    <!-- 	<p> -->
-    <!-- 	  Many web browsers and social bookmarking services allow you to -->
-    <!-- 	  export your bookmarks in an html formal (sometimes called "Netscape -->
-    <!-- 	  Navigator" format).  You can import this file to Recall. -->
-    <!-- 	</p> -->
-    <!-- 	<input id="bookmarks-file-input" type="file"> -->
-    <!-- 	<div class="modal-footer"> -->
-    <!-- 	  <button id="import-bookmarks" class="btn">Import</button> -->
-    <!-- 	</div> -->
-    <!--   </div> -->
-    <!-- </div> -->
+
      
 
 

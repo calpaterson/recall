@@ -180,7 +180,7 @@ core.add(
                 hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
                 sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
                 sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
-                sandbox.find(hyperlink, ".title").innerText = mark.title;
+                sandbox.offdom.find(hyperlink, ".hyperlink-title")[0].innerText = mark.title;
                 sandbox.offdom.find(hyperlink, ".when")[0].innerText = humanTime(mark["~"]);
                 return hyperlink;
             } else {
@@ -199,64 +199,12 @@ core.add(
         };
     }());
 
-// Temporary code stolen from http://stackoverflow.com/a/2880929
-var urlParams = {};
-(function () {
-    var e,
-        a = /\+/g,  // Regex for replacing addition symbol with a space
-        r = /([^&=]+)=?([^&]*)/g,
-        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
-        q = window.location.search.substring(1);
+core.add(
+    "mark-importer",
+    function(){
+        var sandbox;
 
-    while ((e = r.exec(q)))
-       urlParams[d(e[1])] = d(e[2]);
-})();
-
-
-$(document).ready(
-    function() {
-        // Email Address Verification Modal
-        // --------------------------------
-        var url_args = document.location.href.split("?")[1];
-        if (urlParams.hasOwnProperty("email_key")){
-            var email_key = urlParams.email_key;
-            $("#verify-email-modal").modal("show");
-            var password = "password";
-            $("#send-password").click(
-                function(){
-                    $.ajax(
-                        recall_config["api-base-url"] + "/user/" + email_key,
-                        {
-                            "type": "post",
-                            "data": JSON.stringify(
-                                {"%password": password}),
-                            "contentType": "application/json",
-                            "dataType": "json",
-                            complete : function(jqXHR, textStatus){
-                                if (textStatus == "success"){
-                                    var email = JSON.parse(jqXHR.responseText).email;
-                                    localStorage.setItem("email", email);
-                                    localStorage.setItem("password", password);
-                                    $("#auth-status").text(
-                                        localStorage.getItem("email"));
-                                    $("#verify-email-modal").modal("hide");
-                                } else {
-                                    alert("failure to verify email address");
-                                }
-                            }
-                        });
-                }
-            );
-        }
-        // Import Bookmarks Modal
-        // ----------------------
-        $("#show-import-bookmarks-modal").click(
-            function(){
-                $("#import-bookmarks-modal").modal();
-            }
-        );
-
-        var netscapeElementToMark = function(element){
+        var netscapeElementToMark = function(element, email){
             var htmlDecode = function(text){
                 var div = document.createElement("div");
                 div.innerHTML = text;
@@ -270,7 +218,7 @@ $(document).ready(
                 "hyperlink": element.attributes.HREF.nodeValue,
                 "~": parseInt(element.attributes.ADD_DATE.nodeValue, 10),
                 "title": htmlDecode(element.textContent),
-                "@": localStorage.getItem("email")
+                "@": localStorage.getItem("authorisationService$email") // FIXME: hack
             };
             if (element.attributes.hasOwnProperty("PRIVATE")){
                 if (element.attributes.PRIVATE.nodeValue === "1"){
@@ -285,45 +233,126 @@ $(document).ready(
             return mark;
         };
 
-        $("#import-bookmarks").click(
-            function(){
-                var bookmarksFile = $("#bookmarks-file-input")[0].files[0];
-                var reader = new FileReader();
-                reader.onload = function(event){
-                    var contents = event.target.result;
-                    var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
-                    var matches = contents.match(bookmarkRegex);
-                    var bookmarks = [];
-                    for (var each in matches){
-                        var dom = HTMLtoDOM(matches[each]);
-                        var element = $(dom).find("a")[0];
-                        var bookmark = netscapeElementToMark(element);
-                        if (bookmark){
-                            bookmarks.push(bookmark);
-                        }
+        var importBookmarks = function(){
+            var bookmarksFile = $("#m-i-bookmarks-file-input")[0].files[0];
+            var reader = new FileReader();
+            reader.onload = function(event){
+                var contents = event.target.result;
+                var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
+                var matches = contents.match(bookmarkRegex);
+                var bookmarks = [];
+                for (var each in matches){
+                    var dom = HTMLtoDOM(matches[each]);
+                    var element = $(dom).find("a")[0];
+                    var bookmark = netscapeElementToMark(element);
+                    if (bookmark){
+                        bookmarks.push(bookmark);
                     }
-                    $.ajax(
-                        recall_config["api-base-url"] + "/mark",
-                        {
-                            type: 'post',
-                            headers: {
-                                "X-Email": localStorage.getItem("email"),
-                                "X-Password": localStorage.getItem("password")},
-                            data: JSON.stringify(bookmarks),
-                            contentType: 'application/json',
-                            dataType: 'json',
-                            complete: function(jqXHR, textStatus){
-                                if (textStatus === "success"){
-                                    $("#import-bookmarks-modal").modal("hide");
-                                } else {
-                                    alert("Failed");
-                                }
-                            }
-                        }
-                    );
-                };
-                reader.readAsText(bookmarksFile, "UTF-8");
+                }
+                sandbox.publish("new-marks", bookmarks);
+                sandbox.find()[0].hidden = true;
+            };
+            reader.readAsText(bookmarksFile, "UTF-8");
+            return false;
+        };
+
+        var nevermind = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
+        var show = function(success){
+            if (success){
+                sandbox.find()[0].hidden = false;       
+            }
+        };
+
+        return function(sandbox_){
+            sandbox = sandbox_;
+            sandbox.bind("#m-i-import", "click", importBookmarks);
+            sandbox.bind("#m-i-nevermind", "click", nevermind);
+            sandbox.subscribe("logged-in", show);
+        };
+    }());
+
+core.add(
+    "problem-box",
+    function(){
+        var sandbox;
+
+        var info = function(message){
+            var infobox = sandbox.find("#info-template")[0].cloneNode(true);
+            infobox.id = undefined;
+            infobox.hidden = false;
+            sandbox.offdom.find(infobox, ".info-contents")[0].innerText = message;
+            sandbox.append(infobox);
+        };
+
+        return function(sandbox_){
+            sandbox = sandbox_;
+            sandbox.subscribe("info", info);
+        };
+    }());
+
+// Temporary code stolen from http://stackoverflow.com/a/2880929
+var urlParams = {};
+(function () {
+    var e,
+        a = /\+/g,  // Regex for replacing addition symbol with a space
+        r = /([^&=]+)=?([^&]*)/g,
+        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+        q = window.location.search.substring(1);
+
+    while ((e = r.exec(q)))
+       urlParams[d(e[1])] = d(e[2]);
+})();
+
+
+// $(document).ready(
+//     function() {
+//         // Email Address Verification Modal
+//         // --------------------------------
+//         var url_args = document.location.href.split("?")[1];
+//         if (urlParams.hasOwnProperty("email_key")){
+//             var email_key = urlParams.email_key;
+//             $("#verify-email-modal").modal("show");
+//             var password = "password";
+//             $("#send-password").click(
+//                 function(){
+//                     $.ajax(
+//                         recall_config["api-base-url"] + "/user/" + email_key,
+//                         {
+//                             "type": "post",
+//                             "data": JSON.stringify(
+//                                 {"%password": password}),
+//                             "contentType": "application/json",
+//                             "dataType": "json",
+//                             complete : function(jqXHR, textStatus){
+//                                 if (textStatus == "success"){
+//                                     var email = JSON.parse(jqXHR.responseText).email;
+//                                     localStorage.setItem("email", email);
+//                                     localStorage.setItem("password", password);
+//                                     $("#auth-status").text(
+//                                         localStorage.getItem("email"));
+//                                     $("#verify-email-modal").modal("hide");
+//                                 } else {
+//                                     alert("failure to verify email address");
+//                                 }
+//                             }
+//                         });
+//                 }
+//             );
+//         }
+        // Import Bookmarks Modal
+        // ----------------------
+        $("#show-import-bookmarks-modal").click(
+            function(){
+                $("#import-bookmarks-modal").modal();
             }
         );
-    }
-);
+
+
+
+        $("#import-bookmarks").click(
+
+        );
