@@ -59,7 +59,7 @@ class ServerTests(unittest.TestCase):
         db = server.get_db()
         email_key = db.users.find_one({"email": email})["email_key"]
 
-        post_data = json.dumps({"%password": password})
+        post_data = json.dumps({"password": password})
         url = "/user/" + email_key
         response = self.client.post(url, data=post_data)
         assert response.status_code == 201
@@ -82,7 +82,6 @@ class ServerTests(unittest.TestCase):
         response = self.client.post(url, data=post_data)
         self.assertEqual(expected_status_code, response.status_code)
 
-
     def test_verify_email(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
@@ -92,13 +91,96 @@ class ServerTests(unittest.TestCase):
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
-        post_data = json.dumps({"%password": "password"})
+        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
         response = self.client.post(url, data=post_data)
         self.assertEqual(201, response.status_code)
 
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
+
+    @unittest.expectedFailure
+    def test_verify_email_with_wrong_email(self):
+        url = "/user"
+        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
+        self.client.post(url, data=post_data)
+
+        db = server.get_db()
+        email_key = db.users.find_one()["email_key"]
+
+        url = "/user/" + email_key
+        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
+        response = self.client.post(url, data=post_data)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(response_data, {
+                "human_readable": "No such email_key or wrong email"})
+
+        user_in_db = db.users.find_one({"email": "j@bloggs.com"})
+        self.assertNotIn("password_hash", user_in_db)
+        self.assertNotIn("password", user_in_db)
+
+    @unittest.expectedFailure
+    def test_verify_email_with_wrong_key(self):
+        url = "/user"
+        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
+        self.client.post(url, data=post_data)
+
+        email_key = "blah, blah, blah"
+
+        url = "/user/" + email_key
+        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
+        response = self.client.post(url, data=post_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(response_data, {
+                "human_readable": "No such email_key or wrong email"})
+
+        user_in_db = db.users.find_one({"email": "j@bloggs.com"})
+        self.assertNotIn("password_hash", user_in_db)
+        self.assertNotIn("password", user_in_db)
+
+    @unittest.expectedFailure
+    def test_verify_email_without_requesting_invite_first(self):
+        email_key = "blah, blah, blah"
+
+        url = "/user/" + email_key
+        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
+        response = self.client.post(url, data=post_data)
+        self.assertEqual(404, response.status_code)
+        self.assertEqual(response_data, {
+                "human_readable": "No such email_key or wrong email"})
+
+
+        user_in_db = db.users.find_one({"email": "j@bloggs.com"})
+        self.assertNotIn("password_hash", user_in_db)
+        self.assertNotIn("password", user_in_db)
+
+    @unittest.expectedFailure
+    def test_verify_email_second_time(self):
+        url = "/user"
+        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
+        self.client.post(url, data=post_data)
+
+        db = server.get_db()
+        email_key = db.users.find_one()["email_key"]
+
+        url = "/user/" + email_key
+        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
+        response = self.client.post(url, data=post_data)
+        self.assertEqual(201, response.status_code)
+
+        user_in_db = db.users.find_one({"email": "j@bloggs.com"})
+        original_password_hash = user_in_db["password_hash"]
+
+        url = "/user/" + email_key
+        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
+        response = self.client.post(url, data=post_data)
+        response_data = json.loads(response.data)
+
+        self.assertEqual(403, response.status_code)
+        self.assertEqual({"human_readable": "Already verified"})
+        user_in_db = db.users.find_one({"email": "j@bloggs.com"})
+        self.assertEqual(original_password_hash, user_in_db["password_hash"])
 
 
     def test_addition_of_public_mark_fails_without_password(self):

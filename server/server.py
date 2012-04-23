@@ -295,12 +295,13 @@ def request_invite():
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
     body = may_only_contain(json.loads(request.data), [
-            "%password",
+            "password",
+            "email"
             ])
     password_hash = bcrypt.hashpw(
-        body["%password"],
+        body["password"],
         settings["RECALL_PASSWORD_SALT"])
-    del body["%password"]
+    del body["password"]
 
     spec = {"email_key": email_key}
     update = {"$set": {"email_verified": get_unixtime(),
