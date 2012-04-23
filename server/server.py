@@ -301,16 +301,20 @@ def verify_email(email_key):
     password_hash = bcrypt.hashpw(
         body["password"],
         settings["RECALL_PASSWORD_SALT"])
-    del body["password"]
 
-    spec = {"email_key": email_key, "email": body["email"]}
+    spec = {"email_key": email_key, "email": body["email"],
+            "verified": {"$exists": False}}
     update = {"$set": {"email_verified": get_unixtime(),
-                       "password_hash": password_hash}}
+                       "password_hash": password_hash,
+                       "verified": get_unixtime()}}
     db = get_db()
     result = db.users.update(spec, update, safe=True)
     success = result["updatedExisting"]
     if not success:
-        raise HTTPException("No such email_key or wrong email", 404)
+        if db.users.find_one({"email_key": email_key, "email": body["email"]}):
+            raise HTTPException("Already verified", 403)
+        else:
+            raise HTTPException("No such email_key or wrong email", 404)
     user = db.users.find_one({"email_key": email_key})
     del user["password_hash"]
     del user["email_key"]

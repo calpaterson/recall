@@ -119,7 +119,6 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
 
-    @unittest.expectedFailure
     def test_verify_email_with_wrong_key(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
@@ -135,27 +134,32 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
 
+        db = server.get_db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
 
-    @unittest.expectedFailure
     def test_verify_email_without_requesting_invite_first(self):
+        url = "/user"
+        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
+        self.client.post(url, data=post_data)
+
         email_key = "blah, blah, blah"
 
         url = "/user/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
         response = self.client.post(url, data=post_data)
+        response_data = json.loads(response.data)
         self.assertEqual(404, response.status_code)
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
 
 
+        db = server.get_db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
 
-    @unittest.expectedFailure
     def test_verify_email_second_time(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
@@ -178,7 +182,7 @@ class ServerTests(unittest.TestCase):
         response_data = json.loads(response.data)
 
         self.assertEqual(403, response.status_code)
-        self.assertEqual({"human_readable": "Already verified"})
+        self.assertEqual({"human_readable": "Already verified"}, response_data)
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertEqual(original_password_hash, user_in_db["password_hash"])
 
