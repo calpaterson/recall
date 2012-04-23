@@ -303,20 +303,19 @@ def verify_email(email_key):
         settings["RECALL_PASSWORD_SALT"])
     del body["password"]
 
-    spec = {"email_key": email_key}
+    spec = {"email_key": email_key, "email": body["email"]}
     update = {"$set": {"email_verified": get_unixtime(),
                        "password_hash": password_hash}}
     db = get_db()
-    success = db.users.update(
-        spec, update, safe=True)["updatedExisting"]
+    result = db.users.update(spec, update, safe=True)
+    success = result["updatedExisting"]
+    if not success:
+        raise HTTPException("No such email_key or wrong email", 404)
     user = db.users.find_one({"email_key": email_key})
     del user["password_hash"]
     del user["email_key"]
     del user["_id"]
-    if success:
-        return json.dumps(user), 201
-    else:
-        return "No such verification key found", 400
+    return json.dumps(user), 201
 
 if __name__ == "__main__":
     load_settings()

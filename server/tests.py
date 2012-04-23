@@ -59,7 +59,7 @@ class ServerTests(unittest.TestCase):
         db = server.get_db()
         email_key = db.users.find_one({"email": email})["email_key"]
 
-        post_data = json.dumps({"password": password})
+        post_data = json.dumps({"password": password, "email": email})
         url = "/user/" + email_key
         response = self.client.post(url, data=post_data)
         assert response.status_code == 201
@@ -99,7 +99,6 @@ class ServerTests(unittest.TestCase):
         self.assertIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
 
-    @unittest.expectedFailure
     def test_verify_email_with_wrong_email(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
@@ -109,8 +108,9 @@ class ServerTests(unittest.TestCase):
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
-        post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
+        post_data = json.dumps({"email" : "wrong email", "password": "password"})
         response = self.client.post(url, data=post_data)
+        response_data = json.loads(response.data)
         self.assertEqual(404, response.status_code)
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
