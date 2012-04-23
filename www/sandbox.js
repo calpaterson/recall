@@ -60,5 +60,8 @@ makeSandbox = function(core, moduleName) {
     interface_.has = function(key){
         return localStorage.hasOwnProperty(moduleName + "$" + key);
     };
+    interface_.drop = function(key){
+	return localStorage.removeItem(moduleName + "$" + key);
+    };
     return interface_;
 };

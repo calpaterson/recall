@@ -33,10 +33,10 @@ core.add(
                 navbarList.appendChild(copy);
             }
             sandbox.bind("#navbar-log-in", "click", function(message){
-                             sandbox.publish("show-login-form");
+                             sandbox.publish("toggle-login-form");
                          });
             sandbox.bind("#navbar-request-invite", "click", function(message){
-                             sandbox.publish("show-request-invite-form");
+                             sandbox.publish("toggle-request-invite-form");
                          });
         };
 
@@ -69,29 +69,26 @@ core.add(
             return false;
         };
 
-        var nevermind = function(message){
-            hide();
+        var toggle = function(){
+            sandbox.find()[0].hidden = !(sandbox.find()[0].hidden);
             return false;
         };
 
-        var hide = function(){
-            sandbox.find()[0].hidden = true;
-        };
-
-        var show = function(){
-            sandbox.find()[0].hidden = false;
-        };
-
         var complete = function(message){
-            hide();
+            if(message){
+                toggle();
+                sandbox.publish("info", "Logged in");
+            } else {
+                sandbox.publish("error", "Wrong password");
+            }
         };
         
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.bind("#login-form-submit", "click", send);
-            sandbox.bind("#login-form-nevermind", "click", nevermind);
+            sandbox.bind("#login-form-nevermind", "click", toggle);
             sandbox.subscribe("logged-in", complete);
-            sandbox.subscribe("show-login-form", show);
+            sandbox.subscribe("toggle-login-form", toggle);
         };
     }());
 
@@ -139,21 +136,17 @@ core.add(
             }
         };
 
-        var nevermind = function(message){
-            sandbox.find()[0].hidden = true;
+        var toggle = function(){
+            sandbox.find()[0].hidden = !(sandbox.find()[0].hidden);
             return false;
-        };
-
-        var show = function(){
-            sandbox.find()[0].hidden = false;
         };
         
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.bind("#r-i-submit", "click", send);
-            sandbox.bind("#r-i-nevermind", "click", nevermind);
+            sandbox.bind("#r-i-nevermind", "click", toggle);
             sandbox.bind("#r-i-type", "change", changeType);
-            sandbox.subscribe("show-request-invite-form", show);
+            sandbox.subscribe("toggle-request-invite-form", toggle);
         };
     }());
 
@@ -284,6 +277,16 @@ core.add(
             var infobox = sandbox.find("#info-template")[0].cloneNode(true);
             infobox.id = undefined;
             infobox.hidden = false;
+            infobox.classList.add("alert-success");
+            sandbox.offdom.find(infobox, ".info-contents")[0].innerText = message;
+            sandbox.append(infobox);
+        };
+
+        var error = function(message){
+            var infobox = sandbox.find("#info-template")[0].cloneNode(true);
+            infobox.id = undefined;
+            infobox.hidden = false;
+            infobox.classList.add("alert-failure");
             sandbox.offdom.find(infobox, ".info-contents")[0].innerText = message;
             sandbox.append(infobox);
         };
@@ -291,6 +294,7 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("info", info);
+            sandbox.subscribe("error", error);
         };
     }());
 

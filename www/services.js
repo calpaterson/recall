@@ -26,13 +26,15 @@ core.add(
                 var password = sandbox.get("password");
                 sandbox.asynchronous(
                     function(status, content){
-                        var user = JSON.parse(content);
-                        if (user.hasOwnProperty("self")){
+                        if (status === 200 && user.hasOwnProperty("self")){
+                            var user = JSON.parse(content);
                             sandbox.publish("logged-in",
                                             {email: email,
                                              password: password});
                         } else {
                             sandbox.publish("logged-in", false);
+                            sandbox.drop("email");
+                            sandbox.drop("password");
                         }
                     },
                     "get",
