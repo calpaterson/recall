@@ -92,10 +92,17 @@ def has_no_problematic_keys(mark):
         else:
             current = mark_queue.pop()
 
-def may_only_contain(dict_, whitelist):
+def whitelist(dict_, whitelist):
     d = {}
     for k, v in dict_.items():
         if k in whitelist:
+            d[k] = v
+    return d
+
+def blacklist(dict_, blacklist):
+    d = {}
+    for k, v in dict_.items():
+        if k not in blacklist:
             d[k] = v
     return d
 
@@ -266,7 +273,7 @@ def user(email):
     if user is None:
         return "", 404
 
-    return_value = may_only_contain(user, [
+    return_value = whitelist(user, [
             "pseudonym",
             "firstName",
             "surname",
@@ -277,7 +284,7 @@ def user(email):
 
 @app.route("/user", methods=["POST"])
 def request_invite():
-    body = may_only_contain(json.loads(request.data), [
+    body = whitelist(json.loads(request.data), [
             "pseudonym",
             "firstName",
             "surname",
@@ -294,13 +301,9 @@ def request_invite():
 
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
-    body = may_only_contain(json.loads(request.data), [
-            "password",
-            "email"
-            ])
-    password_hash = bcrypt.hashpw(
-        body["password"],
-        settings["RECALL_PASSWORD_SALT"])
+    body = json.loads(request.data)
+    password_hash = bcrypt.hashpw(body["password"],
+                                  settings["RECALL_PASSWORD_SALT"])
 
     spec = {"email_key": email_key, "email": body["email"],
             "verified": {"$exists": False}}
@@ -308,18 +311,15 @@ def verify_email(email_key):
                        "password_hash": password_hash,
                        "verified": get_unixtime()}}
     db = get_db()
-    result = db.users.update(spec, update, safe=True)
-    success = result["updatedExisting"]
+    success = db.users.update(spec, update, safe=True)["updatedExisting"]
     if not success:
         if db.users.find_one({"email_key": email_key, "email": body["email"]}):
             raise HTTPException("Already verified", 403)
         else:
             raise HTTPException("No such email_key or wrong email", 404)
     user = db.users.find_one({"email_key": email_key})
-    del user["password_hash"]
-    del user["email_key"]
-    del user["_id"]
-    return json.dumps(user), 201
+    return json.dumps(blacklist(
+            user, ["_id", "email_key", "password_hash"])), 201
 
 if __name__ == "__main__":
     load_settings()

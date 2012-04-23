@@ -62,7 +62,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"password": password, "email": email})
         url = "/user/" + email_key
         response = self.client.post(url, data=post_data)
-        assert response.status_code == 201
+        self.assertEquals(response.status_code, 201)
         return pseudonym, email, password
 
 
