@@ -93,6 +93,51 @@ core.add(
     }());
 
 core.add(
+    "verify-email-form",
+    function(){
+        var sandbox;
+
+	var email_key;
+
+	var button;
+
+        var verify = function(){
+	    // This is slightly different because we need to call .button
+	    // directly on the resultset of $("foo") in order to get it to
+	    // work
+	    button = sandbox.find("#v-e-submit");
+	    button.button("loading");
+            sandbox.publish(
+            "verify-email", {
+                "email_key": email_key[0].slice(10),
+		"email": sandbox.find("#v-e-email")[0].value,
+                "password": sandbox.find("#v-e-password")[0].value
+            });
+            return false;
+        };
+
+        var toggle = function(){
+            sandbox.find()[0].hidden = !(sandbox.find()[0].hidden);
+            return false;
+        };
+
+	var failed = function(){
+	    button.button("reset");
+	};
+
+        return function(sandbox_){
+            sandbox = sandbox_;
+	    email_key = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
+	    if (email_key){
+		toggle();
+	    }
+            sandbox.bind("#v-e-submit", "click", verify);
+	    sandbox.subscribe("email-verified", toggle);
+	    sandbox.subscribe("email-not-verified", failed);
+        };
+    }());
+
+core.add(
     "request-invite-form",
     function(){
         var sandbox;
@@ -286,7 +331,7 @@ core.add(
             var infobox = sandbox.find("#info-template")[0].cloneNode(true);
             infobox.id = undefined;
             infobox.hidden = false;
-            infobox.classList.add("alert-failure");
+            infobox.classList.add("alert-error");
             sandbox.offdom.find(infobox, ".info-contents")[0].innerText = message;
             sandbox.append(infobox);
         };
@@ -297,66 +342,3 @@ core.add(
             sandbox.subscribe("error", error);
         };
     }());
-
-// Temporary code stolen from http://stackoverflow.com/a/2880929
-var urlParams = {};
-(function () {
-    var e,
-        a = /\+/g,  // Regex for replacing addition symbol with a space
-        r = /([^&=]+)=?([^&]*)/g,
-        d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
-        q = window.location.search.substring(1);
-
-    while ((e = r.exec(q)))
-       urlParams[d(e[1])] = d(e[2]);
-})();
-
-
-// $(document).ready(
-//     function() {
-//         // Email Address Verification Modal
-//         // --------------------------------
-//         var url_args = document.location.href.split("?")[1];
-//         if (urlParams.hasOwnProperty("email_key")){
-//             var email_key = urlParams.email_key;
-//             $("#verify-email-modal").modal("show");
-//             var password = "password";
-//             $("#send-password").click(
-//                 function(){
-//                     $.ajax(
-//                         recall_config["api-base-url"] + "/user/" + email_key,
-//                         {
-//                             "type": "post",
-//                             "data": JSON.stringify(
-//                                 {"%password": password}),
-//                             "contentType": "application/json",
-//                             "dataType": "json",
-//                             complete : function(jqXHR, textStatus){
-//                                 if (textStatus == "success"){
-//                                     var email = JSON.parse(jqXHR.responseText).email;
-//                                     localStorage.setItem("email", email);
-//                                     localStorage.setItem("password", password);
-//                                     $("#auth-status").text(
-//                                         localStorage.getItem("email"));
-//                                     $("#verify-email-modal").modal("hide");
-//                                 } else {
-//                                     alert("failure to verify email address");
-//                                 }
-//                             }
-//                         });
-//                 }
-//             );
-//         }
-        // Import Bookmarks Modal
-        // ----------------------
-        $("#show-import-bookmarks-modal").click(
-            function(){
-                $("#import-bookmarks-modal").modal();
-            }
-        );
-
-
-
-        $("#import-bookmarks").click(
-
-        );

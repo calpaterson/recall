@@ -85,9 +85,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
       </div>
       
+      <div id="verify-email-form" class="row" hidden="true">
+	<div class="offset4 span4 well">
+    	  <h3>The Final Step: Set Your Password</h3>
+	  <p>
+	    Please type in your email again (security reasons) and set a
+	    password and once you're verified you'll be ready to go!
+	  </p>
+	  <form>
+	    <label>Email Address</label>
+	    <input id="v-e-email" type="text"
+		   placeholder="Enter your email address again here">
+	    <label>Password</label>
+    	    <input id="v-e-password" type="password"
+		   placeholder="Enter password here">
+	    <br/>
+    	    <button id="v-e-submit" class="btn btn-primary"
+		    data-loading-text="verifying...">Set Password</button>
+	  </form>
+	</div>
+      </div>
+
       <div id="login-form" class="row" hidden="true">
-	<div class="offset4 span4">
-	  <form class="well form-vertical">
+	<div class="offset4 span4 well">
+	  <h3>Login to Recall</h3>
+	  <form class="form-vertical">
 	    <label>Email</label>
 	    <input id="login-form-email" type="email"
 		   placeholder="Enter email address here">
@@ -104,8 +126,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       </div>
 
       <div id="request-invite-form" class="row" hidden="true">
-	<div class="offset4 span4">
-	  <form class="well form-vertical">
+	<div class="offset4 span4 well">
+	  <h3>Request an Invite to Recall</h3>
+	  <p>
+	    Recall is currently in invite-only testing, but invites are
+	    given out fairly liberally.  We'll get back to you ASAP!
+	  <p>
+	    You can browse the site as much as you like without having an
+	    invite.
+	  </p>
+	  <form class="form-vertical">
     	    <select id="r-i-type">
     	      <option>Use my real name</option>
     	      <option>Use a pseudonym</option>
@@ -228,50 +258,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <!-- 	</p> -->
     <!--   </div> -->
     <!-- </div> -->
-
-    <!-- <div id="verify-email-modal" class="modal fade"> -->
-    <!--   <div class="modal-header"> -->
-    <!-- 	<a class="close" data-dismiss="modal">×</a> -->
-    <!-- 	<h3>The Final Step: Set Your Password</h3> -->
-    <!--   </div> -->
-    <!--   <div class="modal-body"> -->
-    <!-- 	<input id="password-input" type="password" placeholder="Enter password here"> -->
-    <!--   </div> -->
-    <!--   <div class="modal-footer"> -->
-    <!-- 	<button class="btn btn-primary" id="send-password">Set Password</button> -->
-    <!--   </div> -->
-    <!-- </div> -->
-
-
-
-
-     
-
-
-
-
-    <!-- </div> -->
-
-    <!-- <\!-- Javascript -\-> -->
-    <!-- <script src="third-party/jquery/dist/jquery.js"></script> -->
-    <!-- <script src="third-party/jquery-timeago/jquery.timeago.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-alert.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-button.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-carousel.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-collapse.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-dropdown.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-modal.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-scrollspy.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-tab.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-tooltip.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-transition.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-typeahead.js"></script> -->
-    <!-- <script src="third-party/bootstrap/js/bootstrap-popover.js"></script> -->
-    <!-- <script src="config.js"></script> -->
-    <!-- <script src="core.js"></script> -->
-    <!-- <script src="sandbox.js"></script> -->
-    <!-- <script src="services.js"></script> -->
-    <!-- <script src="recall.js"></script> -->
-    <!-- <script src="third-party/htmlparser.js"></script> -->
-<!--   </body> -->
-<!-- </html> -->
