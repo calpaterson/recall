@@ -56,22 +56,18 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <span class="icon-bar"></span>
           </a>
 
+          <a class="brand" href="#">Recall (closed beta)</a>
           <ul id="navbar-list" class="nav nav-collapse">
-            <li>
-              <a class="brand" href="#">Recall</a>
-            </li>
-            <li>
+            <li id="show-about" class="show">
               <a href="#">About</a>
             </li>
+	    <li id="show-view" class="show" >
+	      <a href="#">View</a>
+	    </li>
+	    <li id="show-login" class="show">
+	      <a href="#">Login</a>
+	    </li>
           </ul>
-        </div>
-        <div id="visitor-nav-stager" hidden="true">
-          <li class="visitor-nav">
-            <a id="navbar-request-invite-in-stager" href="#">Request Invite</a>
-          </li>
-          <li class="visitor-nav">
-            <a id="navbar-log-in-in-stager" href="#">Log In</a>
-          </li>
         </div>
       </div>
     </div>
@@ -82,6 +78,100 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<div id="info-template" class="alert" hidden="true">
 	  <a class="close" data-dismiss="alert">×</a>
 	  <span class="info-contents"></span>
+	</div>
+      </div>
+
+      <div id="about" class="row" hidden="true">
+	<div class="span6">
+	  <div id="about-carousel" class="carousel slide">
+	    <div class="carousel-inner">
+	      <div class="active item">
+		<img src="images/port.jpeg">
+		<div class="carousel-caption">
+		  <h4>Import/Export</h4>
+		  <p>
+		    Recall can import your existing bookmarks from your
+		    webbrowser and you can export your data whenever you like.
+		  </p>
+		</div>
+	      </div>
+	      <div class="item">
+		<img src="images/elephant.jpeg">
+		<div class="carousel-caption">
+		  <h4>Never forget</h4>
+		  <p>
+		    Recall remembers the websites you see and want to return to later.
+		  </p>
+		</div>
+	      </div>
+	      <div class="item">
+	      	<img src="images/paddington.jpeg">
+	      	<div class="carousel-caption">
+	      	  <h4>Cross Platform</h4>
+	      	  <p>
+		    Recall will work on your Android, iPhone or iPad.
+	      	  </p>
+	      	</div>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<div class="span6">
+	  <p>
+	    <h1>Recall: bookmark your interests</h1>
+	  </p>
+	  <p>
+	    Recall is a bookmarking web application that allows you to bookmark
+	    more than just web pages.  
+	  </p>
+	  <p>
+	    <h3>You can bookmark <u>topics</u>, <u>web pages</u>
+	      or <u>places</u> from any web browser, including the one on your
+	      smart phone.</h3>
+	  </p>
+	  <p>
+	    Currently, Recall is in a closed, invitation-only beta.  Features
+	    are still being added.  Eventually it will open to the public.  In
+	    the meantime you can <strong>request an invite below
+	    </strong>.
+	  </p>
+	  <p>
+	    You can <a>browse</a> the site as much as you like without having
+	    an invite.
+	  </p>
+	  <div id="request-invite-form">
+	    <div class="well">
+	      <p>
+		<h3>Request an Invite to Recall</h3>
+	      </p>
+	      <form class="form-vertical">
+    		<select id="r-i-type">
+    		  <option>Use my real name</option>
+    		  <option>Use a pseudonym</option>
+    		</select>
+
+    		<div id="r-i-real-name">
+		  <label>First Name</label>
+    		  <input id="r-i-first-name" type="text"
+			 placeholder="Enter first name here">
+		  <label>Surname</label>
+    		  <input id="r-i-surname" type="text"
+			 placeholder="Enter surname here">
+    		</div>
+    		<div id="r-i-pseudonym-div" hidden="true">
+		  <label>Pseudonym</label>
+    		  <input id="r-i-pseudonym" type="text"
+			 placeholder="Enter pseudonym here">
+		</div>
+
+		<label>Email Address (Will be public)</label>
+		<input id="r-i-email" type="text"
+		       placeholder="Enter email address here"> <br/>
+		<button id="r-i-submit" class="btn btn-primary btn-large"
+			type="submit">Request An Invite</button>
+	      </form>
+	    </div>
+	  </div>
 	</div>
       </div>
       
@@ -125,48 +215,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
       </div>
 
-      <div id="request-invite-form" class="row" hidden="true">
-	<div class="offset4 span4 well">
-	  <h3>Request an Invite to Recall</h3>
-	  <p>
-	    Recall is currently in invite-only testing, but invites are
-	    given out fairly liberally.  We'll get back to you ASAP!
-	  <p>
-	    You can browse the site as much as you like without having an
-	    invite.
-	  </p>
-	  <form class="form-vertical">
-    	    <select id="r-i-type">
-    	      <option>Use my real name</option>
-    	      <option>Use a pseudonym</option>
-    	    </select>
-
-    	    <div id="r-i-real-name">
-	      <label>First Name</label>
-    	      <input id="r-i-first-name" type="text"
-		     placeholder="Enter first name here">
-	      <label>Surname</label>
-    	      <input id="r-i-surname" type="text"
-		     placeholder="Enter surname here">
-    	    </div>
-    	    <div id="r-i-pseudonym-div" hidden="true">
-	      <label>Pseudonym</label>
-    	      <input id="r-i-pseudonym" type="text"
-		     placeholder="Enter pseudonym here">
-	    </div>
-
-	    <label>Email Address (Will be public)</label>
-	    <input id="r-i-email" type="text"
-		   placeholder="Enter email address here">
-	    <br/>
-	    <button id="r-i-submit" class="btn btn-primary"
-		    type="submit">Request An Invite</button>
-	    <button id="r-i-nevermind" class="btn"
-		    type="submit">Nevermind</button>
-	  </form>
-	</div>
-      </div>
-
       <div id="mark-importer" class="row well" hidden="true">
       	<h3>Import Your Old Bookmarks From a Web Browser or Social
 	  Bookmarking Service</h3>
@@ -186,7 +234,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       	</form>
       </div>
     
-      <div id="view-of-marks">
+      <div id="view" hidden="true">
 	<div id="list-of-marks">
 	</div>
 	<div id="templates" hidden="true">

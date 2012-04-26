@@ -26,8 +26,8 @@ core.add(
                 var password = sandbox.get("password");
                 sandbox.asynchronous(
                     function(status, content){
+                        var user = JSON.parse(content);
                         if (status === 200 && user.hasOwnProperty("self")){
-                            var user = JSON.parse(content);
                             sandbox.publish("logged-in",
                                             {email: email,
                                              password: password});
@@ -48,34 +48,34 @@ core.add(
             }
         };
 
-	var verifyEmail = function(message){
-	    sandbox.set("email", message.email);
-	    sandbox.set("password", message.password);
-	    sandbox.asynchronous(
-		function(status, content){
-		    if (status === 201){
-			sandbox.publish("email-verified");
-			sandbox.publish("logged-in", {email: message.email,
-						      password: message.password});
-		    } else {
-			if (status === 404) {
-			    sandbox.publish("error", "Wrong link or email address");
-			} else if (status === 403) {
-			    sandbox.publish("error", "Account already verified");
-			}
-			sandbox.publish("email-not-verified");
-			sandbox.drop("email");
-			sandbox.drop("email");
-		    }
-		},
-		"post",
-		recall_config["api-base-url"] + "/user/" + message["email_key"],
-		JSON.stringify({"email_key": message["email_key"],
-				"email" : message["email"],
-				"password": message["password"]}),
-		 "application/json",
+        var verifyEmail = function(message){
+            sandbox.set("email", message.email);
+            sandbox.set("password", message.password);
+            sandbox.asynchronous(
+                function(status, content){
+                    if (status === 201){
+                        sandbox.publish("email-verified");
+                        sandbox.publish("logged-in", {email: message.email,
+                                                      password: message.password});
+                    } else {
+                        if (status === 404) {
+                            sandbox.publish("error", "Wrong link or email address");
+                        } else if (status === 403) {
+                            sandbox.publish("error", "Account already verified");
+                        }
+                        sandbox.publish("email-not-verified");
+                        sandbox.drop("email");
+                        sandbox.drop("email");
+                    }
+                },
+                "post",
+                recall_config["api-base-url"] + "/user/" + message.email_key,
+                JSON.stringify({"email_key": message.email_key,
+                                "email" : message.email,
+                                "password": message.password}),
+                 "application/json",
                 {});
-	};
+        };
         
         var login = function(data){
             sandbox.set("email", data.email);
@@ -87,7 +87,7 @@ core.add(
             sandbox = sandbox_;
             sandbox.subscribe("logged-in?", isLoggedIn);
             sandbox.subscribe("login", login);
-	    sandbox.subscribe("verify-email", verifyEmail);
+            sandbox.subscribe("verify-email", verifyEmail);
         };
     }());
 

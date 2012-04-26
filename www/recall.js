@@ -15,46 +15,27 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 core.add(
-    "navbar",
+    "about",
     function(){
         var sandbox;
 
-        var displayUserNavbar = function(){
-            
-        };
-
-        var displayVisitorNavbar = function(){
-            var vistorNavEs = sandbox.find("#visitor-nav-stager").children();
-            var navbarList = sandbox.find("#navbar-list")[0];
-            for(var i = 0; i < vistorNavEs.length; i++){
-                var original = vistorNavEs[i];
-                var copy = original.cloneNode(true);
-                copy.children[0].id = original.children[0].id.slice(0, -10);
-                navbarList.appendChild(copy);
-            }
-            sandbox.bind("#navbar-log-in", "click", function(message){
-                             sandbox.publish("toggle-login-form");
-                         });
-            sandbox.bind("#navbar-request-invite", "click", function(message){
-                             sandbox.publish("toggle-request-invite-form");
-                         });
-        };
-
-        var displayNavbar = function(message){
-            if (message){
-                displayUserNavbar();
-            } else {
-                displayVisitorNavbar();
-            }
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+            return false;
         };
         
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("logged-in", displayNavbar);
-            sandbox.publish("logged-in?");
+            $('#about-carousel').carousel({interval: 5000});
+            sandbox.subscribe("show-about", show);
+            sandbox.subscribe("hide-all", hide);
         };
     }());
-
+        
 core.add(
     "login-form",
     function(){
@@ -69,8 +50,13 @@ core.add(
             return false;
         };
 
-        var toggle = function(){
-            sandbox.find()[0].hidden = !(sandbox.find()[0].hidden);
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+            return false;
+        };
+
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
             return false;
         };
 
@@ -86,9 +72,9 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.bind("#login-form-submit", "click", send);
-            sandbox.bind("#login-form-nevermind", "click", toggle);
             sandbox.subscribe("logged-in", complete);
-            sandbox.subscribe("toggle-login-form", toggle);
+            sandbox.subscribe("show-login", show);
+            sandbox.subscribe("hide-all", hide);
         };
     }());
 
@@ -97,20 +83,20 @@ core.add(
     function(){
         var sandbox;
 
-	var email_key;
+        var email_key;
 
-	var button;
+        var button;
 
         var verify = function(){
-	    // This is slightly different because we need to call .button
-	    // directly on the resultset of $("foo") in order to get it to
-	    // work
-	    button = sandbox.find("#v-e-submit");
-	    button.button("loading");
+            // This is slightly different because we need to call .button
+            // directly on the resultset of $("foo") in order to get it to
+            // work
+            button = sandbox.find("#v-e-submit");
+            button.button("loading");
             sandbox.publish(
             "verify-email", {
                 "email_key": email_key[0].slice(10),
-		"email": sandbox.find("#v-e-email")[0].value,
+                "email": sandbox.find("#v-e-email")[0].value,
                 "password": sandbox.find("#v-e-password")[0].value
             });
             return false;
@@ -121,19 +107,19 @@ core.add(
             return false;
         };
 
-	var failed = function(){
-	    button.button("reset");
-	};
+        var failed = function(){
+            button.button("reset");
+        };
 
         return function(sandbox_){
             sandbox = sandbox_;
-	    email_key = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
-	    if (email_key){
-		toggle();
-	    }
+            email_key = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
+            if (email_key){
+                toggle();
+            }
             sandbox.bind("#v-e-submit", "click", verify);
-	    sandbox.subscribe("email-verified", toggle);
-	    sandbox.subscribe("email-not-verified", failed);
+            sandbox.subscribe("email-verified", toggle);
+            sandbox.subscribe("email-not-verified", failed);
         };
     }());
 
@@ -145,6 +131,9 @@ core.add(
         var typeShowing = "#r-i-real-name";
 
         var send = function(){
+            var button = sandbox.find("#r-i-submit")[0];
+            button.classList.add("disabled");
+            button.innerText = "Sending...";
             var data = {
                 "email": sandbox.find("#r-i-email")[0].value
             };
@@ -158,6 +147,9 @@ core.add(
             // FIXME: This is a breach of the division
             $.ajax(recall_config["api-base-url"] + "/user",
                 {
+                    complete: function(){
+                        button.innerText = "Sent!";
+                    },
                     type: "post",
                     data: JSON.stringify(data),
                     contentType: "application/json",
@@ -181,22 +173,15 @@ core.add(
             }
         };
 
-        var toggle = function(){
-            sandbox.find()[0].hidden = !(sandbox.find()[0].hidden);
-            return false;
-        };
-        
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.bind("#r-i-submit", "click", send);
-            sandbox.bind("#r-i-nevermind", "click", toggle);
             sandbox.bind("#r-i-type", "change", changeType);
-            sandbox.subscribe("toggle-request-invite-form", toggle);
         };
     }());
 
 core.add(
-    "view-of-marks",
+    "view",
     function()
     {
         var sandbox;
@@ -231,9 +216,21 @@ core.add(
             }
         };
 
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+            return false;
+        };
+
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("mark", showMark);
+            sandbox.subscribe("show-view", show);
+            sandbox.subscribe("hide-all", hide);
         };
     }());
 
@@ -340,5 +337,37 @@ core.add(
             sandbox = sandbox_;
             sandbox.subscribe("info", info);
             sandbox.subscribe("error", error);
+        };
+    }());
+
+core.add(
+    "navbar",
+    function(){
+        var sandbox;
+
+        var showing;
+
+        var display = function(event){
+            if (event !== undefined){
+                showing = "#" + event.currentTarget.id;
+            }
+            sandbox.publish("hide-all");
+            sandbox.publish(showing.slice(1));
+            var showElements = sandbox.find(".show");
+            for (var i = 0; i<showElements.length; i++){
+                showElements[i].classList.remove("active");             
+            }
+            sandbox.find(showing)[0].classList.add("active");
+            sandbox.set("showing", showing);
+        };
+        
+        return function(sandbox_){
+            sandbox = sandbox_;
+            showing = sandbox.get("showing");
+            if(showing === null){
+                showing = "#show-about";
+            }
+            display();
+            sandbox.bind(".show", "click", display);
         };
     }());
