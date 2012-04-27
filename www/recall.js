@@ -188,8 +188,11 @@ core.add(
 
         var contents;
 
-        var showMark = function(mark){
-            sandbox.append(markToElement(mark));
+        var displayMarks = function(marks){
+	    sandbox.deleteContentsOf("#list-of-marks");
+	    for (var i = 0; i < marks.length; i++){
+	        sandbox.append(markToElement(marks[i]));	
+	    }
         };
 
         var humanTime = function(unixtime){
@@ -199,7 +202,8 @@ core.add(
 
         var markToElement = function(mark){
             if (mark.hasOwnProperty("hyperlink")){
-                var hyperlink = sandbox.find("#hyperlink-template")[0].cloneNode(true);
+		var template = sandbox.find("#hyperlink-template")[0];
+                var hyperlink = template.cloneNode(true);
                 hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
                 sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
                 sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
@@ -228,7 +232,7 @@ core.add(
 
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("mark", showMark);
+            sandbox.subscribe("display", displayMarks);
             sandbox.subscribe("show-view", show);
             sandbox.subscribe("hide-all", hide);
         };

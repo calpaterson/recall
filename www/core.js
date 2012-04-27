@@ -75,7 +75,10 @@ core = (
             },
             append: function(moduleName, element){
                 $("#" + moduleName).append(element);
-            }
+            },
+	    deleteContentsOf: function(moduleName, selector){
+		$(selector).children().remove("*");
+	    }
         };
         core.offdom = {
             find: function(element, selector){

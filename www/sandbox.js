@@ -28,6 +28,9 @@ makeSandbox = function(core, moduleName) {
     interface_.append = function(element){
         core.dom.append(moduleName, element);
     };
+    interface_.deleteContentsOf = function(selector){
+	core.dom.deleteContentsOf(moduleName, selector);
+    };
 
     // Off-DOM
     interface_.offdom = {

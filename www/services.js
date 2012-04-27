@@ -128,13 +128,11 @@ core.add(
             password = data.password;
         };
 
-        var loadRecentMarks = function(){
+        var marks = function(){
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);
-                    for (var index in marks){
-                        sandbox.publish("mark", marks[index]);
-                    }
+                    sandbox.publish("display", marks);
                 },
                 "get",
                 recall_config["api-base-url"] + "/mark",
@@ -151,6 +149,7 @@ core.add(
         
         return function(sandbox_){
             sandbox = sandbox_;
+	    marks();
             sandbox.subscribe("new-mark", send);
             sandbox.subscribe("new-marks", send);
             sandbox.subscribe("logged-in", whenLoggedIn);
