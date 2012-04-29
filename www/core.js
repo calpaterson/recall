@@ -19,7 +19,7 @@ core = (
     function () {
         var core = {};
         var modules = {};
-        
+
         core.add = function (moduleName, controller){
             // Add a module
             modules[moduleName] = {
@@ -44,7 +44,7 @@ core = (
                 modules[moduleName].subscriptions = {};
             }
             modules[moduleName].subscriptions[messageType] = handler;
-            
+
         };
         core.publish = function (messageType, messageData){
             // Publish a message
@@ -65,20 +65,28 @@ core = (
                     throw "#" + moduleName + " is used more than once";
                 }
                 if (selector !== undefined){
-                    return $(module).find(selector);   
+                    return $(module).find(selector);
                 } else {
                     return $(module);
                 }
             },
-            bind: function(element, event, handler){ // FIXME Should take moduleName
+            bind: function(element, event, handler){
+                // FIXME Should take moduleName
                 $(element).bind(event, handler);
             },
-            append: function(moduleName, element){
-                $("#" + moduleName).append(element);
+            append: function(moduleName, selector, element){
+                core.dom.queryWithin(moduleName, selector).append(element);
             },
-	    deleteContentsOf: function(moduleName, selector){
-		$(selector).children().remove("*");
-	    }
+            deleteContentsOf: function(moduleName, selector){
+                $(selector).children().remove("*");
+            },
+            hiddenWrapHack : function(moduleName, selector){
+                core.dom.queryWithin(moduleName, selector).wrap(
+                    '<div hidden=true></div>');
+            },
+            unHiddenWrapHack : function(moduleName, selector){
+                core.dom.queryWithin(moduleName, selector).unwrap();
+            }
         };
         core.offdom = {
             find: function(element, selector){

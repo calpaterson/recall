@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-makeSandbox = function(core, moduleName) {      
+makeSandbox = function(core, moduleName) {
     var interface_ = {};
 
     // DOM
@@ -25,11 +25,17 @@ makeSandbox = function(core, moduleName) {
     interface_.bind = function (element, event, handler){
         core.dom.bind(element, event, handler);
     };
-    interface_.append = function(element){
-        core.dom.append(moduleName, element);
+    interface_.append = function(selector, element){
+        core.dom.append(moduleName, selector, element);
     };
     interface_.deleteContentsOf = function(selector){
 	core.dom.deleteContentsOf(moduleName, selector);
+    };
+    interface_.hiddenWrapHack = function(selector){
+	core.dom.hiddenWrapHack(moduleName, selector);
+    };
+    interface_.unHiddenWrapHack = function(selector){
+	core.dom.unHiddenWrapHack(moduleName, selector);
     };
 
     // Off-DOM
@@ -53,7 +59,7 @@ makeSandbox = function(core, moduleName) {
         core.asynchronous(handler, verb, url, data, mime, headers);
     };
 
-    // Storage
+    // Module Storage
     interface_.get = function(key){
         return localStorage.getItem(moduleName + "$" + key);
     };
@@ -66,5 +72,6 @@ makeSandbox = function(core, moduleName) {
     interface_.drop = function(key){
 	return localStorage.removeItem(moduleName + "$" + key);
     };
+
     return interface_;
 };

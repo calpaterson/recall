@@ -43,26 +43,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div id="error-area" hidden="true">
     </div>
 
-    <div id="bookmarklet">
-
-      <!-- Login view -->
-      <div id="login" hidden="true">
-	<p>
-	<h3>Please Login</h3>
-	</p>
-	<p>
-	<input id="login-email-input" type="text"
-	       placeholder="Enter email address here">
-	<input id="login-password-input" type="password"
-	       placeholder="Enter password here">
-	</p>
-	<p>
-	  <button class="btn btn-primary" id="login-button">Login</button>
-	</p>
+    <!-- Must be kept in sync with the version in index.html -->
+    <div id="login-form" class="row" hidden="true">
+      <div class="offset4 span4 well">
+	<h3>Login to Recall</h3>
+	<form class="form-vertical">
+	  <label>Email</label>
+	  <input id="login-form-email" type="email"
+		 placeholder="Enter email address here">
+	  <label>Password</label>
+	  <input id="login-form-password" type="password"
+		 placeholder="Enter password here">
+	  <br/>
+	  <button id="login-form-submit" class="btn btn-primary"
+		  type="submit">Login</button>
+	</form>
       </div>
+    </div>
+
+    <div id="bookmarklet" hidden="true">
 
       <!-- Form view -->
-      <div id="form" class="tabbable" hidden="true">
+      <div id="form" class="tabbable">
 	<!-- Tab bar -->
 	<ul class="nav nav-tabs"> 
           <li id="hyperlink-tab">
@@ -114,6 +116,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <script src="core.js"></script>
     <script src="sandbox.js"></script>
     <script src="services.js"></script>
+    <script src="common_ui.js"></script>
     <script src="bookmarklet.js"></script>
   </body>
 </html>

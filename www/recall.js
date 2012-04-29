@@ -23,7 +23,7 @@ core.add(
             sandbox.find()[0].hidden = false;
             return false;
         };
-        
+
         var hide = function(){
             sandbox.find()[0].hidden = true;
             return false;
@@ -32,48 +32,6 @@ core.add(
             sandbox = sandbox_;
             $('#about-carousel').carousel({interval: 5000});
             sandbox.subscribe("show-about", show);
-            sandbox.subscribe("hide-all", hide);
-        };
-    }());
-        
-core.add(
-    "login-form",
-    function(){
-        var sandbox;
-
-        var send = function(){
-            sandbox.publish(
-            "login", {
-                "email": sandbox.find("#login-form-email")[0].value,
-                "password": sandbox.find("#login-form-password")[0].value
-            });
-            return false;
-        };
-
-        var show = function(){
-            sandbox.find()[0].hidden = false;
-            return false;
-        };
-
-        var hide = function(){
-            sandbox.find()[0].hidden = true;
-            return false;
-        };
-
-        var complete = function(message){
-            if(message){
-                toggle();
-                sandbox.publish("info", "Logged in");
-            } else {
-                sandbox.publish("error", "Wrong password");
-            }
-        };
-        
-        return function(sandbox_){
-            sandbox = sandbox_;
-            sandbox.bind("#login-form-submit", "click", send);
-            sandbox.subscribe("logged-in", complete);
-            sandbox.subscribe("show-login", show);
             sandbox.subscribe("hide-all", hide);
         };
     }());
@@ -134,20 +92,22 @@ core.add(
             var button = sandbox.find("#r-i-submit")[0];
             button.classList.add("disabled");
             button.innerText = "Sending...";
+
             var data = {
                 "email": sandbox.find("#r-i-email")[0].value
             };
             var typeSelect = sandbox.find("#r-i-type")[0];
             if (typeSelect.selectedIndex === 0){
                 data.firstName = sandbox.find("#r-i-first-name")[0].value;
-                data.surname = sandbox.find("#r-i-surname")[0].value;           
+                data.surname = sandbox.find("#r-i-surname")[0].value;
             } else if (typeSelect.selectedIndex === 1){
                 data.pseudonym = sandbox.find("#r-i-pseudonym")[0].value;
             }
+
             // FIXME: This is a breach of the division
             $.ajax(recall_config["api-base-url"] + "/user",
                 {
-                    complete: function(){
+                    success: function(){
                         button.innerText = "Sent!";
                     },
                     type: "post",
@@ -155,7 +115,7 @@ core.add(
                     contentType: "application/json",
                     dataType: "json"
                 }
-            );      
+            );
             return false;
         };
 
@@ -188,11 +148,13 @@ core.add(
 
         var contents;
 
-        var displayMarks = function(marks){
-	    sandbox.deleteContentsOf("#list-of-marks");
-	    for (var i = 0; i < marks.length; i++){
-	        sandbox.append(markToElement(marks[i]));	
-	    }
+        var hadAuthLastTime = false;
+
+        var display = function(marks){
+            sandbox.deleteContentsOf("#list-of-marks");
+            for (var i = 0; i < marks.length; i++){
+                sandbox.append("#list-of-marks", markToElement(marks[i]));
+            }
         };
 
         var humanTime = function(unixtime){
@@ -202,7 +164,7 @@ core.add(
 
         var markToElement = function(mark){
             if (mark.hasOwnProperty("hyperlink")){
-		var template = sandbox.find("#hyperlink-template")[0];
+                var template = sandbox.find("#hyperlink-template")[0];
                 var hyperlink = template.cloneNode(true);
                 hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
                 sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
@@ -221,6 +183,9 @@ core.add(
         };
 
         var show = function(){
+            if (!hadAuthLastTime){
+                sandbox.publish("get-marks?", {"display": display});
+            }
             sandbox.find()[0].hidden = false;
             return false;
         };
@@ -232,8 +197,8 @@ core.add(
 
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("display", displayMarks);
             sandbox.subscribe("show-view", show);
+            sandbox.subscribe("show-post-login", show);
             sandbox.subscribe("hide-all", hide);
         };
     }());
@@ -302,7 +267,7 @@ core.add(
 
         var show = function(success){
             if (success){
-                sandbox.find()[0].hidden = false;       
+                sandbox.find()[0].hidden = false;
             }
         };
 
@@ -310,7 +275,6 @@ core.add(
             sandbox = sandbox_;
             sandbox.bind("#m-i-import", "click", importBookmarks);
             sandbox.bind("#m-i-nevermind", "click", nevermind);
-            sandbox.subscribe("logged-in", show);
         };
     }());
 
@@ -351,6 +315,8 @@ core.add(
 
         var showing;
 
+        var previousMode;
+
         var display = function(event){
             if (event !== undefined){
                 showing = "#" + event.currentTarget.id;
@@ -359,12 +325,27 @@ core.add(
             sandbox.publish(showing.slice(1));
             var showElements = sandbox.find(".show");
             for (var i = 0; i<showElements.length; i++){
-                showElements[i].classList.remove("active");             
+                showElements[i].classList.remove("active");
             }
             sandbox.find(showing)[0].classList.add("active");
             sandbox.set("showing", showing);
         };
-        
+
+        var navbarMode = function(mode){
+            if (mode === "visitor"){
+                if(previousMode){
+                    sandbox.hiddenWrapHack(".navbar-" + previousMode);
+                }
+                sandbox.unHiddenWrapHack(".navbar-visitor");
+            } else if (mode === "user"){
+                if(previousMode){
+                    sandbox.hiddenWrapHack(".navbar-" + previousMode);
+                }
+                sandbox.unHiddenWrapHack(".navbar-user");
+            }
+            previousMode = mode;
+        };
+
         return function(sandbox_){
             sandbox = sandbox_;
             showing = sandbox.get("showing");
@@ -373,5 +354,9 @@ core.add(
             }
             display();
             sandbox.bind(".show", "click", display);
+            sandbox.publish("logged-in",
+                            {"success": function(){ navbarMode("user");},
+                             "failure": function(){ navbarMode("visitor");}
+                             });
         };
     }());

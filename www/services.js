@@ -19,33 +19,34 @@ core.add(
     "authorisationService",
     function(){
         var sandbox;
-        
-        var isLoggedIn = function(){
-            if (sandbox.has("email") && sandbox.has("password")){
-                var email = sandbox.get("email");
-                var password = sandbox.get("password");
-                sandbox.asynchronous(
-                    function(status, content){
-                        var user = JSON.parse(content);
-                        if (status === 200 && user.hasOwnProperty("self")){
-                            sandbox.publish("logged-in",
-                                            {email: email,
-                                             password: password});
-                        } else {
-                            sandbox.publish("logged-in", false);
-                            sandbox.drop("email");
-                            sandbox.drop("password");
-                        }
-                    },
-                    "get",
-                    recall_config["api-base-url"] + "/user/" + email,
-                    {},
-                    "application/json",
-                    {"X-Email": email,
-                     "X-Password": password});
-            } else {
-                sandbox.publish("logged-in", false);
-            }
+
+        var login = function(message){
+            var cb = function(status, content){
+                var user = JSON.parse(content);
+                if (status === 200 && user.hasOwnProperty("self")){
+                    sandbox.set("email", message.email);
+                    sandbox.set("password", message.password);
+                    message.success(user);
+                } else {
+                    message.failure(user);
+                }
+            };
+            sandbox.asynchronous(
+                cb,
+                "get",
+                recall_config["api-base-url"] + "/user/" + message.email,
+                {},
+                "application/json",
+                {"X-Email": message.email,
+                 "X-Password": message.password});
+        };
+
+        var loggedIn = function(message){
+          if (sandbox.has("email")){
+              message.success(sandbox.get("email", sandbox.get("password")));
+          } else {
+              message.failure();
+          }
         };
 
         var verifyEmail = function(message){
@@ -76,17 +77,11 @@ core.add(
                  "application/json",
                 {});
         };
-        
-        var login = function(data){
-            sandbox.set("email", data.email);
-            sandbox.set("password", data.password);
-            isLoggedIn();
-        };
-        
+
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("logged-in?", isLoggedIn);
             sandbox.subscribe("login", login);
+            sandbox.subscribe("logged-in?". loggedIn);
             sandbox.subscribe("verify-email", verifyEmail);
         };
     }());
@@ -97,10 +92,11 @@ core.add(
     "markService",
     function(){
         var sandbox;
-        
+
         var email, password;
 
         var send = function(mark){
+            authentication();
             var serialisedMark = JSON.stringify(mark);
             sandbox.asynchronous(
                 function(status, content){
@@ -122,17 +118,18 @@ core.add(
                  "X-Password": password}
             );
         };
-        
-        var storeEmailAndPassword = function(data){
-            email = data.email;
-            password = data.password;
+
+        var authentication = function(email, password){
+            this.email = email;
+            this.password = password;
         };
 
-        var marks = function(){
+        var marks = function(message){
+            sandbox.publish("logged-in?", {"success": authentication});
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);
-                    sandbox.publish("display", marks);
+                    message.display(marks);
                 },
                 "get",
                 recall_config["api-base-url"] + "/mark",
@@ -142,16 +139,10 @@ core.add(
                  "X-Password": password});
         };
 
-        var whenLoggedIn = function(data){
-            storeEmailAndPassword(data);
-            loadRecentMarks();
-        };
-        
         return function(sandbox_){
             sandbox = sandbox_;
-	    marks();
+            sandbox.subscribe("get-marks?", marks);
             sandbox.subscribe("new-mark", send);
             sandbox.subscribe("new-marks", send);
-            sandbox.subscribe("logged-in", whenLoggedIn);
         };
     }());

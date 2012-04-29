@@ -74,12 +74,14 @@ core.add(
             sandbox.publish("new-mark", mark);
         };
 
-        var login = function(){
-            sandbox.publish(
-                "login", {
-                    email: sandbox.find("#login-email-input")[0].value,
-                    password: sandbox.find("#login-password-input")[0].value
-                });
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+            return false;
+        };
+
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
         };
 
         return function (sandbox_) {
@@ -88,17 +90,17 @@ core.add(
             preloadHyperlinkTabFields();
             sandbox.bind(".tab", "click", saveTabSelection);
             sandbox.bind("#mark-button", "click", makeMark);
-            sandbox.bind("#login-button", "click", login);
-            sandbox.subscribe("logged-in", function(data){
-                                  if (data){
-                                      sandbox.find("#login")[0].hidden = true;
-                                      sandbox.find("#form")[0].hidden = false;
-                                      email = data.email;
-                                  } else {
-                                      sandbox.find("#form")[0].hidden = true;
-                                      sandbox.find("#login")[0].hidden = false;
-                                  }});
             sandbox.subscribe("mark-sent", function() {window.close();});
-            sandbox.publish("logged-in?");
+            sandbox.subscribe("hide-all", hide);
+            sandbox.subscribe("show-bookmarklet", show);
+            sandbox.subscribe("show-post-login", show);
+            var get = function(key){
+                return localStorage.getItem("authorisationService$" + key);
+            };
+            if (get("email") && get("password")){
+                show();
+            } else {
+                sandbox.publish("show-login");
+            };
         };
     }());
