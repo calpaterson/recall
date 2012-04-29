@@ -101,6 +101,6 @@ core.add(
                 show();
             } else {
                 sandbox.publish("show-login");
-            };
+            }
         };
     }());
