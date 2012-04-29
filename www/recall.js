@@ -346,17 +346,32 @@ core.add(
             previousMode = mode;
         };
 
+        var setVersion = function(){
+            var version;
+            if (recall_config.version == "development"){
+                version = "Development version";
+            } else if (typeof recall_config.version === "number"){
+                version = "Version " + recall_config.version;
+            } else {
+                version = "Unknown version";
+            }
+
+            sandbox.find("#recall-version")[0].innerText = version;
+        };
+
         return function(sandbox_){
             sandbox = sandbox_;
             showing = sandbox.get("showing");
             if(showing === null){
                 showing = "#show-about";
             }
+            setVersion();
             display();
             sandbox.bind(".show", "click", display);
-            sandbox.publish("logged-in",
+            sandbox.publish("logged-in?",
                             {"success": function(){ navbarMode("user");},
                              "failure": function(){ navbarMode("visitor");}
                              });
+            sandbox.subscribe("login", function(){ navbarMode("user");});
         };
     }());

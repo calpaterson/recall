@@ -27,8 +27,9 @@ core.add(
                     sandbox.set("email", message.email);
                     sandbox.set("password", message.password);
                     message.success(user);
+                    sandbox.publish("login");
                 } else {
-                    message.failure(user);
+                    message.failure();
                 }
             };
             sandbox.asynchronous(
@@ -81,7 +82,7 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("login", login);
-            sandbox.subscribe("logged-in?". loggedIn);
+            sandbox.subscribe("logged-in?", loggedIn);
             sandbox.subscribe("verify-email", verifyEmail);
         };
     }());
