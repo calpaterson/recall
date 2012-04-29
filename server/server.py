@@ -271,7 +271,7 @@ def user(email):
     users = get_db().users
     user = users.find_one({"email": email})
     if user is None:
-        return "", 404
+        return "null", 404
 
     return_value = whitelist(user, [
             "pseudonym",

@@ -468,6 +468,12 @@ class ServerTests(unittest.TestCase):
         response_data = json.loads(response.data)
         self.assertTrue(response_data.get("self", False))
 
+    def test_non_existent_user_gives_404(self):
+        response = self.client.get("/user/god")
+        self.assertEquals(404, response.status_code)
+        response_data = json.loads(response.data)
+        self.assertEqual(None, response_data)
+
 
     @unittest.expectedFailure
     def test_before_and_since(self):
