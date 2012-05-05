@@ -208,7 +208,7 @@ core.add(
     }());
 
 core.add(
-    "mark-importer",
+    "import-bookmarks",
     function(){
         var sandbox;
 
@@ -242,6 +242,9 @@ core.add(
         };
 
         var importBookmarks = function(){
+            var button = sandbox.find("#m-i-import")[0];
+            button.classList.add("disabled");
+            button.innerText = "Importing...";
             var bookmarksFile = $("#m-i-bookmarks-file-input")[0].files[0];
             var reader = new FileReader();
             reader.onload = function(event){
@@ -258,27 +261,27 @@ core.add(
                     }
                 }
                 sandbox.publish("new-marks", bookmarks);
-                sandbox.find()[0].hidden = true;
+                button.innerText = "Imported!";
             };
             reader.readAsText(bookmarksFile, "UTF-8");
             return false;
         };
 
-        var nevermind = function(){
+        var hide = function(){
             sandbox.find()[0].hidden = true;
             return false;
         };
 
         var show = function(success){
-            if (success){
-                sandbox.find()[0].hidden = false;
-            }
+            sandbox.find()[0].hidden = false;
+            return false;
         };
 
         return function(sandbox_){
             sandbox = sandbox_;
+            sandbox.subscribe("hide-all", hide);
+            sandbox.subscribe("show-import-bookmarks", show);
             sandbox.bind("#m-i-import", "click", importBookmarks);
-            sandbox.bind("#m-i-nevermind", "click", nevermind);
         };
     }());
 
@@ -320,7 +323,7 @@ core.add(
         var previousMode;
 
         var moveTo = function(show){
-	    sandbox.set("last-show", show);
+            sandbox.set("last-show", show);
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show);
 

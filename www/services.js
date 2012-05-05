@@ -48,7 +48,7 @@ core.add(
 
         var loggedIn = function(message){
           if (sandbox.has("email")){
-              message.success(sandbox.get("email", sandbox.get("password")));
+              message.success(sandbox.get("email"), sandbox.get("password"));
           } else {
               message.failure();
           }
@@ -102,7 +102,7 @@ core.add(
         var email, password;
 
         var send = function(mark){
-            authentication();
+            authenticate();
             var serialisedMark = JSON.stringify(mark);
             sandbox.asynchronous(
                 function(status, content){
@@ -125,14 +125,17 @@ core.add(
             );
         };
 
-        var authentication = function(email, password){
-            this.email = email;
-            this.password = password;
+        var authenticate = function(){
+            var authentication = function(email_, password_){
+                email = email_;
+                password = password_;
+            };
+            sandbox.publish("logged-in?", {"success": authentication,
+                                           "failure": function(){}});
         };
 
         var marks = function(message){
-            sandbox.publish("logged-in?", {"success": authentication,
-                                           "failure": function(){}});
+            authenticate();
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);

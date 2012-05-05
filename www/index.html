@@ -61,9 +61,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	    <li id="show-about" class="show">
 	      <a href="#">About</a>
             </li>
-	    <li id="show-view" class="show" >
+	    <li id="show-view" class="show">
 	      <a href="#">View</a>
 	    </li>
+	    <div hidden="true">
+	      <li id="show-import-bookmarks" class="show navbar-user">
+		<a href="#">Import Bookmarks</a>
+	      </li>
+	    </div>
+
 	    <div hidden="true">
 	      <li id="show-login" class="show navbar-visitor" hidden="true">
 		<a href="#">Login</a>
@@ -227,24 +233,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</div>
       </div>
 
-      <div id="mark-importer" class="row well" hidden="true">
-      	<h3>Import Your Old Bookmarks From a Web Browser or Social
-	  Bookmarking Service</h3>
-      	<p>
+      <div id="import-bookmarks" class="row" hidden="true">
+	<div class="offset4 span4 well">
+      	  <h3>Import Your Old Bookmarks From a Web Browser or Social
+	    Bookmarking Service</h3>
+      	  <p>
 
-      	  Many web browsers and social bookmarking services allow you
-      	  to export your bookmarks as a file (in a format sometimes
-      	  called "Netscape Navigator" format).  You can import this
-      	  file to Recall.
-      	</p>
-      	<form class="form-vertical">
-      	  <input id="m-i-bookmarks-file-input" type="file">
-      	  <br/>
-	  <button id="m-i-import" class="btn btn-primary"
-		  type="submit">Import</button>
-	  <button id="m-i-nevermind" class="btn"
-		  type="submit">Nevermind</button>
-      	</form>
+      	    Many web browsers and social bookmarking services allow you
+      	    to export your bookmarks as a file (in a format sometimes
+      	    called "Netscape Navigator" format).  You can import this
+      	    file to Recall.
+      	  </p>
+      	  <form class="form-vertical">
+      	    <input id="m-i-bookmarks-file-input" type="file">
+      	    <br/>
+	    <button id="m-i-import" class="btn btn-primary"
+		    type="submit">Import</button>
+      	  </form>
+	</div>
       </div>
     
       <div id="view" hidden="true">
