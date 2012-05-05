@@ -60,18 +60,18 @@ core.add(
             sandbox.asynchronous(
                 function(status, content){
                     if (status === 201){
-                        sandbox.publish("email-verified");
                         sandbox.publish("logged-in", {email: message.email,
                                                       password: message.password});
+                        message.success();
                     } else {
                         if (status === 404) {
                             sandbox.publish("error", "Wrong link or email address");
                         } else if (status === 403) {
                             sandbox.publish("error", "Account already verified");
                         }
-                        sandbox.publish("email-not-verified");
+                        message.failure();
                         sandbox.drop("email");
-                        sandbox.drop("email");
+                        sandbox.drop("password");
                     }
                 },
                 "post",

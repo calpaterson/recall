@@ -41,43 +41,48 @@ core.add(
     function(){
         var sandbox;
 
-        var email_key;
-
-        var button;
-
         var verify = function(){
-            // This is slightly different because we need to call .button
-            // directly on the resultset of $("foo") in order to get it to
-            // work
-            button = sandbox.find("#v-e-submit");
-            button.button("loading");
+            var button = sandbox.find("#v-e-submit")[0];
+            button.classList.add("disabled");
+            button.innerText = "Verifying...";
+
+            var matches = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
+            var email_key = matches[0].slice(10);
+
             sandbox.publish(
             "verify-email", {
-                "email_key": email_key[0].slice(10),
+                "email_key": email_key,
                 "email": sandbox.find("#v-e-email")[0].value,
-                "password": sandbox.find("#v-e-password")[0].value
+                "password": sandbox.find("#v-e-password")[0].value,
+                "success": function(){
+                    sandbox.publish("show-post-login");
+                },
+                "failure": failure
             });
             return false;
         };
 
-        var toggle = function(){
-            sandbox.find()[0].hidden = !(sandbox.find()[0].hidden);
+        var show = function(){
+            sandbox.find()[0].hidden = false;
             return false;
         };
 
-        var failed = function(){
-            button.button("reset");
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
+        var failure = function(){
+            var button = sandbox.find("#v-e-submit")[0];
+            button.innerText = "Try Again";
+            button.classList.remove("disabled");
         };
 
         return function(sandbox_){
             sandbox = sandbox_;
-            email_key = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
-            if (email_key){
-                toggle();
-            }
             sandbox.bind("#v-e-submit", "click", verify);
-            sandbox.subscribe("email-verified", toggle);
-            sandbox.subscribe("email-not-verified", failed);
+            sandbox.subscribe("show-verify-email-form", show);
+            sandbox.subscribe("hide-all", hide);
         };
     }());
 
@@ -312,22 +317,21 @@ core.add(
     function(){
         var sandbox;
 
-        var showing;
-
         var previousMode;
 
-        var display = function(event){
-            if (event !== undefined){
-                showing = "#" + event.currentTarget.id;
-            }
+        var moveTo = function(show){
             sandbox.publish("hide-all");
-            sandbox.publish(showing.slice(1));
-            var showElements = sandbox.find(".show");
-            for (var i = 0; i<showElements.length; i++){
-                showElements[i].classList.remove("active");
+            sandbox.publish("show-" + show);
+
+            var allNavbarLinks = sandbox.find(".show");
+            for (var i = 0; i<allNavbarLinks.length; i++){
+                allNavbarLinks[i].classList.remove("active");
             }
-            sandbox.find(showing)[0].classList.add("active");
-            sandbox.set("showing", showing);
+
+            var navbarLinkForNewShow = sandbox.find("#show-" + show);
+            if (navbarLinkForNewShow.length !== 0){
+                navbarLinkForNewShow[0].classList.add("active");                
+            }
         };
 
         var navbarMode = function(mode){
@@ -360,21 +364,25 @@ core.add(
 
         var logout = function(){
             sandbox.publish("logout");
-            showing = "#show-about";
-            display();
+            moveTo("about");
             navbarMode("visitor");
             localStorage.clear();
         };
 
         return function(sandbox_){
             sandbox = sandbox_;
-            showing = sandbox.get("showing");
-            if(showing === null){
-                showing = "#show-about";
-            }
             setVersion();
-            display();
-            sandbox.bind(".show", "click", display);
+            var show = sandbox.get("last-show");
+            if (show === null){
+                show = "about";
+            }
+            if (document.documentURI.match("email_key")){
+                show = "verify-email-form";
+            }
+            moveTo(show);
+            sandbox.bind(".show", "click", function(event){
+                             moveTo(event.currentTarget.id.slice(5));
+                         });
             sandbox.publish("logged-in?",
                             {"success": function(){ navbarMode("user");},
                              "failure": function(){ navbarMode("visitor");}
@@ -382,8 +390,7 @@ core.add(
             sandbox.bind("#logout", "click", logout);
             sandbox.subscribe("login", function(){ navbarMode("user");});
             sandbox.subscribe("show-post-login", function(){
-                                  showing = "#show-view";
-                                  display();
+                                  moveTo("view");
                               });
         };
     }());

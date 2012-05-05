@@ -6,7 +6,7 @@ core.add(
 
         var login = function(){
             button.classList.add("disabled");
-            button.innerText = "Logging In...";
+            button.innerText = "Logging in...";
             sandbox.publish(
             "login", {
                 "email": sandbox.find("#login-form-email")[0].value,
@@ -30,7 +30,7 @@ core.add(
         };
 
         var loginError = function(user){
-            button.innerText = "Try again";
+            button.innerText = "Try Again";
             button.classList.remove("disabled");
         };
 
