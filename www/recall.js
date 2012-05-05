@@ -358,7 +358,7 @@ core.add(
                 if (status !== 200){
                     version = "Development Version";
                 } else {
-                    version = "Version" + content;
+                    version = "Version " + content;
                 }
                 sandbox.find("#recall-version")[0].innerText = version;         
             };
