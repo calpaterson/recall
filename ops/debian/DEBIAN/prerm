@@ -1,4 +1,9 @@
 #!/bin/sh
-
 set -e
-echo "Stopping recall-server"
+
+CONFIG_FILE=/usr/share/recall/config.js
+
+if [ -f $CONFIG_FILE ]
+then
+    echo "Configuration file found - not removing"
+fi

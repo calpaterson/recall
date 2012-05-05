@@ -354,16 +354,15 @@ core.add(
         };
 
         var setVersion = function(){
-            var version;
-            if (recall_config.version == "development"){
-                version = "Development version";
-            } else if (typeof recall_config.version === "number"){
-                version = "Version " + recall_config.version;
-            } else {
-                version = "Unknown version";
-            }
-
-            sandbox.find("#recall-version")[0].innerText = version;
+            var set = function(status, content){
+                if (status !== 200){
+                    version = "Development Version";
+                } else {
+                    version = "Version" + content;
+                }
+                sandbox.find("#recall-version")[0].innerText = version;         
+            };
+            sandbox.asynchronous(set, "get", recall_config["www-base-url"] + "/version");
         };
 
         var logout = function(){

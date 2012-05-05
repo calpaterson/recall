@@ -38,6 +38,9 @@ make
 # Copy www to /usr/share/recall
 cp -R $OPS_DIR/../www $OPS_DIR/debian/usr/share/recall/
 
+# Insert version file
+echo $VERSION > $OPS_DIR/debian/usr/share/recall/version
+
 # Create and populate bin directory
 BIN_DIR=$OPS_DIR/debian/usr/bin
 mkdir -p $BIN_DIR/
