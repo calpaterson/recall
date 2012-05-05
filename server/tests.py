@@ -24,6 +24,7 @@ import time
 import bcrypt
 from pymongo import Connection
 from werkzeug.datastructures import Headers
+from mock import patch
 
 import server
 
@@ -474,6 +475,13 @@ class ServerTests(unittest.TestCase):
         response_data = json.loads(response.data)
         self.assertEqual(None, response_data)
 
+
+    def test_error_handler_always_returns_json_object(self):
+        try:
+            raise Exception
+        except Exception as e:
+            data, status = server.handle_exception(e)
+            self.assertIn("human_readable", json.loads(data))
 
     @unittest.expectedFailure
     def test_before_and_since(self):
