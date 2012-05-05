@@ -24,7 +24,6 @@ import time
 import bcrypt
 from pymongo import Connection
 from werkzeug.datastructures import Headers
-from mock import patch
 
 import server
 
