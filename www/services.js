@@ -27,7 +27,6 @@ core.add(
                     sandbox.set("email", message.email);
                     sandbox.set("password", message.password);
                     message.success(user);
-                    sandbox.publish("login");
                 } else {
                     message.failure();
                 }
@@ -126,7 +125,8 @@ core.add(
         };
 
         var marks = function(message){
-            sandbox.publish("logged-in?", {"success": authentication});
+            sandbox.publish("logged-in?", {"success": authentication,
+					   "failure": function(){}});
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);
