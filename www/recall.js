@@ -320,6 +320,7 @@ core.add(
         var previousMode;
 
         var moveTo = function(show){
+	    sandbox.set("last-show", show);
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show);
 
