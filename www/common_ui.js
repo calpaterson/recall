@@ -11,15 +11,17 @@ core.add(
             "login", {
                 "email": sandbox.find("#login-form-email")[0].value,
                 "password": sandbox.find("#login-form-password")[0].value,
-                "success": showPostLogin,
+                "success": loginSuccess,
                 "offline": offline,
                 "failure": loginError
             });
             return false;
         };
 
-        var showPostLogin = function(user){
+        var loginSuccess = function(user){
             hide();
+            button.innerText = "Login Again";
+            button.classList.remove("disabled");
             sandbox.publish("show-post-login");
         };
 

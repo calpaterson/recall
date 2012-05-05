@@ -198,7 +198,6 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("show-view", show);
-            sandbox.subscribe("show-post-login", show);
             sandbox.subscribe("hide-all", hide);
         };
     }());
@@ -359,6 +358,14 @@ core.add(
             sandbox.find("#recall-version")[0].innerText = version;
         };
 
+        var logout = function(){
+            sandbox.publish("logout");
+            showing = "#show-about";
+            display();
+            navbarMode("visitor");
+            localStorage.clear();
+        };
+
         return function(sandbox_){
             sandbox = sandbox_;
             showing = sandbox.get("showing");
@@ -372,6 +379,11 @@ core.add(
                             {"success": function(){ navbarMode("user");},
                              "failure": function(){ navbarMode("visitor");}
                              });
+            sandbox.bind("#logout", "click", logout);
             sandbox.subscribe("login", function(){ navbarMode("user");});
+            sandbox.subscribe("show-post-login", function(){
+                                  showing = "#show-view";
+                                  display();
+                              });
         };
     }());

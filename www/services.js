@@ -41,6 +41,11 @@ core.add(
                  "X-Password": message.password});
         };
 
+        var logout = function(){
+            sandbox.drop("email");
+            sandbox.drop("password");
+        };
+
         var loggedIn = function(message){
           if (sandbox.has("email")){
               message.success(sandbox.get("email", sandbox.get("password")));
@@ -81,6 +86,7 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("login", login);
+            sandbox.subscribe("logout", logout);
             sandbox.subscribe("logged-in?", loggedIn);
             sandbox.subscribe("verify-email", verifyEmail);
         };
@@ -126,7 +132,7 @@ core.add(
 
         var marks = function(message){
             sandbox.publish("logged-in?", {"success": authentication,
-					   "failure": function(){}});
+                                           "failure": function(){}});
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);
