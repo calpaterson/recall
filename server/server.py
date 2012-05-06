@@ -46,10 +46,13 @@ def handle_exception(exception):
             document["machine_readable"] = exception.machine_readable
         return json.dumps(document)
 
-    if not isinstance(exception, HTTPException):
-        return json_error("Unknown exception: " + exception.message), 500
-    else:
+    if isinstance(exception, HTTPException):
         return json_error(exception.message), exception.status_code
+    if isinstance(exception, AssertionError):
+        return json_error(exception.message), 400
+    else:
+        return json_error("Unknown exception: " + exception.message), 500
+
 
 app.handle_exception = handle_exception
 
@@ -139,9 +142,9 @@ def make_mark_url(mark):
         + mark[u"@"] + "/" + str(int(mark["~"]))
 
 @app.route("/mark", methods=["POST"])
-
 def add_mark():
     def insert_mark(body):
+        assert "~" in body and "@" in body, "Must include @ and ~ with all marks"
         has_no_problematic_keys(body)
         body[u"£created"] = get_unixtime()
         db = get_db()

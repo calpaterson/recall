@@ -20,8 +20,6 @@ core.add(
     function(){
         var sandbox;
 
-        var email;
-
         var restoreTabSelection = function(){
             var tabSelection = sandbox.get(
                 "bookmarklet-tab-selection");
@@ -59,19 +57,25 @@ core.add(
             var unixtimeNow = function() {
                 return Math.floor(new Date().getTime() / 1000);
             };
-            var mark = { "~": unixtimeNow() };
-            if (sandbox.find("#private")[0].checked){
-                mark["%private"] = true;
-            }
-            mark["@"] = email;
-            if (sandbox.find("#comment-tab-content").hasClass("active")){
-                mark["#"] = sandbox.find("#comment-body").val();
-            } else if (sandbox.find("#hyperlink-tab-content").hasClass(
-                           "active")){
-                mark.title = sandbox.find("#hyperlink-title").val();
-                mark.hyperlink = sandbox.find("#hyperlink-url").val();
-            }
-            sandbox.publish("new-mark", mark);
+            var makeMarkCallback = function(email, password){
+                var mark = { "~": unixtimeNow() };
+                if (sandbox.find("#private")[0].checked){
+                    mark["%private"] = true;
+                }
+                if (sandbox.find("#comment-tab-content").hasClass("active")){
+                    mark["#"] = sandbox.find("#comment-body").val();
+                } else if (sandbox.find("#hyperlink-tab-content").hasClass(
+                               "active")){
+                    mark.title = sandbox.find("#hyperlink-title").val();
+                    mark.hyperlink = sandbox.find("#hyperlink-url").val();
+                }
+                mark["@"] = email;
+                sandbox.publish("new-mark", mark);
+            };
+
+            sandbox.publish("logged-in?", {
+                                "success": makeMarkCallback,
+                                "failure": alert("failure")});
         };
 
         var show = function(){

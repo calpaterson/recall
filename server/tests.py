@@ -264,6 +264,27 @@ class ServerTests(unittest.TestCase):
             self.client.get("/mark/" + email + "/0", headers=headers).data)
         self.assertEqual(expected_mark, specific_mark_with_auth)
 
+    def test_cannot_create_public_mark_without_who_and_when(self):
+        _, email, password = self._create_test_user()
+        headers = Headers({"X-Email": email, "X-Password": password})
+        mark1 = {"~": 0, "#": "Hello"}
+        mark2 = {"@": email, "#": "Hello"}
+
+        expected_response_data = {
+            "human_readable": "Must include @ and ~ with all marks"}
+
+        url = "/mark"
+        post_data = json.dumps(mark1)
+        response = self.client.post(url, headers=headers, data=post_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response_data, expected_response_data)
+
+        post_data = json.dumps(mark2)
+        response = self.client.post(url, headers=headers, data=post_data)
+        response_data = json.loads(response.data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response_data, expected_response_data)
 
     def test_get_public_marks_of_others_while_authed(self):
         _, user1, password1 = self._create_test_user()
