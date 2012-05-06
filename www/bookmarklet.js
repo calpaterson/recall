@@ -75,13 +75,17 @@ core.add(
 
             sandbox.publish("logged-in?", {
                                 "success": makeMarkCallback,
-                                "failure": alert("failure")});
+                                "failure": failure});
         };
 
         var show = function(){
             sandbox.find()[0].hidden = false;
             return false;
         };
+
+	var failure = function(){
+	    
+	};
 
         var hide = function(){
             sandbox.find()[0].hidden = true;
