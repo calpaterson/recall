@@ -1,6 +1,6 @@
 void(
     open(
-	'BASE_API_URL' +
+	'WWW_BASE_URL' +
 	    '/bookmarklet.html?version=1&title=' +
 	    encodeURIComponent(document.title) +
 	    '&url=' +

@@ -238,6 +238,10 @@ core.add(
                     mark.unread = true;
                 }
             }
+            if (element.attributes.hasOwnProperty("TAGS")){
+                var string = element.attributes.TAGS.nodeValue;
+                mark["%tags"] = string.split(/ *, */);
+            }
             return mark;
         };
 
@@ -312,6 +316,46 @@ core.add(
             sandbox = sandbox_;
             sandbox.subscribe("info", info);
             sandbox.subscribe("error", error);
+        };
+    }());
+
+core.add(
+    "bookmarklet",
+    function(){
+        var sandbox;
+
+        var insertJavasciptLink = function(){
+            var insert = function(status, content){
+                var bookmarkletAnchor = sandbox.find("#bookmarklet-a")[0];
+                var url = "javascript:" + content.replace(
+                    "WWW_BASE_URL", recall_config["www-base-url"]);
+                bookmarkletAnchor.href = url;
+            };
+
+            var trampolineURL = recall_config["www-base-url"] + "/bookmarklet-trampoline";
+            
+            sandbox.asynchronous(
+                insert,
+                "get",
+                trampolineURL
+            );
+        };
+
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+            return false;
+        };
+        
+        return function(sandbox_){
+            sandbox = sandbox_;
+            insertJavasciptLink();
+            sandbox.subscribe("show-bookmarklet", show);
+            sandbox.subscribe("hide-all", hide);
         };
     }());
 

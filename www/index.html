@@ -69,10 +69,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<a href="#">Import Bookmarks</a>
 	      </li>
 	    </div>
-
 	    <div hidden="true">
-	      <li id="show-login" class="show navbar-visitor" hidden="true">
+	      <li id="show-login" class="show navbar-visitor">
 		<a href="#">Login</a>
+	      </li>
+	    </div>
+	    <div hidden="true">
+	      <li id="show-bookmarklet" class="show navbar-user">
+		<a href="#">Bookmarklet</a>
 	      </li>
 	    </div>
 	    <div hidden="true">
@@ -252,6 +256,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
       	  </form>
 	</div>
       </div>
+
+      <div id="bookmarklet" class="row" hidden="true">
+	<div class="offset4 span4">
+	  <h3>Using the Recall Bookmarklet</h3>
+	  <p>
+    	    You can use the bookmarklet to mark from a web browser.  Drag the
+    	    hyperlink below onto your bookmarks toolbar.
+	  </p>
+	  <p>
+    	    <a class="bookmarklet" id="bookmarklet-a" href="#">mark this</a>
+	  </p>
+	</div>
+      </div>
     
       <div id="view" hidden="true">
 	<div id="list-of-marks">
@@ -310,19 +327,3 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <script src="third-party/htmlparser.js"></script>
   </body>
 </html>
-
-    <!-- <div id="bookmarklet-modal" class="modal fade"> -->
-    <!--   <div class="modal-header"> -->
-    <!-- 	<a class="close" data-dismiss="modal">×</a> -->
-    <!-- 	<h3>Using the Recall Bookmarklet</h3> -->
-    <!--   </div> -->
-    <!--   <div class="modal-body"> -->
-    <!-- 	<p> -->
-    <!-- 	  You can use the bookmarklet to mark from a web browser.  Drag the -->
-    <!-- 	  hyperlink below onto your bookmarks toolbar. -->
-    <!-- 	</p> -->
-    <!-- 	<p> -->
-    <!-- 	  <a class="bookmarklet" id="bookmarklet" href="">Drag me!</a> -->
-    <!-- 	</p> -->
-    <!--   </div> -->
-    <!-- </div> -->
