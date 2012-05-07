@@ -98,6 +98,8 @@ class ServerTests(unittest.TestCase):
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
+        self.assertEquals(user_in_db["verified"], 0)
+        self.assertNotIn("email_verified", user_in_db)
 
     def test_verify_email_with_wrong_email(self):
         url = "/user"

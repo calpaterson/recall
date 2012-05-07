@@ -310,8 +310,7 @@ def verify_email(email_key):
 
     spec = {"email_key": email_key, "email": body["email"],
             "verified": {"$exists": False}}
-    update = {"$set": {"email_verified": get_unixtime(),
-                       "password_hash": password_hash,
+    update = {"$set": {"password_hash": password_hash,
                        "verified": get_unixtime()}}
     db = get_db()
     success = db.users.update(spec, update, safe=True)["updatedExisting"]
