@@ -44,7 +44,7 @@ core.add(
         var verify = function(){
             var button = sandbox.find("#v-e-submit")[0];
             button.classList.add("disabled");
-            button.innerText = "Verifying...";
+            button.textContent = "Verifying...";
 
             var matches = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
             var email_key = matches[0].slice(10);
@@ -74,7 +74,7 @@ core.add(
 
         var failure = function(){
             var button = sandbox.find("#v-e-submit")[0];
-            button.innerText = "Try Again";
+            button.textContent = "Try Again";
             button.classList.remove("disabled");
         };
 
@@ -96,7 +96,7 @@ core.add(
         var send = function(){
             var button = sandbox.find("#r-i-submit")[0];
             button.classList.add("disabled");
-            button.innerText = "Sending...";
+            button.textContent = "Sending...";
 
             var data = {};
 
@@ -140,12 +140,12 @@ core.add(
 
         var success = function(){
             var button = sandbox.find("#r-i-submit")[0];
-            button.innerText = "Sent!";
+            button.textContent = "Sent!";
         };
 
         var failure = function(){
             var button = sandbox.find("#r-i-submit")[0];
-            button.innerText = "Try Again (after filling out all fields)";
+            button.textContent = "Try Again (after filling out all fields)";
             button.classList.remove("disabled");
         };
 
@@ -197,17 +197,17 @@ core.add(
                 var template = sandbox.find("#hyperlink-template")[0];
                 var hyperlink = template.cloneNode(true);
                 hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
-                sandbox.offdom.find(hyperlink, ".who")[0].innerText = mark["@"];
+                sandbox.offdom.find(hyperlink, ".who")[0].textContent = mark["@"];
                 sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
-                sandbox.offdom.find(hyperlink, ".hyperlink-title")[0].innerText = mark.title;
-                sandbox.offdom.find(hyperlink, ".when")[0].innerText = humanTime(mark["~"]);
+                sandbox.offdom.find(hyperlink, ".hyperlink-title")[0].textContent = mark.title;
+                sandbox.offdom.find(hyperlink, ".when")[0].textContent = humanTime(mark["~"]);
                 return hyperlink;
             } else {
                 var comment = sandbox.find("#comment-template")[0].cloneNode(true);
                 comment.id = "mark-" + mark["@"] + "-" + mark["~"];
-                sandbox.offdom.find(comment, ".who")[0].innerText = mark["@"];
-                sandbox.offdom.find(comment, ".what")[0].innerText = mark["#"];
-                sandbox.offdom.find(comment, ".when")[0].innerText = humanTime(mark["~"]);
+                sandbox.offdom.find(comment, ".who")[0].textContent = mark["@"];
+                sandbox.offdom.find(comment, ".what")[0].textContent = mark["#"];
+                sandbox.offdom.find(comment, ".when")[0].textContent = humanTime(mark["~"]);
                 return comment;
             }
         };
@@ -273,7 +273,7 @@ core.add(
         var importBookmarks = function(){
             var button = sandbox.find("#m-i-import")[0];
             button.classList.add("disabled");
-            button.innerText = "Importing...";
+            button.textContent = "Importing...";
             var bookmarksFile = $("#m-i-bookmarks-file-input")[0].files[0];
             var reader = new FileReader();
             reader.onload = function(event){
@@ -290,7 +290,7 @@ core.add(
                     }
                 }
                 sandbox.publish("new-marks", bookmarks);
-                button.innerText = "Imported!";
+                button.textContent = "Imported!";
             };
             reader.readAsText(bookmarksFile, "UTF-8");
             return false;
@@ -324,7 +324,7 @@ core.add(
             infobox.id = undefined;
             infobox.hidden = false;
             infobox.classList.add("alert-success");
-            sandbox.offdom.find(infobox, ".info-contents")[0].innerText = message;
+            sandbox.offdom.find(infobox, ".info-contents")[0].textContent = message;
             sandbox.append(infobox);
         };
 
@@ -333,7 +333,7 @@ core.add(
             infobox.id = undefined;
             infobox.hidden = false;
             infobox.classList.add("alert-error");
-            sandbox.offdom.find(infobox, ".info-contents")[0].innerText = message;
+            sandbox.offdom.find(infobox, ".info-contents")[0].textContent = message;
             sandbox.append(infobox);
         };
 
@@ -403,7 +403,7 @@ core.add(
 
             var navbarLinkForNewShow = sandbox.find("#show-" + show);
             if (navbarLinkForNewShow.length !== 0){
-                navbarLinkForNewShow[0].classList.add("active");                
+                navbarLinkForNewShow[0].classList.add("active");
             }
         };
 
@@ -429,7 +429,7 @@ core.add(
                 } else {
                     version = "Version " + content;
                 }
-                sandbox.find("#recall-version")[0].innerText = version;         
+                sandbox.find("#recall-version")[0].textContent = version;         
             };
             sandbox.asynchronous(set, "get", recall_config["www-base-url"] + "/version");
         };

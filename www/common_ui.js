@@ -6,7 +6,7 @@ core.add(
 
         var login = function(){
             button.classList.add("disabled");
-            button.innerText = "Logging in...";
+            button.textContent = "Logging in...";
             sandbox.publish(
             "login", {
                 "email": sandbox.find("#login-form-email")[0].value,
@@ -20,17 +20,17 @@ core.add(
 
         var loginSuccess = function(user){
             hide();
-            button.innerText = "Login Again";
+            button.textContent = "Login Again";
             button.classList.remove("disabled");
             sandbox.publish("show-post-login");
         };
 
         var offline = function(user){
-            button.innerText = "You are offline";
+            button.textContent = "You are offline";
         };
 
         var loginError = function(user){
-            button.innerText = "Try Again";
+            button.textContent = "Try Again";
             button.classList.remove("disabled");
         };
 
