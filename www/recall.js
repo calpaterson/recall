@@ -98,30 +98,55 @@ core.add(
             button.classList.add("disabled");
             button.innerText = "Sending...";
 
-            var data = {
-                "email": sandbox.find("#r-i-email")[0].value
-            };
+            var data = {};
+
+            data.email = sandbox.find("#r-i-email")[0].value;
+            if (data.email.indexOf("@") === -1){
+                failure();
+                return false;
+            }
+
             var typeSelect = sandbox.find("#r-i-type")[0];
             if (typeSelect.selectedIndex === 0){
                 data.firstName = sandbox.find("#r-i-first-name")[0].value;
                 data.surname = sandbox.find("#r-i-surname")[0].value;
+                if (data.firstName === "" || data.surname === ""){
+                    failure();
+                    return false;
+                }
             } else if (typeSelect.selectedIndex === 1){
                 data.pseudonym = sandbox.find("#r-i-pseudonym")[0].value;
+                if (data.pseudonym === ""){
+                    failure();
+                    return false;
+                }
             }
 
-            // FIXME: This is a breach of the division
-            $.ajax(recall_config["api-base-url"] + "/user",
-                {
-                    success: function(){
-                        button.innerText = "Sent!";
-                    },
-                    type: "post",
-                    data: JSON.stringify(data),
-                    contentType: "application/json",
-                    dataType: "json"
-                }
-            );
+            sandbox.asynchronous(
+                function(status, content){
+                    if(status !== 202){
+                        failure();
+                    } else {
+                        success();
+                    }
+                },
+                "post",
+                recall_config["api-base-url"] + "/user",
+                JSON.stringify(data),
+                "application/json"
+                );
             return false;
+        };
+
+        var success = function(){
+            var button = sandbox.find("#r-i-submit")[0];
+            button.innerText = "Sent!";
+        };
+
+        var failure = function(){
+            var button = sandbox.find("#r-i-submit")[0];
+            button.innerText = "Try Again (after filling out all fields)";
+            button.classList.remove("disabled");
         };
 
         var changeType = function(event){
