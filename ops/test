@@ -3,6 +3,8 @@ set -e
 
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+export RECALL_PASSWORD_SALT="foo"
+
 python ${OPS_DIR}/../server/tests.py
 
 # jasmine-node ${OPS_DIR}/../www/bookmarkletSpec.js
