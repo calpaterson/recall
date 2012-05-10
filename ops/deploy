@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -e
+
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
+
+if [[ $# != 1 ]]
+then
+    echo "usage: deploy N, where N is the version to deploy"
+    exit 1
+fi
+
+VERSION=$1
+
+# SCP the binary onto the machine
+scp -B $PROJECT_ROOT/ops/artefacts/recall_$VERSION_all.deb root@middle.calpaterson.com
+
+# SSH install and restart the job
+ssh root@middle.calpaterson.com "dpkg -i recall_$VERSION_all.deb; supervisorctl restart recall-server"
