@@ -63,15 +63,18 @@ def load_settings():
         "RECALL_MONGODB_HOST", "localhost")
     settings["RECALL_MONGODB_PORT"] = os.environ.get(
         "RECALL_MONGODB_PORT", 27017)
-    settings["RECALL_PASSWORD_SALT"] = os.environ.get(
-        "RECALL_PASSWORD_SALT", "$2a$12$tl2VDOPWJOuoJsnu6xQtWu")
     settings["RECALL_API_BASE_URL"] = os.environ.get(
         "RECALL_API_HOSTNAME", "https://localhost:5000")
     settings["RECALL_MARK_LIMIT"] = os.environ.get("RECALL_MARK_LIMIT", 100)
-    if os.environ.get("RECALL_DEBUG_MODE") == "false":
-        settings["RECALL_DEBUG_MODE"] = False
-    else:
+    if os.environ.get("RECALL_DEBUG_MODE", "false").lower() == "true":
         settings["RECALL_DEBUG_MODE"] = True
+    else:
+        settings["RECALL_DEBUG_MODE"] = False
+    try:
+        settings["RECALL_PASSWORD_SALT"] = os.environ["RECALL_PASSWORD_SALT"]
+    except KeyError as e:
+        print("You MUST set $RECALL_PASSWORD_SALT before running recall-server")
+        exit(1)
 
 def get_db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
