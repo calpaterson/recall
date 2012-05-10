@@ -72,7 +72,7 @@ def load_settings():
         settings["RECALL_DEBUG_MODE"] = False
     try:
         settings["RECALL_PASSWORD_SALT"] = os.environ["RECALL_PASSWORD_SALT"]
-    except KeyError as e:
+    except KeyError:
         print("You MUST set $RECALL_PASSWORD_SALT before running recall-server")
         exit(1)
 
