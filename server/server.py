@@ -326,6 +326,30 @@ def verify_email(email_key):
     return json.dumps(blacklist(
             user, ["_id", "email_key", "password_hash"])), 201
 
+@app.route("/linked/<who>/<when>", methods=["GET"])
+def linked(who, when):
+    spec = {"$or": [
+            {"%private": {"$exists": False},
+             "@": who,
+             "~": int(when)},
+            {"%private": {"$exists": False},
+             u":.@": who,
+             u":.~": int(when)
+             }
+            ]}
+            
+    try:
+        raise KeyError # Fill this in
+    except KeyError:
+        pass
+    db = get_db()
+    found = []
+    for mark in db.marks.find(spec):
+        del(mark[u"_id"])
+        mark[u"%url"] = make_mark_url(mark)
+        found.append(mark)
+    return json.dumps(list(found))
+
 if __name__ == "__main__":
     load_settings()
     if settings["RECALL_DEBUG_MODE"]:
