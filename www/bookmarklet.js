@@ -101,6 +101,7 @@ core.add(
                     },
                     "failure": function(){
                         button.textContent = "Failure!";
+			button.classList.remove("disabled");
                     },
                     "marks": marks
                 };
