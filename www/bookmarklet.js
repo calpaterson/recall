@@ -54,12 +54,19 @@ core.add(
         };
 
         var makeMark = function(event){
+            var button = sandbox.find("#mark-button")[0];
+            button.classList.add("disabled");
+            button.textContent = "Marking...";
             var unixtimeNow = function() {
                 return Math.floor(new Date().getTime() / 1000);
             };
             var makeMarkCallback = function(email, password){
-                var mark = { "~": unixtimeNow() };
-                if (sandbox.find("#private")[0].checked){
+                var marks = [];
+
+                var markTime = unixtimeNow();
+                var mark = { "~": markTime };
+                var private_ = sandbox.find("#private")[0].checked;
+                if (private_){
                     mark["%private"] = true;
                 }
                 if (sandbox.find("#comment-tab-content").hasClass("active")){
@@ -70,21 +77,39 @@ core.add(
                     mark.hyperlink = sandbox.find("#hyperlink-url").val();
                 }
                 mark["@"] = email;
-                sandbox.publish("new-mark", mark);
+                marks.push(mark);
+
+                var factsEntered = sandbox.find("#about-facts")[0].value.split(/ *, */);
+                var facts = {};
+                var factTime = markTime;
+                for (var i=0; i<factsEntered.length; i++){
+                    factTime += 1;
+                    var fact = { "@": email,
+                                 "~": factTime,
+                                 ":": {"@": email, "~": markTime}};
+                    if (private_){
+                        fact["%private"] = true;
+                    };
+                    marks.push(fact);
+                }
+                
+                sandbox.publish("new-marks", marks);
+                button.textContent = "Marked!";
+            };
+
+            var failure = function(){
+                
             };
 
             sandbox.publish("logged-in?", {
                                 "success": makeMarkCallback,
                                 "failure": failure});
+            return false;
         };
 
         var show = function(){
             sandbox.find()[0].hidden = false;
             return false;
-        };
-
-        var failure = function(){
-            
         };
 
         var hide = function(){
@@ -98,7 +123,7 @@ core.add(
             preloadHyperlinkTabFields();
             sandbox.bind(".tab", "click", saveTabSelection);
             sandbox.bind("#mark-button", "click", makeMark);
-            sandbox.subscribe("mark-sent", function() {window.close();});
+            // sandbox.subscribe("mark-sent", function() {window.close();});
             sandbox.subscribe("hide-all", hide);
             sandbox.subscribe("show-bookmarklet", show);
             sandbox.subscribe("show-post-login", show);

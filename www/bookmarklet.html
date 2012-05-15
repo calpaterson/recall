@@ -64,34 +64,39 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <div id="bookmarklet" hidden="true">
 
       <!-- Form view -->
-      <div id="form" class="tabbable">
+      <form id="form" class="tabbable">
 	<!-- Tab bar -->
-	<ul class="nav nav-tabs"> 
+	<ul class="nav nav-pills">
           <li id="hyperlink-tab">
             <a href="#hyperlink-tab-content"
-	       class="tab" data-toggle="tab">Hyperlink</a>
+	       class="tab" data-toggle="tab">Mark a Hyperlink</a>
           </li>
           <li id="comment-tab">
             <a href="#comment-tab-content"
-	       class="tab" data-toggle="tab">Comment</a>
+	       class="tab" data-toggle="tab">Mark a Comment</a>
           </li>
 	</ul>
 
 	<!-- Tab contents -->
 	<div class="tab-content">
 	  <div class="tab-pane" id="comment-tab-content">
-            <div class="well">
+            <div>
               <textarea id="comment-body" class="span4" autofocus="true"></textarea>
             </div>
           </div>
           <div class="tab-pane" id="hyperlink-tab-content">
-            <div class="well">
+            <div>
               <label>Title</label>
               <input id="hyperlink-title" class="span4" type="text">
               <label>URL</label>
               <input id="hyperlink-url" class="span4" type="url">
             </div>
           </div>
+	</div>
+
+	<div class="facts">
+	  <label>What is this mark about?</label>
+	  <input id="about-facts" type="text" placeholder="design, computers, politics">
 	</div>
 
 	<!-- Footer containing button -->
@@ -106,7 +111,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	  </button>
 	</div>
       </div>
-    </div>
+    </form>
     
     <script src="third-party/jquery/dist/jquery.js"></script>
     <script src="third-party/bootstrap/js/bootstrap-alert.js"></script>
