@@ -86,15 +86,25 @@ core.add(
                     factTime += 1;
                     var fact = { "@": email,
                                  "~": factTime,
+                                 "about": factsEntered[i],
                                  ":": {"@": email, "~": markTime}};
                     if (private_){
                         fact["%private"] = true;
-                    };
+                    }
                     marks.push(fact);
                 }
-                
-                sandbox.publish("new-marks", marks);
-                button.textContent = "Marked!";
+
+                var message = {
+                    "success": function(){
+                        button.textContent = "Marked!";
+                        window.close();
+                    },
+                    "failure": function(){
+                        button.textContent = "Failure!";
+                    },
+                    "marks": marks
+                };
+                sandbox.publish("new-marks", message);
             };
 
             var failure = function(){

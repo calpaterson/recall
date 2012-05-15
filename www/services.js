@@ -101,19 +101,17 @@ core.add(
 
         var email, password;
 
-        var send = function(mark){
+        var send = function(message){
             authenticate();
-            var serialisedMark = JSON.stringify(mark);
+            var serialisedMark = JSON.stringify(message.marks);
             sandbox.asynchronous(
                 function(status, content){
                     if (status === 201){
-                        sandbox.publish("mark-sent");
+			message.success();
                     } else if (status === 202){
-                        var message = "Your bookmarks have been imported" +
-                            " (reload the page to see them)";
-                        sandbox.publish("info", message);
+			message.success();
                     } else{
-                        sandbox.publish("error", "Problem while sending mark");
+                        message.failure();
                     }
                 },
                 "post",
