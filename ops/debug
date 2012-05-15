@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
+
+export RECALL_PASSWORD_SALT='$2a$12$tl2VDOPWJOuoJsnu6xQtWu'
+export RECALL_DEBUG_MODE='true'
+
+$PROJECT_ROOT/server/server.py
