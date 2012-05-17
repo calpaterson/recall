@@ -23,7 +23,7 @@ import os
 import time
 
 from flask import Flask, request, make_response, Response
-from pymongo import Connection, DESCENDING
+from pymongo import Connection, DESCENDING, ASCENDING
 from werkzeug.routing import BaseConverter
 import bcrypt
 import uuid
@@ -66,10 +66,22 @@ def load_settings():
     settings["RECALL_API_BASE_URL"] = os.environ.get(
         "RECALL_API_HOSTNAME", "https://localhost:5000")
     settings["RECALL_MARK_LIMIT"] = os.environ.get("RECALL_MARK_LIMIT", 100)
+    settings["RECALL_SERVER_PORT"] = os.environ.get(
+        "RECALL_SERVER_PORT", 5000)
+
+    # Elasticsearch
+    settings["RECALL_ELASTICSEARCH_PORT"] = os.environ.get(
+        "RECALL_ELASTICSEARCH_PORT", 9200)
+    settings["RECALL_ELASTICSEARCH_HOST"] = os.environ.get(
+        "RECALL_ELASTICSEARCH_HOST", "localhost")
+
+    # Debug mode is running with flask's builtin server
     if os.environ.get("RECALL_DEBUG_MODE", "false").lower() == "true":
         settings["RECALL_DEBUG_MODE"] = True
     else:
         settings["RECALL_DEBUG_MODE"] = False
+
+    # Never proceed without a password salt
     try:
         settings["RECALL_PASSWORD_SALT"] = os.environ["RECALL_PASSWORD_SALT"]
     except KeyError:
@@ -303,7 +315,7 @@ def request_invite():
     db = get_db().users
     db.ensure_index("email", unique=True)
     db.insert(body, safe=True)
-    return "", 202
+    return "null", 202
 
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
@@ -337,14 +349,14 @@ def linked(who, when):
              u":.~": int(when)
              }
             ]}
-            
+
     try:
         raise KeyError # Fill this in
     except KeyError:
         pass
     db = get_db()
     found = []
-    for mark in db.marks.find(spec):
+    for mark in db.marks.find(spec).sort(":", ASCENDING):
         del(mark[u"_id"])
         mark[u"%url"] = make_mark_url(mark)
         found.append(mark)
@@ -353,12 +365,12 @@ def linked(who, when):
 if __name__ == "__main__":
     load_settings()
     if settings["RECALL_DEBUG_MODE"]:
-        app.run(debug=True)
+        app.run(port=settings["RECALL_SERVER_PORT"], debug=True)
     else:
         from tornado.wsgi import WSGIContainer
         from tornado.httpserver import HTTPServer
         from tornado.ioloop import IOLoop
 
         http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(5000)
+        http_server.listen(settings["RECALL_SERVER_PORT"])
         IOLoop.instance().start()

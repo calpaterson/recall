@@ -20,16 +20,17 @@
 import unittest
 import json
 import time
+import os
 
 import bcrypt
 from pymongo import Connection
 from werkzeug.datastructures import Headers
+import requests
+import pymongo
 
-import server
+from server import server
 
 class ServerTests(unittest.TestCase):
-
-
     def setUp(self):
         server.app.testing = True
         self.client = server.app.test_client()
@@ -44,22 +45,6 @@ class ServerTests(unittest.TestCase):
         self.db = server.get_db()
         self.db.marks.remove()
         self.db.users.remove()
-
-    def _post_mark(self, user, mark):
-        url = "/mark"
-        data = json.dumps(mark)
-        self.client.post(url, data=data, headers=user.headers())
-
-    def _get_linked(self, user, who, when):
-        url = "/linked/" + who + "/" + str(when)
-        response = self.client.get(url, headers=user.headers())
-        return json.loads(response.data)
-
-    def _assert_marks_equal(self, mark1, mark2):
-        for field in mark1:
-            if field.startswith(u"%") or field.startswith(u"£"):
-                continue
-            self.assertEquals(mark1[field], mark2[field])
 
     def _create_test_user(self):
         pseudonym = "example" + str(self.example_user_counter)
@@ -78,33 +63,6 @@ class ServerTests(unittest.TestCase):
         response = self.client.post(url, data=post_data)
         self.assertEquals(response.status_code, 201)
         return pseudonym, email, password
-
-    def __create_test_user(self):
-        class User(object):
-            email = None
-            def __init__(self, pseudonym, email, password):
-                self.pseudonym = pseudonym
-                self.email = email
-                self.password = password
-
-            def headers(self):
-                return Headers({"X-Email": self.email, "X-Password": self.password})
-
-        pseudonym = "example" + str(self.example_user_counter)
-        email = pseudonym + "@example.com"
-        password = email
-        post_data = json.dumps({"pseudonym": pseudonym, "email": email})
-        self.client.post("/user", data=str(post_data))
-        self.example_user_counter += 1
-
-        db = server.get_db()
-        email_key = db.users.find_one({"email": email})["email_key"]
-
-        post_data = json.dumps({"password": password, "email": email})
-        url = "/user/" + email_key
-        self.client.post(url, data=post_data)
-        return User(pseudonym, email, password)
-
 
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
@@ -543,27 +501,6 @@ class ServerTests(unittest.TestCase):
         except Exception as e:
             data, status = server.handle_exception(e)
             self.assertIn("human_readable", json.loads(data))
-
-    def test_save_and_retrieve_fact(self):
-        user = self.__create_test_user()
-        mark = {u"#": "Hello", u"~": 0, u"@": user.email}
-        fact = {u":": {u"~": 0, u"@": user.email},
-                u"about": u"greeting",
-                u"@": user.email,
-                u"~": 1
-                }
-
-        self._post_mark(user, mark)
-        self._post_mark(user, fact)
-
-        marks = self._get_linked(user, user.email, 0)
-        self.assertEquals(2, len(marks))
-        self._assert_marks_equal(marks[0], mark)
-        self._assert_marks_equal(marks[1], fact)
-
-    @unittest.expectedFailure
-    def test_before_and_since(self):
-        self.fail()
 
 if __name__ == "__main__":
     unittest.main()
