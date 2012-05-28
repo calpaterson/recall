@@ -21,29 +21,31 @@ import os
 import logging
 
 import requests
+from redis import Redis
 
-settings = {}
+_settings = {}
 
 def load_settings():
-    settings["RECALL_SERVER_HOST"] = os.environ.get(
-        "RECALL_SERVER_HOST", "localhost")
-    settings["RECALL_SERVER_PORT"] = os.environ.get(
-        "RECALL_SERVER_PORT", 5000)
-
-    settings["RECALL_ELASTICSEARCH_PORT"] = os.environ.get(
-        "RECALL_ELASTICSEARCH_PORT", 9200)
-    settings["RECALL_ELASTICSEARCH_HOST"] = os.environ.get(
-        "RECALL_ELASTICSEARCH_HOST", "localhost")
-
-    settings["RECALL_SERVER_EMAIL"] = os.environ.get(
-        "RECALL_SERVER_HOST")
-    settings["RECALL_SERVER_PASSWORD"] = os.environ.get(
-        "RECALL_SERVER_PASSWORD")
+    for name in os.environ:
+        if name.startswith("RECALL_"):
+            _settings[name] = os.environ[name]
 
 def indexTrees():
-    search_engine_url = "http://%s:%s" % (
-        settings["RECALL_ELASTICSEARCH_HOST"],
-        settings["RECALL_ELASTICSEARCH_PORT"])
+    search_engine_url = "http://%s:%s/%s" % (
+        _settings["RECALL_ELASTICSEARCH_HOST"],
+        int(_settings["RECALL_ELASTICSEARCH_PORT"]),
+        _settings["RECALL_ELASTICSEARCH_INDEX"])
+    
+    recall_server_api_url = "http://%s:%s" % (
+        _settings["RECALL_SERVER_HOST"],
+        int(_settings["RECALL_SERVER_PORT"]))
+    
+    connection = Redis(
+        host=_settings["RECALL_REDIS_HOST"],
+        port=int(_settings["RECALL_REDIS_PORT"]),
+        db=int(_settings["RECALL_REDIS_DB"]))
+    
+    mark = connection.blpop("marks")
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

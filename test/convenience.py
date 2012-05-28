@@ -26,22 +26,11 @@ import pymongo
 def get_db():
     settings = get_settings()
     db_name = settings["RECALL_MONGODB_DB_NAME"]
-    return pymongo.Connection(host=settings["RECALL_MONGODB_DB_HOST"],
-                              port=settings["RECALL_MONGODB_DB_PORT"])[db_name]
+    return pymongo.Connection(host=settings["RECALL_MONGODB_HOST"],
+                              port=int(settings["RECALL_MONGODB_PORT"]))[db_name]
 
 def get_settings():
-    return {
-        "RECALL_ELASTICSEARCH_HOST": os.environ.get("RECALL_ELASTICSEARCH_HOST"),
-        "RECALL_ELASTICSEARCH_PORT": int(os.environ.get("RECALL_ELASTICSEARCH_PORT")),
-        "RECALL_MONGODB_DB_HOST": os.environ.get("RECALL_MONGODB_DB_HOST"),
-        "RECALL_MONGODB_DB_NAME": os.environ.get("RECALL_MONGODB_DB_NAME"),
-        "RECALL_MONGODB_DB_PORT": int(os.environ.get("RECALL_MONGODB_DB_PORT")),
-        "RECALL_REDIS_DB_NUMBER": os.environ.get("RECALL_REDIS_DB_NUMBER"),
-        "RECALL_REDIS_SERVER_HOST": os.environ.get("RECALL_REDIS_SERVER_HOST"),
-        "RECALL_REDIS_SERVER_PORT": int(os.environ.get("RECALL_REDIS_SERVER_PORT")),
-        "RECALL_SERVER_HOST": os.environ.get("RECALL_SERVER_HOST"),
-        "RECALL_SERVER_PORT": os.environ.get("RECALL_SERVER_PORT"),
-    }
+    return dict(filter(lambda x: x[0].startswith("RECALL_"), os.environ.items()))
 
 def get_recall_server_api_url():
     settings = get_settings()
@@ -71,7 +60,7 @@ def get_linked(user, who, when):
     response = requests.get(url, headers=user.headers())
     return json.loads(response.content)
 
-def assert_marks_equal(mark1, mark2):
+def assert_marks_equal(mark1, mark2, self):
     for field in mark1:
         if field.startswith(u"%") or field.startswith(u"£"):
             continue
@@ -88,20 +77,21 @@ def create_test_user():
             self.password = password
 
         def headers(self):
-            return {"X-Email": self.email, "X-Password": self.password}
+            return {"x-email": self.email, "x-password": self.password}
 
     pseudonym = "example" + str(_example_user_counter)
     email = pseudonym + "@example.com"
     password = email
     post_data = json.dumps({"pseudonym": pseudonym, "email": email})
-    rsp = requests.post(get_recall_server_api_url() + "/user",
-                        data=post_data,
-                        headers={"content-type": "application/json"})
+    url = get_recall_server_api_url() + "/user"
+    requests.post(url, data=post_data,
+                  headers={"content-type": "application/json"})
     _example_user_counter += 1
 
     email_key = get_db().users.find_one({"email": email})["email_key"]
 
     post_data = json.dumps({"password": password, "email": email})
     url = get_recall_server_api_url() + "/user/" + email_key
-    requests.post(url, data=post_data)
+    rsp = requests.post(url, data=post_data,
+                        headers={"content-type": "application/json"})
     return User(pseudonym, email, password)

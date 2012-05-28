@@ -29,7 +29,6 @@ class WorkerTests(unittest.TestCase):
     def tearDown(self):
         convenience.wipe_mongodb
 
-    @unittest.expectedFailure
     def test_will_index_new_trees(self):
         user = convenience.create_test_user()
         convenience.post_mark(user, {"#": "Hello", "@": user.email, "~": 0})

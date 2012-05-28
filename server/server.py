@@ -17,16 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 from sys import argv
+import json
 import os
 import time
+import traceback
+import uuid
 
 from flask import Flask, request, make_response, Response
 from pymongo import Connection, DESCENDING, ASCENDING
 from werkzeug.routing import BaseConverter
 import bcrypt
-import uuid
+from redis import Redis
 
 settings = {}
 
@@ -53,33 +55,18 @@ def handle_exception(exception):
     else:
         return json_error("Unknown exception: " + exception.message), 500
 
-
 app.handle_exception = handle_exception
 
 def load_settings():
-    settings["RECALL_MONGODB_DB_NAME"] = os.environ.get(
-        "RECALL_MONGODB_DB_NAME", "recall")
-    settings["RECALL_MONGODB_HOST"] = os.environ.get(
-        "RECALL_MONGODB_HOST", "localhost")
-    settings["RECALL_MONGODB_PORT"] = os.environ.get(
-        "RECALL_MONGODB_PORT", 27017)
-    settings["RECALL_API_BASE_URL"] = os.environ.get(
-        "RECALL_API_HOSTNAME", "https://localhost:5000")
-    settings["RECALL_MARK_LIMIT"] = os.environ.get("RECALL_MARK_LIMIT", 100)
-    settings["RECALL_SERVER_PORT"] = os.environ.get(
-        "RECALL_SERVER_PORT", 5000)
-
-    # Elasticsearch
-    settings["RECALL_ELASTICSEARCH_PORT"] = os.environ.get(
-        "RECALL_ELASTICSEARCH_PORT", 9200)
-    settings["RECALL_ELASTICSEARCH_HOST"] = os.environ.get(
-        "RECALL_ELASTICSEARCH_HOST", "localhost")
-
-    # Debug mode is running with flask's builtin server
-    if os.environ.get("RECALL_DEBUG_MODE", "false").lower() == "true":
-        settings["RECALL_DEBUG_MODE"] = True
-    else:
-        settings["RECALL_DEBUG_MODE"] = False
+    settings["RECALL_MONGODB_DB_NAME"] = "recall"
+    settings["RECALL_MONGODB_HOST"] = "localhost"
+    settings["REALLL_MONGODB_PORT"] = "27017"
+    settings["RECALL_API_BASE_URL"] = "https://localhost:5000"
+    settings["RECALL_MARK_LIMIT"] = "100"
+    settings["RECALL_SERVER_PORT"] = "5000"
+    for name in os.environ:
+        if name.startswith("RECALL_"):
+            settings[name] = os.environ[name]
 
     # Never proceed without a password salt
     try:
@@ -92,7 +79,13 @@ def get_db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return Connection(
         settings["RECALL_MONGODB_HOST"],
-        settings["RECALL_MONGODB_PORT"])[db_name]
+        int(settings["RECALL_MONGODB_PORT"]))[db_name]
+
+def redis_connection():
+    return Redis(
+        host=_settings["RECALL_REDIS_HOST"],
+        port=int(_settings["RECALL_REDIS_PORT"]),
+        db=int(_settings["RECALL_REDIS_DB"]))
 
 def has_no_problematic_keys(mark):
     mark_queue = []
@@ -165,6 +158,7 @@ def add_mark():
         db = get_db()
         db.marks.insert(body)
         del body["_id"]
+
         return body
 
     if not is_authorised(require_attempt=True):
@@ -349,11 +343,6 @@ def linked(who, when):
              u":.~": int(when)
              }
             ]}
-
-    try:
-        raise KeyError # Fill this in
-    except KeyError:
-        pass
     db = get_db()
     found = []
     for mark in db.marks.find(spec).sort(":", ASCENDING):
@@ -364,8 +353,8 @@ def linked(who, when):
 
 if __name__ == "__main__":
     load_settings()
-    if settings["RECALL_DEBUG_MODE"]:
-        app.run(port=settings["RECALL_SERVER_PORT"], debug=True)
+    if "RECALL_DEBUG_MODE" in settings:
+        app.run(port=int(settings["RECALL_SERVER_PORT"]), debug=True)
     else:
         from tornado.wsgi import WSGIContainer
         from tornado.httpserver import HTTPServer

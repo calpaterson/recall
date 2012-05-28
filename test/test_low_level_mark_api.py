@@ -27,8 +27,8 @@ import requests
 import convenience
 
 _settings = {
-    "RECALL_SERVER_HOST": os.environ.get("RECALL_SERVER_HOST", "localhost"),
-    "RECALL_SERVER_PORT": os.environ.get("RECALL_SERVER_PORT", 5001),
+    "RECALL_SERVER_HOST": os.environ["RECALL_SERVER_HOST"],
+    "RECALL_SERVER_PORT": os.environ["RECALL_SERVER_PORT"],
     }
 
 class LowLevelMarkAPITests(unittest.TestCase):
@@ -39,9 +39,8 @@ class LowLevelMarkAPITests(unittest.TestCase):
     def tearDown(self):
         convenience.wipe_mongodb();
 
-    @unittest.expectedFailure
     def test_save_and_retrieve_fact(self):
-        user = self.create_test_user()
+        user = convenience.create_test_user()
         mark = {u"#": "Hello", u"~": 0, u"@": user.email}
         fact = {u":": {u"~": 0, u"@": user.email},
                 u"about": u"greeting",
@@ -49,10 +48,10 @@ class LowLevelMarkAPITests(unittest.TestCase):
                 u"~": 1
                 }
 
-        self.post_mark(user, mark)
-        self.post_mark(user, fact)
+        convenience.post_mark(user, mark)
+        convenience.post_mark(user, fact)
 
-        marks = self.get_linked(user, user.email, 0)
+        marks = convenience.get_linked(user, user.email, 0)
         self.assertEquals(2, len(marks))
-        self.assert_marks_equal(marks[0], mark)
-        self.assert_marks_equal(marks[1], fact)
+        convenience.assert_marks_equal(marks[0], mark, self)
+        convenience.assert_marks_equal(marks[1], fact, self)
