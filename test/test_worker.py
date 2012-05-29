@@ -19,23 +19,37 @@
 
 import os
 import unittest
+import json
+import time
 
 import requests
-from redis import Redis
 
 import convenience
 
 class WorkerTests(unittest.TestCase):
+    def setUp(self):
+        self.tearDown()
+
     def tearDown(self):
-        convenience.wipe_mongodb
+        convenience.wipe_mongodb()
+        convenience.wipe_elastic_search()
 
     def test_will_index_new_trees(self):
         user = convenience.create_test_user()
-        convenience.post_mark(user, {"#": "Hello", "@": user.email, "~": 0})
-        url = convenience.get_search_api_url() + "/recall/mark/%s@%s" % (
-            user.email, 0)
-        response = requests.get(url)
-        self.assertEquals(response.status_code, 200)
+        mark = {"@": user.email, "~": 0, "#": "Please index me!"}
+        convenience.post_mark(user, mark)
+
+        def check_was_indexed():
+            url = convenience.get_search_api_url() + "/test/mark/%s%s" % (
+                user.email, "0")
+            response = requests.get(url)
+            self.assertIn("_source", response.content)
+            tree = json.loads(response.content)["_source"]
+            self.assertEquals(response.status_code, 200)
+            convenience.assert_marks_equal(tree, mark, self)
+
+        convenience.keep_trying(check_was_indexed)
+        
 
 if __name__ == "__main__":
     unittest.main()

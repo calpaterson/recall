@@ -19,6 +19,7 @@
 
 import os
 import json
+import time
 
 import requests
 import pymongo
@@ -47,6 +48,12 @@ def wipe_mongodb():
         if collection_name == u"system.indexes":
             continue
         get_db().drop_collection(collection_name)
+
+def wipe_elastic_search():
+    url = "{search_url}/{index}".format(
+        search_url = get_search_api_url(),
+        index = get_settings()["RECALL_ELASTICSEARCH_INDEX"])
+    requests.delete(url)
 
 def post_mark(user, mark):
     url = get_recall_server_api_url() + "/mark"
@@ -95,3 +102,20 @@ def create_test_user():
     rsp = requests.post(url, data=post_data,
                         headers={"content-type": "application/json"})
     return User(pseudonym, email, password)
+
+def keep_trying(test, seconds=5, gap=0.1):
+    give_up = int(time.time()) + seconds
+    attempts = 0
+    while(True):
+        try:
+            attempts += 1
+            test()
+            break
+        except AssertionError as e:
+            now = int(time.time())
+            if now < give_up:
+                time.sleep(gap)
+                continue
+            else:
+                raise e
+

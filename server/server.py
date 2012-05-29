@@ -83,9 +83,9 @@ def get_db():
 
 def redis_connection():
     return Redis(
-        host=_settings["RECALL_REDIS_HOST"],
-        port=int(_settings["RECALL_REDIS_PORT"]),
-        db=int(_settings["RECALL_REDIS_DB"]))
+        host=settings["RECALL_REDIS_HOST"],
+        port=int(settings["RECALL_REDIS_PORT"]),
+        db=int(settings["RECALL_REDIS_DB"]))
 
 def has_no_problematic_keys(mark):
     mark_queue = []
@@ -158,7 +158,7 @@ def add_mark():
         db = get_db()
         db.marks.insert(body)
         del body["_id"]
-
+        redis_connection().lpush("marks", json.dumps(body))
         return body
 
     if not is_authorised(require_attempt=True):

@@ -19,6 +19,7 @@
 
 import os
 import logging
+import json
 
 import requests
 from redis import Redis
@@ -30,25 +31,36 @@ def load_settings():
         if name.startswith("RECALL_"):
             _settings[name] = os.environ[name]
 
-def indexTrees():
-    search_engine_url = "http://%s:%s/%s" % (
-        _settings["RECALL_ELASTICSEARCH_HOST"],
-        int(_settings["RECALL_ELASTICSEARCH_PORT"]),
-        _settings["RECALL_ELASTICSEARCH_INDEX"])
-    
-    recall_server_api_url = "http://%s:%s" % (
-        _settings["RECALL_SERVER_HOST"],
-        int(_settings["RECALL_SERVER_PORT"]))
-    
-    connection = Redis(
-        host=_settings["RECALL_REDIS_HOST"],
-        port=int(_settings["RECALL_REDIS_PORT"]),
-        db=int(_settings["RECALL_REDIS_DB"]))
-    
-    mark = connection.blpop("marks")
+def index_new_marks():
+    def index(name, value):
+        url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
+            hostname = _settings["RECALL_ELASTICSEARCH_HOST"],
+            port = int(_settings["RECALL_ELASTICSEARCH_PORT"]),
+            index = _settings["RECALL_ELASTICSEARCH_INDEX"],
+            type = "mark",
+            id = name)
+        requests.post(url, data=json.dumps(value))
+
+    def redis_connection():
+        return Redis(
+            host=_settings["RECALL_REDIS_HOST"],
+            port=int(_settings["RECALL_REDIS_PORT"]),
+            db=int(_settings["RECALL_REDIS_DB"]))
+
+    def pop_mark():
+        connection = redis_connection()
+        entry = connection.blpop("marks")
+        mark_as_string = entry[1]
+        return json.loads(mark_as_string)
+
+    def is_root(mark):
+        return ":" not in mark
+
+    mark = pop_mark()
+    if is_root(mark):
+        index(mark["@"] + str(mark["~"]), mark)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
     load_settings()
     while(True):
-        indexTrees()
+        index_new_marks()
