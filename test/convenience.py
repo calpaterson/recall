@@ -103,7 +103,7 @@ def create_test_user():
                         headers={"content-type": "application/json"})
     return User(pseudonym, email, password)
 
-def keep_trying(test, seconds=5, gap=0.1):
+def keep_trying(test, seconds=2, gap=0.1):
     give_up = int(time.time()) + seconds
     attempts = 0
     while(True):

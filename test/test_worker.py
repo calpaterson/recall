@@ -34,21 +34,39 @@ class WorkerTests(unittest.TestCase):
         convenience.wipe_mongodb()
         convenience.wipe_elastic_search()
 
-    def test_will_index_new_trees(self):
+    def _assert_index(self, name, expectedValue):
+        url = convenience.get_search_api_url() + "/test/mark/%s" % name
+        response = requests.get(url)
+        self.assertIn("_source", response.content)
+        tree = json.loads(response.content)["_source"]
+        self.assertEquals(response.status_code, 200)
+        for key in tree.keys():
+            tree.__delitem__(key) if key.startswith(u"£") else None
+        self.assertEquals(tree, expectedValue)
+
+    def test_will_index_new_roots(self):
         user = convenience.create_test_user()
         mark = {"@": user.email, "~": 0, "#": "Please index me!"}
         convenience.post_mark(user, mark)
 
-        def check_was_indexed():
-            url = convenience.get_search_api_url() + "/test/mark/%s%s" % (
-                user.email, "0")
-            response = requests.get(url)
-            self.assertIn("_source", response.content)
-            tree = json.loads(response.content)["_source"]
-            self.assertEquals(response.status_code, 200)
-            convenience.assert_marks_equal(tree, mark, self)
+        convenience.keep_trying(lambda: self._assert_index(
+            user.email + "0", mark))
 
-        convenience.keep_trying(check_was_indexed)
+    @unittest.expectedFailure
+    def test_will_index_trees(self):
+        user = convenience.create_test_user()
+        map(lambda mark: convenience.post_mark(user, mark), [
+                {"@": user.email, "~": 0, "#": "Please index me!"},
+                {"@": user.email, "~": 1, "about": "hopes"},
+                {"@": user.email, "~": 2, "about": "pleads"},
+                ])
+        expected_tree = {
+            "@": user.email,
+            "#": "Please index me!",
+            "~": 0,
+            "about": ["hopes", "pleads"]}
+        convenience.keep_trying(lambda: self._assert_index(
+                user.email + "0", expected_tree))
         
 
 if __name__ == "__main__":
