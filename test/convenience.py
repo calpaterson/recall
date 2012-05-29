@@ -73,9 +73,9 @@ def assert_marks_equal(mark1, mark2, self):
             continue
         self.assertEquals(mark1[field], mark2[field])
 
-_example_user_counter = 1
+_test_user_counter = 1
 def create_test_user():
-    global _example_user_counter
+    global _test_user_counter
     class User(object):
         email = None
         def __init__(self, pseudonym, email, password):
@@ -86,14 +86,14 @@ def create_test_user():
         def headers(self):
             return {"x-email": self.email, "x-password": self.password}
 
-    pseudonym = "example" + str(_example_user_counter)
+    pseudonym = "example" + str(_test_user_counter)
     email = pseudonym + "@example.com"
     password = email
     post_data = json.dumps({"pseudonym": pseudonym, "email": email})
     url = get_recall_server_api_url() + "/user"
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
-    _example_user_counter += 1
+    _test_user_counter += 1
 
     email_key = get_db().users.find_one({"email": email})["email_key"]
 
