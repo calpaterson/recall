@@ -3,6 +3,8 @@
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
 export RECALL_API_BASE_URL='http://localhost:6000'
+export RECALL_API_HOST="localhost"
+export RECALL_API_PORT="6000"
 export RECALL_ELASTICSEARCH_HOST=localhost
 export RECALL_ELASTICSEARCH_PORT=9200
 export RECALL_ELASTICSEARCH_INDEX=test
@@ -15,14 +17,10 @@ export RECALL_REDIS_DB=15
 export RECALL_REDIS_PORT=6379
 export RECALL_SERVER_HOST=localhost
 export RECALL_SERVER_PORT=6000
-export RECALL_DEBUG_MODE=true
+# export RECALL_DEBUG_MODE=true
 
 python ${PROJECT_ROOT}/server/server.py &
 python ${PROJECT_ROOT}/worker/worker.py &
-
-# This is required on slow machines in order to allow the above to get
-# started
-sleep 0.5
 
 python -m unittest discover -s $PROJECT_ROOT -v
 

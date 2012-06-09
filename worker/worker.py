@@ -20,6 +20,7 @@
 import os
 import logging
 import json
+import time
 
 import requests
 from redis import Redis
@@ -56,9 +57,26 @@ def index_new_marks():
     def is_root(mark):
         return ":" not in mark
 
+    def build_from_links(mark):
+        url = "http://{hostname}:{port}/linked/{email}/{unixtime}".format(
+            hostname = _settings["RECALL_API_HOST"],
+            port = _settings["RECALL_API_PORT"],
+            email = mark["@"],
+            unixtime = mark["~"])
+        print url
+        linked_marks = json.loads(requests.get(url))
+        for mark in linked_marks:
+            print marks
+            if is_root(mark):
+                pass
+            else:
+                pass
+
     mark = pop_mark()
     if is_root(mark):
         index(mark["@"] + str(mark["~"]), mark)
+    else:
+        pass
 
 if __name__ == "__main__":
     load_settings()

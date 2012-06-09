@@ -67,7 +67,7 @@ class WorkerTests(unittest.TestCase):
             "about": ["hopes", "pleads"]}
         convenience.keep_trying(lambda: self._assert_index(
                 user.email + "0", expected_tree))
-        
+
 
 if __name__ == "__main__":
     unittest.main()

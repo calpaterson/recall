@@ -25,10 +25,11 @@ import traceback
 import uuid
 
 from flask import Flask, request, make_response, Response
+from gevent import monkey
 from pymongo import Connection, DESCENDING, ASCENDING
+from redis import Redis
 from werkzeug.routing import BaseConverter
 import bcrypt
-from redis import Redis
 
 settings = {}
 
@@ -353,13 +354,11 @@ def linked(who, when):
 
 if __name__ == "__main__":
     load_settings()
+    monkey.patch_socket()
     if "RECALL_DEBUG_MODE" in settings:
+        print "Starting in debug mode"
         app.run(port=int(settings["RECALL_SERVER_PORT"]), debug=True)
     else:
-        from tornado.wsgi import WSGIContainer
-        from tornado.httpserver import HTTPServer
-        from tornado.ioloop import IOLoop
-
-        http_server = HTTPServer(WSGIContainer(app))
-        http_server.listen(settings["RECALL_SERVER_PORT"])
-        IOLoop.instance().start()
+        from gevent.wsgi import WSGIServer
+        http_server = WSGIServer(('', int(settings["RECALL_SERVER_PORT"])), app)
+        http_server.serve_forever()
