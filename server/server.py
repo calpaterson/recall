@@ -21,7 +21,6 @@ from sys import argv
 import json
 import os
 import time
-import traceback
 import uuid
 
 from flask import Flask, request, make_response, Response
