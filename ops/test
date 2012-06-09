@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
@@ -17,10 +18,12 @@ export RECALL_REDIS_DB=15
 export RECALL_REDIS_PORT=6379
 export RECALL_SERVER_HOST=localhost
 export RECALL_SERVER_PORT=6000
-# export RECALL_DEBUG_MODE=true
+export RECALL_DEBUG_MODE=true
 
 python ${PROJECT_ROOT}/server/server.py &
+sleep 1
 python ${PROJECT_ROOT}/worker/worker.py &
+sleep 1
 
 python -m unittest discover -s $PROJECT_ROOT -v
 
