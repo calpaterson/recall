@@ -24,7 +24,6 @@ import time
 import uuid
 
 from flask import Flask, request, make_response, Response
-from gevent import monkey
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
 from werkzeug.routing import BaseConverter
@@ -353,11 +352,10 @@ def linked(who, when):
 
 if __name__ == "__main__":
     load_settings()
-    monkey.patch_socket()
-    if "RECALL_DEBUG_MODE" in settings:
-        print "Starting in debug mode"
-        app.run(port=int(settings["RECALL_SERVER_PORT"]), debug=True)
-    else:
-        from gevent.wsgi import WSGIServer
-        http_server = WSGIServer(('', int(settings["RECALL_SERVER_PORT"])), app)
-        http_server.serve_forever()
+    if "RECALL_DEBUG_MODE" not in settings:
+        from gevent import monkey
+        monkey.patch_socket()
+
+    from gevent.wsgi import WSGIServer
+    http_server = WSGIServer(('', int(settings["RECALL_SERVER_PORT"])), app)
+    http_server.serve_forever()
