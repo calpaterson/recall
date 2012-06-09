@@ -95,8 +95,6 @@ def create_test_user():
                   headers={"content-type": "application/json"})
     _test_user_counter += 1
 
-    # This is a hack to deal with mongodb's "eventual consistency"
-    time.sleep(1)
     email_key = get_db().users.find_one({"email": email})["email_key"]
 
     post_data = json.dumps({"password": password, "email": email})
