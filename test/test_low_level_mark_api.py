@@ -27,14 +27,14 @@ import requests
 import convenience
 
 _settings = {
-    "RECALL_SERVER_HOST": os.environ["RECALL_SERVER_HOST"],
-    "RECALL_SERVER_PORT": os.environ["RECALL_SERVER_PORT"],
+    "RECALL_API_HOST": os.environ["RECALL_API_HOST"],
+    "RECALL_API_PORT": os.environ["RECALL_API_PORT"],
     }
 
 class LowLevelMarkAPITests(unittest.TestCase):
     def setUp(self):
-        self.recall_api_url = "http://" + _settings["RECALL_SERVER_HOST"] +\
-            ":" + _settings["RECALL_SERVER_PORT"]
+        self.recall_api_url = "http://" + _settings["RECALL_API_HOST"] +\
+            ":" + _settings["RECALL_API_PORT"]
 
     def tearDown(self):
         convenience.wipe_mongodb();

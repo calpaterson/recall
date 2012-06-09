@@ -35,8 +35,8 @@ def get_settings():
 
 def get_recall_server_api_url():
     settings = get_settings()
-    return "http://" + settings["RECALL_SERVER_HOST"] + ":" +\
-        settings["RECALL_SERVER_PORT"]
+    return "http://" + settings["RECALL_API_HOST"] + ":" +\
+        settings["RECALL_API_PORT"]
 
 def get_search_api_url():
     settings = get_settings()
