@@ -5,7 +5,7 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
 export RECALL_API_BASE_URL='http://localhost:6000'
 export RECALL_API_HOST="localhost"
-export RECALL_API_PORT="6000"
+export RECALL_API_PORT=6000
 export RECALL_ELASTICSEARCH_HOST=localhost
 export RECALL_ELASTICSEARCH_PORT=9200
 export RECALL_ELASTICSEARCH_INDEX=test
@@ -16,8 +16,6 @@ export RECALL_PASSWORD_SALT='$2a$04$HDPphuN9nmnFLPxt.fWQ3e'
 export RECALL_REDIS_HOST=localhost
 export RECALL_REDIS_DB=15
 export RECALL_REDIS_PORT=6379
-export RECALL_SERVER_HOST=localhost
-export RECALL_SERVER_PORT=6000
 export RECALL_DEBUG_MODE=true
 
 python ${PROJECT_ROOT}/server/server.py &

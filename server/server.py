@@ -357,5 +357,5 @@ if __name__ == "__main__":
         monkey.patch_socket()
 
     from gevent.wsgi import WSGIServer
-    http_server = WSGIServer(('', int(settings["RECALL_SERVER_PORT"])), app)
+    http_server = WSGIServer(('', int(settings["RECALL_API_PORT"])), app)
     http_server.serve_forever()
