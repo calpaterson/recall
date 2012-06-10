@@ -8,5 +8,5 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 scp -Bv $PROJECT_ROOT/ops/artefacts/recall_${VERSION}_all.deb root@middle.calpaterson.com:/root/
 
 # SSH install and restart the service
-ssh root@middle.calpaterson.com "dpkg -i recall_${VERSION}_all.deb"
-ssh root@middle.calpaterson.com "supervisorctl restart recall-server"
+ssh ubuntu@middle.calpaterson.com "dpkg -i recall_${VERSION}_all.deb"
+ssh ubuntu@middle.calpaterson.com "supervisorctl restart recall-server"
