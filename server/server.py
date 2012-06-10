@@ -27,6 +27,8 @@ from flask import Flask, request, make_response, Response
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
 import bcrypt
+from gevent import monkey
+from gevent.wsgi import WSGIServer
 
 settings = {}
 
@@ -352,9 +354,7 @@ def linked(who, when):
 if __name__ == "__main__":
     load_settings()
     if "RECALL_DEBUG_MODE" not in settings:
-        from gevent import monkey
         monkey.patch_socket()
 
-    from gevent.wsgi import WSGIServer
     http_server = WSGIServer(('', int(settings["RECALL_API_PORT"])), app)
     http_server.serve_forever()
