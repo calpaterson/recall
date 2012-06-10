@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-trap 'kill 0' SIGINT SIGTERM EXIT
-
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
 export RECALL_API_BASE_URL='http://localhost:6000'
@@ -21,6 +19,10 @@ export RECALL_REDIS_PORT=6379
 export RECALL_DEBUG_MODE=true
 
 python -3 ${PROJECT_ROOT}/server/server.py &
+SERVER_PID=$!
 python -3 ${PROJECT_ROOT}/worker/worker.py &
+WORKER_PID=$!
+
+trap 'kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
 
 python -m unittest discover -s $PROJECT_ROOT -v
