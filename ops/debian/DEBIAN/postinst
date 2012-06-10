@@ -7,7 +7,7 @@ EXAMPLE_CONFIG_FILE=/usr/share/recall/config.js.example
 if [ ! -f $CONFIG_FILE ]
 then
     echo "Config file not found, using default config file"
-    mv EXAMPLE_CONFIG_FILE CONFIG_FILE
+    mv $EXAMPLE_CONFIG_FILE $CONFIG_FILE
 else
     echo "Config file already installed, reusing"
 fi
