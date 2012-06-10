@@ -12,15 +12,14 @@ export RECALL_ELASTICSEARCH_INDEX=test
 export RECALL_MONGODB_DB_NAME=test
 export RECALL_MONGODB_HOST=localhost
 export RECALL_MONGODB_PORT=27017
-export RECALL_PASSWORD_SALT='$2a$04$HDPphuN9nmnFLPxt.fWQ3e'
 export RECALL_REDIS_HOST=localhost
 export RECALL_REDIS_DB=15
 export RECALL_REDIS_PORT=6379
-export RECALL_DEBUG_MODE=true
+export RECALL_TEST_MODE=true
 
-python -3 ${PROJECT_ROOT}/server/server.py &
+python ${PROJECT_ROOT}/server/server.py &
 SERVER_PID=$!
-python -3 ${PROJECT_ROOT}/worker/worker.py &
+python ${PROJECT_ROOT}/worker/worker.py &
 WORKER_PID=$!
 
 trap 'kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT

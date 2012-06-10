@@ -68,13 +68,6 @@ def load_settings():
         if name.startswith("RECALL_"):
             settings[name] = os.environ[name]
 
-    # Never proceed without a password salt
-    try:
-        settings["RECALL_PASSWORD_SALT"] = os.environ["RECALL_PASSWORD_SALT"]
-    except KeyError:
-        print("You MUST set $RECALL_PASSWORD_SALT before running recall-server")
-        exit(1)
-
 def get_db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return Connection(
@@ -134,16 +127,14 @@ def is_authorised(require_attempt=False):
         if require_attempt:
             raise HTTPException("You must include authentication headers", 400)
         return False
-    password_hash = bcrypt.hashpw(
-        password,
-        settings["RECALL_PASSWORD_SALT"])
     user = db.users.find_one(
-        {"email": email,
-         "password_hash": password_hash})
+        {"email": email, "password_hash": {"$exists": True}})
     if user is None:
         return False
-    else:
-        return user
+    if user["password_hash"] != bcrypt.hashpw(password, user["password_hash"]):
+        print "PASSWORDS DON'T MATCH"
+        return False
+    return user
 
 def make_mark_url(mark):
     return settings["RECALL_API_BASE_URL"] + "/mark/" \
@@ -314,8 +305,11 @@ def request_invite():
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
     body = json.loads(request.data)
-    password_hash = bcrypt.hashpw(body["password"],
-                                  settings["RECALL_PASSWORD_SALT"])
+    if "RECALL_TEST_MODE" in settings:
+        salt = bcrypt.gensalt(1)
+    else:
+        salt = bcrypt.gensalt()
+    password_hash = bcrypt.hashpw(body["password"], salt)
 
     spec = {"email_key": email_key, "email": body["email"],
             "verified": {"$exists": False}}

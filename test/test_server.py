@@ -37,8 +37,8 @@ class ServerTests(unittest.TestCase):
         server.load_settings()
         server.settings["RECALL_MONGODB_DB_NAME"] = "test"
         server.settings["RECALL_API_HOSTNAME"] = "localhost"
-        server.settings["RECALL_PASSWORD_SALT"] = bcrypt.gensalt(0)
         server.settings["RECALL_API_BASE_URL"] = "http://test"
+        server.settings["RECALL_TEST_MODE"] = "true"
         self.example_user_counter = 1
 
     def tearDown(self):
