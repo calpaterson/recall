@@ -26,7 +26,6 @@ import uuid
 from flask import Flask, request, make_response, Response
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
-from werkzeug.routing import BaseConverter
 import bcrypt
 
 settings = {}
