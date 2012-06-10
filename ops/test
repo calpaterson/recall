@@ -20,7 +20,7 @@ export RECALL_REDIS_DB=15
 export RECALL_REDIS_PORT=6379
 export RECALL_DEBUG_MODE=true
 
-python ${PROJECT_ROOT}/server/server.py &
-python ${PROJECT_ROOT}/worker/worker.py &
+python -3 ${PROJECT_ROOT}/server/server.py &
+python -3 ${PROJECT_ROOT}/worker/worker.py &
 
 python -m unittest discover -s $PROJECT_ROOT -v
