@@ -67,11 +67,14 @@ def get_linked(user, who, when):
     response = requests.get(url, headers=user.headers())
     return json.loads(response.content)
 
-def assert_marks_equal(mark1, mark2, self):
+def assert_marks_equal(mark1, mark2):
     for field in mark1:
         if field.startswith(u"%") or field.startswith(u"£"):
             continue
-        self.assertEquals(mark1[field], mark2[field])
+        if field not in mark2:
+            raise AssertionError("%s not in %s" % (field, mark2))
+        if mark1[field] != mark2[field]:
+            raise AssertionError("%s != %s" % (mark1[field], mark2[field]))
 
 _test_user_counter = 1
 def create_test_user():
@@ -118,4 +121,3 @@ def keep_trying(test, seconds=2, gap=0.1):
                 continue
             else:
                 raise e
-

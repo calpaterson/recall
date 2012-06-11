@@ -53,5 +53,5 @@ class LowLevelMarkAPITests(unittest.TestCase):
 
         marks = convenience.get_linked(user, user.email, 0)
         self.assertEquals(2, len(marks))
-        convenience.assert_marks_equal(marks[0], mark, self)
-        convenience.assert_marks_equal(marks[1], fact, self)
+        convenience.assert_marks_equal(marks[0], mark)
+        convenience.assert_marks_equal(marks[1], fact)

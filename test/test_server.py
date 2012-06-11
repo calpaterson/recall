@@ -27,6 +27,7 @@ from pymongo import Connection
 from werkzeug.datastructures import Headers
 import requests
 import pymongo
+import convenience
 
 from server import server
 
@@ -35,34 +36,16 @@ class ServerTests(unittest.TestCase):
         server.app.testing = True
         self.client = server.app.test_client()
         server.load_settings()
-        server.settings["RECALL_MONGODB_DB_NAME"] = "test"
-        server.settings["RECALL_API_HOSTNAME"] = "localhost"
-        server.settings["RECALL_API_BASE_URL"] = "http://test"
-        server.settings["RECALL_TEST_MODE"] = "true"
-        self.example_user_counter = 1
 
     def tearDown(self):
-        self.db = server.get_db()
-        self.db.marks.remove()
-        self.db.users.remove()
+        convenience.wipe_mongodb()
+
+    def _base_url(self):
+        return convenience.get_settings()["RECALL_API_BASE_URL"]
 
     def _create_test_user(self):
-        pseudonym = "example" + str(self.example_user_counter)
-        email = pseudonym + "@example.com"
-        password = email
-        post_data = json.dumps({"pseudonym": pseudonym, "email": email})
-        response = self.client.post("/user", data=str(post_data))
-        assert response.status_code == 202
-        self.example_user_counter += 1
-
-        db = server.get_db()
-        email_key = db.users.find_one({"email": email})["email_key"]
-
-        post_data = json.dumps({"password": password, "email": email})
-        url = "/user/" + email_key
-        response = self.client.post(url, data=post_data)
-        self.assertEquals(response.status_code, 201)
-        return pseudonym, email, password
+        test_user = convenience.create_test_user()
+        return test_user.pseudonym, test_user.email, test_user.password
 
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
@@ -72,20 +55,17 @@ class ServerTests(unittest.TestCase):
         response = self.client.post(url, data=post_data)
         self.assertEquals(expected_status_code, response.status_code)
 
-
     def test_request_invite_with_pseudonym(self):
-        expected_status_code = 202
-        url = "/user"
-        post_data = json.dumps({"pseudonym": "jb", "email": "jb@bloggs.com"})
-        response = self.client.post(url, data=post_data)
-        self.assertEqual(expected_status_code, response.status_code)
+        response = self.client.post("/user", data=json.dumps(
+                {"pseudonym": "jb", "email": "jb@bloggs.com"}))
+        self.assertEqual(202, response.status_code)
 
     def test_verify_email(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         self.client.post(url, data=post_data)
 
-        db = server.get_db()
+        db = server.db()
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
@@ -104,7 +84,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         self.client.post(url, data=post_data)
 
-        db = server.get_db()
+        db = server.db()
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
@@ -134,7 +114,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
 
-        db = server.get_db()
+        db = server.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
@@ -155,7 +135,7 @@ class ServerTests(unittest.TestCase):
                 "human_readable": "No such email_key or wrong email"})
 
 
-        db = server.get_db()
+        db = server.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
@@ -165,7 +145,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         self.client.post(url, data=post_data)
 
-        db = server.get_db()
+        db = server.db()
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
@@ -197,32 +177,25 @@ class ServerTests(unittest.TestCase):
 
 
     def test_create_public_mark(self):
-        _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
-        mark = {
-            "~": 0,
-            "@": email,
-            "#": "Hello!",
-            }
-        expected_mark = {
-            u"#": "Hello!",
-            u"@": email,
-            u"%url": u"http://test/mark/" + email + "/0",
-            u"~": 0,
-            u"£created": 0
-            }
-        post_data = json.dumps(mark)
-        response = self.client.post("/mark", data=post_data, headers=headers)
-        self.assertEqual(response.status_code, 201)
+        user = convenience.create_test_user()
+        mark = {"~": 0, "@": user.email, "#": "Hello!"}
 
-        actual_mark = json.loads(self.client.get("/mark/"+ email +"/0").data)
-        self.assertEqual(expected_mark, actual_mark)
+        post_response = requests.post(
+            self._base_url() + "/mark", data=json.dumps(mark),
+            headers=user.headers())
+        mark_directly = json.loads(
+            requests.get("{base_url}/mark/{email}/0".format(
+                    base_url=self._base_url(), email=user.email)).content)
+        mark_from_users_marks = json.loads(
+            requests.get("{base_url}/mark/{email}".format(
+                    base_url=self._base_url(), email=user.email)).content)
+        mark_from_all_marks = json.loads(
+            requests.get(self._base_url() + "/mark").content)
 
-        actual_mark = json.loads(self.client.get("/mark/" + email).data)
-        self.assertEqual([expected_mark], actual_mark)
-
-        actual_mark = json.loads(self.client.get("/mark").data)
-        self.assertEqual([expected_mark], actual_mark)
+        self.assertEqual(post_response.status_code, 201)
+        convenience.assert_marks_equal(mark, mark_directly)
+        convenience.assert_marks_equal(mark, mark_from_users_marks[0])
+        convenience.assert_marks_equal(mark, mark_from_all_marks[0])
 
 
     def test_add_and_get_private_mark(self):
@@ -233,7 +206,7 @@ class ServerTests(unittest.TestCase):
             u"~": 0,
             u"#": "Hello",
             u"@": email,
-            u"%url": u"http://test/mark/" + email + "/0",
+            u"%url": server.settings["RECALL_API_BASE_URL"] + u"/mark/" + email + "/0",
             u"%private": True,
             u"£created": 0
             }
@@ -299,7 +272,7 @@ class ServerTests(unittest.TestCase):
         user2_headers = Headers({"X-Email": user2, "X-Password": password2})
 
         expected_mark = {u"#": "Hello!", u"@": user1,
-                         u"%url": u"http://test/mark/" + user1 + "/0",
+                         u"%url": server.settings["RECALL_API_BASE_URL"] + u"/mark/" + user1 + "/0",
                          u"~": 0, u"£created": 0}
 
         response = self.client.get(
@@ -317,34 +290,32 @@ class ServerTests(unittest.TestCase):
 
 
     def test_bulk_addition_of_marks(self):
-        _, example, example_pass = self._create_test_user()
-        headers = Headers({"X-Email": example,
-                           "X-Password": example_pass})
-
+        user = convenience.create_test_user()
         marks = [
             {
                 u"~": 0,
-                u"@": example,
+                u"@": user.email,
                 u"#": u"Hello",
             },
             {
                 u"~": 1,
-                u"@": example,
+                u"@": user.email,
                 u"#": u"Hello",
                 u"%private": True
             }]
 
-        url = "/mark"
-        post_data = json.dumps(marks)
-        response = self.client.post(url, data=post_data, headers=headers)
-        self.assertEqual(202, response.status_code)
+        post_response = requests.post(
+            self._base_url() + "/mark", data=json.dumps(marks),
+            headers=user.headers())
+        get_response = requests.get(self._base_url() + "/mark/" + user.email,
+                                   headers=user.headers())
 
-        expected_response_data = list(reversed(marks))
-        response = self.client.get("/mark/" + example, headers=headers)
-        actual_response_data = json.loads(response.data)
+        actual_response_data = json.loads(get_response.content)
         for mark in actual_response_data:
             del mark["%url"]
             del mark[u"£created"]
+        expected_response_data = list(reversed(marks))
+        self.assertEqual(202, post_response.status_code)
         self.assertEqual(expected_response_data, actual_response_data)
 
 
@@ -476,24 +447,23 @@ class ServerTests(unittest.TestCase):
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([2, 1, 0], mark_times)
 
-    def test_user_able_to_check_authentication(self):
-        _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
-
-        response = self.client.get("/user/%s" % email)
-        response_data = json.loads(response.data)
-        self.assertNotIn("self", response_data)
+    def test_can_check_existance_of_user(self):
+        user = convenience.create_test_user()
+        response = requests.get(self._base_url() + "/user/" + user.email)
         self.assertEquals(200, response.status_code)
+        self.assertNotIn("self", json.loads(response.content))
 
-        response = self.client.get("/user/%s" % email, headers=headers)
-        response_data = json.loads(response.data)
-        self.assertTrue(response_data.get("self", False))
+    def test_can_check_authentication(self):
+        user = convenience.create_test_user()
+        response = requests.get(self._base_url() + "/user/" + user.email,
+                                headers=user.headers())
+        self.assertEquals(200, response.status_code)
+        self.assertIn("self", json.loads(response.content))
 
     def test_non_existent_user_gives_404(self):
         response = self.client.get("/user/god")
         self.assertEquals(404, response.status_code)
-        response_data = json.loads(response.data)
-        self.assertEqual(None, response_data)
+        self.assertEqual(None, json.loads(response.data))
 
     def test_error_handler_always_returns_json_object(self):
         try:
@@ -501,6 +471,3 @@ class ServerTests(unittest.TestCase):
         except Exception as e:
             data, status = server.handle_exception(e)
             self.assertIn("human_readable", json.loads(data))
-
-if __name__ == "__main__":
-    unittest.main()

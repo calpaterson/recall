@@ -58,17 +58,17 @@ def handle_exception(exception):
 app.handle_exception = handle_exception
 
 def load_settings():
-    settings["RECALL_MONGODB_DB_NAME"] = "recall"
-    settings["RECALL_MONGODB_HOST"] = "localhost"
-    settings["REALLL_MONGODB_PORT"] = "27017"
-    settings["RECALL_API_BASE_URL"] = "https://localhost:5000"
-    settings["RECALL_MARK_LIMIT"] = "100"
-    settings["RECALL_SERVER_PORT"] = "5000"
+    settings.update({"RECALL_MONGODB_DB_NAME": "recall",
+                     "RECALL_MONGODB_HOST": "localhost",
+                     "REALLL_MONGODB_PORT": "27017",
+                     "RECALL_API_BASE_URL": "https://localhost:5000",
+                     "RECALL_MARK_LIMIT": "100",
+                     "RECALL_SERVER_PORT": "5000"})
     for name in os.environ:
         if name.startswith("RECALL_"):
             settings[name] = os.environ[name]
 
-def get_db():
+def db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return Connection(
         settings["RECALL_MONGODB_HOST"],
@@ -113,26 +113,24 @@ def blacklist(dict_, blacklist):
 def json_error(message):
     return json.dumps({"error": message})
 
-def get_unixtime():
+def unixtime():
     if app.testing:
         return 0
     else:
         return int(time.time())
 
 def is_authorised(require_attempt=False):
-    db = get_db()
     email = request.headers.get("X-Email", None)
     password = request.headers.get("X-Password", None)
     if email is None or password is None:
         if require_attempt:
             raise HTTPException("You must include authentication headers", 400)
         return False
-    user = db.users.find_one(
+    user = db().users.find_one(
         {"email": email, "password_hash": {"$exists": True}})
     if user is None:
         return False
     if user["password_hash"] != bcrypt.hashpw(password, user["password_hash"]):
-        print "PASSWORDS DON'T MATCH"
         return False
     return user
 
@@ -145,9 +143,8 @@ def add_mark():
     def insert_mark(body):
         assert "~" in body and "@" in body, "Must include @ and ~ with all marks"
         has_no_problematic_keys(body)
-        body[u"£created"] = get_unixtime()
-        db = get_db()
-        db.marks.insert(body)
+        body[u"£created"] = unixtime()
+        db().marks.insert(body)
         del body["_id"]
         redis_connection().lpush("marks", json.dumps(body))
         return body
@@ -190,8 +187,7 @@ def get_all_marks():
                 spec["~"] = {"$lt": before}
     except KeyError:
         pass
-    db = get_db()
-    rs = db.marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
+    rs = db().marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
     marks = []
     counter = 0
     for mark in rs:
@@ -229,8 +225,7 @@ def get_all_marks_by_email(email):
                 spec["~"] = {"$lt": before}
     except KeyError:
         pass
-    db = get_db()
-    rs = db.marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
+    rs = db().marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
     marks = []
     counter = 0
     for mark in rs:
@@ -260,8 +255,7 @@ def get_mark(email, time):
                     "~": int(time)}
     except KeyError:
         pass
-    db = get_db()
-    mark = db.marks.find_one(spec)
+    mark = db().marks.find_one(spec)
     try:
         del(mark[u"_id"])
         mark[u"%url"] = make_mark_url(mark)
@@ -271,7 +265,7 @@ def get_mark(email, time):
 
 @app.route("/user/<email>", methods=["GET"])
 def user(email):
-    users = get_db().users
+    users = db().users
     user = users.find_one({"email": email})
     if user is None:
         return "null", 404
@@ -296,33 +290,30 @@ def request_invite():
     if "email" not in body:
         return "You must provide an email field", 400
     body["email_key"] = str(uuid.uuid4())
-    body["registered"] = get_unixtime()
-    db = get_db().users
-    db.ensure_index("email", unique=True)
-    db.insert(body, safe=True)
+    body["registered"] = unixtime()
+    db().users.ensure_index("email", unique=True)
+    db().users.insert(body, safe=True)
     return "null", 202
 
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
-    body = json.loads(request.data)
     if "RECALL_TEST_MODE" in settings:
         salt = bcrypt.gensalt(1)
     else:
         salt = bcrypt.gensalt()
-    password_hash = bcrypt.hashpw(body["password"], salt)
+    password_hash = bcrypt.hashpw(json.loads(request.data)["password"], salt)
 
-    spec = {"email_key": email_key, "email": body["email"],
+    spec = {"email_key": email_key, "email": json.loads(request.data)["email"],
             "verified": {"$exists": False}}
     update = {"$set": {"password_hash": password_hash,
-                       "verified": get_unixtime()}}
-    db = get_db()
-    success = db.users.update(spec, update, safe=True)["updatedExisting"]
+                       "verified": unixtime()}}
+    success = db().users.update(spec, update, safe=True)["updatedExisting"]
     if not success:
-        if db.users.find_one({"email_key": email_key, "email": body["email"]}):
+        if db().users.find_one({"email_key": email_key, "email": json.loads(request.data)["email"]}):
             raise HTTPException("Already verified", 403)
         else:
             raise HTTPException("No such email_key or wrong email", 404)
-    user = db.users.find_one({"email_key": email_key})
+    user = db().users.find_one({"email_key": email_key})
     return json.dumps(blacklist(
             user, ["_id", "email_key", "password_hash"])), 201
 
@@ -337,9 +328,8 @@ def linked(who, when):
              u":.~": int(when)
              }
             ]}
-    db = get_db()
     found = []
-    for mark in db.marks.find(spec).sort(":", ASCENDING):
+    for mark in db().marks.find(spec).sort(":", ASCENDING):
         del(mark[u"_id"])
         mark[u"%url"] = make_mark_url(mark)
         found.append(mark)
