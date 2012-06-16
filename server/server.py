@@ -29,6 +29,9 @@ from redis import Redis
 import bcrypt
 from gevent import monkey
 from gevent.wsgi import WSGIServer
+import requests
+
+import convenience
 
 settings = {}
 
@@ -63,7 +66,7 @@ def load_settings():
                      "REALLL_MONGODB_PORT": "27017",
                      "RECALL_API_BASE_URL": "https://localhost:5000",
                      "RECALL_MARK_LIMIT": "100",
-                     "RECALL_SERVER_PORT": "5000"})
+                     "RECALL_API_PORT": "5000"})
     for name in os.environ:
         if name.startswith("RECALL_"):
             settings[name] = os.environ[name]
@@ -165,29 +168,34 @@ def add_mark():
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
-    maximum = int(request.args.get("maximum", 0))
-    since = int(request.args.get("since", 0))
-    before = int(request.args.get("before", 0))
-    spec = {"%private": {"$exists": False}}
-    if since != 0:
-        spec["~"] = {"$gt": since}
-    if before != 0:
-        spec["~"] = {"$lt": before}
-    try:
-        user = is_authorised()
-        if user:
-            spec = {"$or": [
-                    {"@": user["email"]},
-                    {"%private": {"$exists": False}},
-                    ],
-                    }
-            if since != 0:
-                spec["~"] = {"$gt": since}
-            if before != 0:
-                spec["~"] = {"$lt": before}
-    except KeyError:
-        pass
-    rs = db().marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
+    if "q" in request.args:
+        return search(request.args["q"])
+    else:
+        return marks()
+
+@app.route("/mark/<email>", methods=["GET"])
+def get_all_marks_by_email(email):
+    spec_additions = {"@": email}
+    return marks(spec_additions)
+
+@convenience.on_json
+def results_to_marks(body):
+    marks = []
+    for mark in body["hits"]["hits"]:
+        marks.append(mark["_source"])
+    return marks
+
+def search(query):
+    url = convenience.get_es_mark_url() +  "/_search?q={query}".format(
+        query=query)
+    r = requests.get(url)
+    return results_to_marks(r.content)
+
+def marks(spec_additions={}):
+    spec = _build_spec(spec_additions)
+    limit = int(request.args.get("maximum", 0))
+    rs = db().marks.find(spec, sort=[("~", DESCENDING)],
+                         limit=limit)
     marks = []
     counter = 0
     for mark in rs:
@@ -202,43 +210,25 @@ def get_all_marks():
                 413, machine_readable=settings["RECALL_MARK_LIMIT"])
     return json.dumps(marks)
 
-@app.route("/mark/<email>", methods=["GET"])
-def get_all_marks_by_email(email):
-    maximum = int(request.args.get("maximum", 0))
-    since = int(request.args.get("since", 0))
-    before = int(request.args.get("before", 0))
-    spec = {"%private": {"$exists": False},
-            "@": email}
-    if since != 0:
-        spec["~"] = {"$gt": since}
-    if before != 0:
-        spec["~"] = {"$lt": before}
-    try:
-        user = is_authorised()
-        if user:
-            spec = {"$or": [
-                    {"@": user["email"]},
-                    {"%private": {"$exists": False}}]}
-            if since != 0:
-                spec["~"] = {"$gt": since}
-            if before != 0:
-                spec["~"] = {"$lt": before}
-    except KeyError:
-        pass
-    rs = db().marks.find(spec, sort=[("~", DESCENDING)], limit=maximum)
-    marks = []
-    counter = 0
-    for mark in rs:
-        del(mark[u"_id"])
-        marks.append(mark)
-        mark[u"%url"] = make_mark_url(mark)
-        counter += 1
-        if counter > settings["RECALL_MARK_LIMIT"]:
-            raise HTTPException(
-                "May not request more than %s marks at once"
-                % settings["RECALL_MARK_LIMIT"],
-                413, machine_readable=settings["RECALL_MARK_LIMIT"])
-    return json.dumps(marks)
+def _build_spec(spec_additions):
+    spec = {}
+    _respect_privacy(spec)
+
+    if int(request.args.get("since", 0)) != 0:
+        spec["~"] = {"$gt": int(request.args.get("since", 0))}
+    if int(request.args.get("before", 0)) != 0:
+        spec["~"] = {"$lt": int(request.args.get("before", 0))}
+    spec.update(spec_additions)
+    return spec
+
+def _respect_privacy(spec):
+    user = is_authorised()
+    if user:
+        spec.update({"$or": [
+                {"@": user["email"]},
+                {"%private": {"$exists": False}}]})
+    else:
+        spec.update({"%private": {"$exists": False}})
 
 @app.route("/mark/<email>/<time>", methods=["GET"])
 def get_mark(email, time):
@@ -251,8 +241,8 @@ def get_mark(email, time):
             spec = {"$or": [
                     {"@": user["email"]},
                     {"%private": {"$exists" : False}}
-                    ],
-                    "~": int(time)}
+                    ]}
+            spec.update({"~": int(time)})
     except KeyError:
         pass
     mark = db().marks.find_one(spec)

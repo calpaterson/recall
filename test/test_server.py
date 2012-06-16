@@ -41,7 +41,7 @@ class ServerTests(unittest.TestCase):
         convenience.wipe_mongodb()
 
     def _base_url(self):
-        return convenience.get_settings()["RECALL_API_BASE_URL"]
+        return convenience.get_recall_server_api_url()
 
     def _create_test_user(self):
         test_user = convenience.create_test_user()

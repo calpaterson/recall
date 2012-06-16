@@ -34,23 +34,22 @@ class WorkerTests(unittest.TestCase):
         convenience.wipe_mongodb()
         convenience.wipe_elastic_search()
 
-    def _assert_index(self, name, expectedValue):
-        url = convenience.get_search_api_url() + "/test/mark/%s" % name
-        response = requests.get(url)
-        self.assertIn("_source", response.content)
-        tree = json.loads(response.content)["_source"]
-        self.assertEquals(response.status_code, 200)
-        for key in tree.keys():
-            tree.__delitem__(key) if key.startswith(u"£") else None
-        self.assertEquals(tree, expectedValue)
-
     def test_will_index_new_roots(self):
         user = convenience.create_test_user()
         mark = {"@": user.email, "~": 0, "#": "Please index me!"}
-        convenience.post_mark(user, mark)
+        convenience.post_mark(
+            user, mark)
 
-        convenience.keep_trying(lambda: self._assert_index(
-            user.email + "0", mark))
+        def inner_assert():
+            url = convenience.get_recall_server_api_url()
+            url += "/mark?q=index"
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertEquals(1, len(content))
+            convenience.assert_marks_equal(content[0], mark)
+
+        convenience.with_patience(inner_assert)
 
     @unittest.expectedFailure
     def test_will_index_trees(self):
@@ -65,9 +64,8 @@ class WorkerTests(unittest.TestCase):
             "#": "Please index me!",
             "~": 0,
             "about": ["hopes", "pleads"]}
-        convenience.keep_trying(lambda: self._assert_index(
+        convenience.with_patience(lambda: self._assert_index(
                 user.email + "0", expected_tree))
-
 
 if __name__ == "__main__":
     unittest.main()

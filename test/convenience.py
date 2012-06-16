@@ -20,6 +20,9 @@
 import os
 import json
 import time
+from copy import deepcopy
+from pprint import pformat
+from functools import wraps
 
 import requests
 import pymongo
@@ -36,12 +39,18 @@ def get_settings():
 def get_recall_server_api_url():
     settings = get_settings()
     return "http://" + settings["RECALL_API_HOST"] + ":" +\
-        settings["RECALL_API_PORT"]
+        get_settings()["RECALL_API_PORT"]
 
-def get_search_api_url():
+def get_es_base_url():
     settings = get_settings()
     return "http://" + settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
-        str(settings["RECALL_ELASTICSEARCH_PORT"])
+        str(get_settings()["RECALL_ELASTICSEARCH_PORT"])
+
+def get_es_mark_url():
+    return "{es_base_url}/{index}/mark".format(
+        es_base_url=get_es_base_url(),
+        index=get_settings()["RECALL_ELASTICSEARCH_INDEX"])
+
 
 def wipe_mongodb():
     for collection_name in get_db().collection_names():
@@ -51,7 +60,7 @@ def wipe_mongodb():
 
 def wipe_elastic_search():
     url = "{search_url}/{index}".format(
-        search_url = get_search_api_url(),
+        search_url = get_es_base_url(),
         index = get_settings()["RECALL_ELASTICSEARCH_INDEX"])
     requests.delete(url)
 
@@ -67,14 +76,20 @@ def get_linked(user, who, when):
     response = requests.get(url, headers=user.headers())
     return json.loads(response.content)
 
-def assert_marks_equal(mark1, mark2):
-    for field in mark1:
-        if field.startswith(u"%") or field.startswith(u"£"):
-            continue
-        if field not in mark2:
-            raise AssertionError("%s not in %s" % (field, mark2))
-        if mark1[field] != mark2[field]:
-            raise AssertionError("%s != %s" % (mark1[field], mark2[field]))
+def assert_marks_equal(mark1_, mark2_):
+    field = None
+    try:
+        fields = mark1_.keys()
+        fields += mark2_.keys()
+        for field in set(fields):
+            if type(field) == str or type(field) == unicode:
+                if field.startswith(u"%") or field.startswith(u"£"):
+                    continue
+            assert field in mark1_
+            assert field in mark2_
+            assert mark1_[field] == mark2_[field]
+    except AssertionError:
+        raise AssertionError("Marks not equal: \n%s\n%s" % (pformat(mark1_), pformat(mark2_)))
 
 _test_user_counter = 1
 def create_test_user():
@@ -102,16 +117,14 @@ def create_test_user():
 
     post_data = json.dumps({"password": password, "email": email})
     url = get_recall_server_api_url() + "/user/" + email_key
-    rsp = requests.post(url, data=post_data,
-                        headers={"content-type": "application/json"})
+    requests.post(url, data=post_data,
+                  headers={"content-type": "application/json"})
     return User(pseudonym, email, password)
 
-def keep_trying(test, seconds=2, gap=0.1):
+def with_patience(test, seconds=5, gap=0.1):
     give_up = int(time.time()) + seconds
-    attempts = 0
     while(True):
         try:
-            attempts += 1
             test()
             break
         except AssertionError as e:
@@ -121,3 +134,10 @@ def keep_trying(test, seconds=2, gap=0.1):
                 continue
             else:
                 raise e
+
+def on_json(f):
+    def decorated(*args, **kwargs):
+        assert len(args) == 1
+        return json.dumps(f(json.loads(args[0]), **kwargs),
+                          indent=4)
+    return decorated
