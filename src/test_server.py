@@ -29,7 +29,7 @@ import requests
 import pymongo
 import convenience
 
-from server import server
+import server
 
 class ServerTests(unittest.TestCase):
     def setUp(self):
