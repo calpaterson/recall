@@ -1,8 +1,8 @@
 #!/bin/sh
 set -e
 
-CONFIG_FILE=/usr/share/recall/config.js
-EXAMPLE_CONFIG_FILE=/usr/share/recall/config.js.example
+CONFIG_FILE=/usr/share/recall/www/config.js
+EXAMPLE_CONFIG_FILE=/usr/share/recall/www/config.js.example
 
 if [ ! -f $CONFIG_FILE ]
 then
