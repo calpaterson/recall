@@ -22,6 +22,9 @@ SERVER_PID=$!
 python ${PROJECT_ROOT}/src/worker.py &
 WORKER_PID=$!
 
+# Hack to wait for servers to start
+sleep 2
+
 trap 'kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
 
 python -m unittest discover -s $PROJECT_ROOT -v
