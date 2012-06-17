@@ -3,4 +3,5 @@ config.json
 config.js
 *pyc
 ops/artefacts
-ops/debian/usr
+*ropeproject*
+build.d

@@ -3,65 +3,85 @@ set -e
 set -x
 
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+BUILD_DIR=$OPS_DIR/build.d
 PROJECT_ROOT=$OPS_DIR/..
 
-# If Jenkin's build number is available, use that, otherwise DEV
-if [ $BUILD_NUMBER ]
-then
-    VERSION=$BUILD_NUMBER
-else
-    VERSION=0-DEV
-fi
+create_build_directory () {
+    if [[ -d $BUILD_DIR ]]
+    then
+	rm -rf $BUILD_DIR
+    fi
+    cp -Rv $OPS_DIR/debian/ $BUILD_DIR
+}
 
-# Clean
-rm -rf $OPS_DIR/debian/usr
+set_version () {
+    if [ $BUILD_NUMBER ]
+    then
+	VERSION=$BUILD_NUMBER
+    else
+	VERSION=0-DEV
+    fi
+    echo $VERSION > $BUILD_DIR/usr/share/recall/version
+    sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/build.d/DEBIAN/control
+}
 
-# Create and populate documentation directory
-DOC_DIR=$OPS_DIR/debian/usr/share/doc/recall
-mkdir -p $DOC_DIR/
-cp $PROJECT_ROOT/LICENCE $DOC_DIR/copyright
-touch $DOC_DIR/changelog.Debian
-gzip --best $DOC_DIR/changelog.Debian
+build_bootstrap_if_needed () {
+    if [[ ! -f $PROJECT_ROOT/www/third-party/bootstrap/css/bootstrap.css ]]
+    then
+	BOOTSTRAP_DIR=$PROJECT_ROOT/www/third-party/bootstrap/
+	mkdir $BOOTSTRAP_DIR/css
+	lessc $BOOTSTRAP_DIR/less/bootstrap.less > $BOOTSTRAP_DIR/css/bootstrap.css
+	lessc $BOOTSTRAP_DIR/less/responsive.less > $BOOTSTRAP_DIR/css/bootstrap-responsive.css
+    fi
+}
 
-# Build bootstrap
-cd $PROJECT_ROOT/www/third-party/bootstrap
-if [ ! -d css ]; then
-    mkdir css
-fi
-lessc less/bootstrap.less > css/bootstrap.css
-lessc less/responsive.less > css/bootstrap-responsive.css
+build_jquery_if_needed () {
+    JQUERY_DIR=$PROJECT_ROOT/www/third-party/jquery
+    if [[ ! -f $JQUERY_DIR/dist/jquery.js ]]
+    then
+	cd $JQUERY_DIR
+	make
+	cd $PROJECT_ROOT
+    fi
+}
 
-# Build jquery
-cd $PROJECT_ROOT/www/third-party/jquery
-make
+insert_web_resources () {
+    build_bootstrap_if_needed
+    build_jquery_if_needed
+    cp -R $PROJECT_ROOT/www $BUILD_DIR/usr/share/recall/www/
+}
 
-# Copy www to /usr/share/recall
-cp -R $OPS_DIR/../www $OPS_DIR/debian/usr/share/recall/
+insert_python_resources () {
+    cp -R $PROJECT_ROOT/src $BUILD_DIR/usr/share/recall/
+}
+    
+clean_out_temporary_files () {
+    find $OPS_DIR/debian/ -name '*~' -exec rm '{}' ';'
+}
 
-# Insert version file
-echo $VERSION > $OPS_DIR/debian/usr/share/recall/version
+build_artefact () {
+    fakeroot dpkg-deb --build $BUILD_DIR $OPS_DIR/artefacts/recall.deb
+    dpkg-name $OPS_DIR/artefacts/recall.deb
+}
 
-# Create and populate bin directory
-BIN_DIR=$OPS_DIR/debian/usr/bin
-mkdir -p $BIN_DIR/
-cp $OPS_DIR/../server/server.py $BIN_DIR/recall-server
+insert_documentation () {
+    cp $PROJECT_ROOT/LICENCE $BUILD_DIR/usr/share/doc/recall/copyright
+    touch $BUILD_DIR/usr/share/doc/recall/changelog.Debian
+    gzip --best $BUILD_DIR/usr/share/doc/recall/changelog.Debian
+}
 
-# Remove *~ files from debian directory
-find $OPS_DIR/debian/ -name '*~' -exec rm '{}' ';'
+push_tags_if_on_ci () {
+    if [[ $BUILD_NUMBER ]]
+    then
+	git push --tags
+    fi
+}
 
-# Set version number correctly, package, then set it back to UNKNOWN
-cd $OPS_DIR
-mkdir -p $OPS_DIR/artefacts
-sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/debian/DEBIAN/control
-fakeroot dpkg-deb --build debian $OPS_DIR/artefacts/recall.deb
-sed -i "s/${VERSION}/0-UNKNOWN/" $OPS_DIR/debian/DEBIAN/control
-
-lintian $OPS_DIR/artefacts/recall.deb
-dpkg-name $OPS_DIR/artefacts/recall.deb
-
-cd $PROJECT_ROOT
-
-if [ $BUILD_NUMBER ]
-then
-    git push --tags
-fi
+create_build_directory
+set_version
+insert_web_resources
+insert_python_resources
+insert_documentation
+clean_out_temporary_files
+build_artefact
+push_tags_if_on_ci

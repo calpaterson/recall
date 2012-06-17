@@ -1,0 +1,4 @@
+# This file exists in order to trick a version control system into
+# recording an empty directory
+*
+!.gitignore
