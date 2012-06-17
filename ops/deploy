@@ -5,8 +5,9 @@ set -x
 PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
 # SCP the binary onto the machine
-scp -Bv $PROJECT_ROOT/ops/artefacts/recall_${VERSION}_all.deb root@middle.calpaterson.com:/root/
+scp -Bv $PROJECT_ROOT/ops/artefacts/recall_${VERSION}_all.deb ubuntu@middle.calpaterson.com:/root/
 
 # SSH install and restart the service
 ssh ubuntu@middle.calpaterson.com "dpkg -i recall_${VERSION}_all.deb"
 ssh ubuntu@middle.calpaterson.com "supervisorctl restart recall-server"
+#ssh ubuntu@middle.calpaterson.com "supervisorctl restart recall-worker"
