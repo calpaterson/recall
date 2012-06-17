@@ -66,8 +66,8 @@ build_artefact () {
 
 insert_documentation () {
     cp $PROJECT_ROOT/LICENCE $BUILD_DIR/usr/share/doc/recall/copyright
-    touch $BUILD_DIR/usr/share/doc/recall/changelog.Debian
-    gzip --best $BUILD_DIR/usr/share/doc/recall/changelog.Debian
+    # touch $BUILD_DIR/usr/share/doc/recall/changelog.Debian
+    # gzip --best $BUILD_DIR/usr/share/doc/recall/changelog.Debian
 }
 
 push_tags_if_on_ci () {
