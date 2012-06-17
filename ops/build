@@ -21,7 +21,6 @@ set_version () {
     else
 	VERSION=0-DEV
     fi
-    echo $VERSION > $BUILD_DIR/usr/share/recall/www/version
     sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/build.d/DEBIAN/control
 }
 
@@ -49,6 +48,7 @@ insert_web_resources () {
     build_bootstrap_if_needed
     build_jquery_if_needed
     cp -R $PROJECT_ROOT/www $BUILD_DIR/usr/share/recall/www/
+    echo $VERSION > $BUILD_DIR/usr/share/recall/www/version
 }
 
 insert_python_resources () {
