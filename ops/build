@@ -39,6 +39,8 @@ build_jquery_if_needed () {
     if [[ ! -f $JQUERY_DIR/dist/jquery.js ]]
     then
 	cd $JQUERY_DIR
+	git submodule init
+	git submodule update
 	make
 	cd $PROJECT_ROOT
     fi
