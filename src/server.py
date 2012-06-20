@@ -61,12 +61,13 @@ def handle_exception(exception):
 app.handle_exception = handle_exception
 
 def load_settings():
-    settings.update({"RECALL_MONGODB_DB_NAME": "recall",
-                     "RECALL_MONGODB_HOST": "localhost",
-                     "REALLL_MONGODB_PORT": "27017",
-                     "RECALL_API_BASE_URL": "https://localhost:5000",
-                     "RECALL_MARK_LIMIT": "100",
-                     "RECALL_API_PORT": "5000"})
+    if "RECALL_DEBUG_MODE" in os.environ:
+        settings.update({"RECALL_MONGODB_DB_NAME": "recall",
+                         "RECALL_MONGODB_HOST": "localhost",
+                         "RECALL_MONGODB_PORT": "27017",
+                         "RECALL_API_BASE_URL": "https://localhost:5000",
+                         "RECALL_MARK_LIMIT": "100",
+                         "RECALL_API_PORT": "5000"})
     for name in os.environ:
         if name.startswith("RECALL_"):
             settings[name] = os.environ[name]
