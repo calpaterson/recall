@@ -192,7 +192,7 @@ class ServerTests(unittest.TestCase):
         mark_from_all_marks = json.loads(
             requests.get(self._base_url() + "/mark").content)
 
-        self.assertEqual(post_response.status_code, 201)
+        self.assertEqual(post_response.status_code, 202)
         convenience.assert_marks_equal(mark, mark_directly)
         convenience.assert_marks_equal(mark, mark_from_users_marks[0])
         convenience.assert_marks_equal(mark, mark_from_all_marks[0])
@@ -214,7 +214,7 @@ class ServerTests(unittest.TestCase):
         url = "/mark"
         post_data = json.dumps(mark)
         response = self.client.post(url, headers=headers, data=post_data)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 202)
 
         public_marks = json.loads(self.client.get("/mark").data)
         self.assertEqual([], public_marks)
@@ -266,7 +266,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"~": 0, "@": user1, "#": "Hello!"})
         response = self.client.post(
             "/mark", data=post_data, headers=user1_headers)
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 202)
 
         _, user2, password2 = self._create_test_user()
         user2_headers = Headers({"X-Email": user2, "X-Password": password2})
