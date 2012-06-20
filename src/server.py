@@ -143,7 +143,7 @@ def make_mark_url(mark):
         + mark[u"@"] + "/" + str(int(mark["~"]))
 
 @app.route("/mark", methods=["POST"])
-def add_mark():
+def add_marks():
     def insert_mark(body):
         assert "~" in body and "@" in body, "Must include @ and ~ with all marks"
         has_no_problematic_keys(body)
@@ -155,17 +155,21 @@ def add_mark():
 
     if not is_authorised(require_attempt=True):
         raise HTTPException("Email or password or both do not match", 403)
-    body = json.loads(request.data)
+
+    marks = json.loads(request.data)
+
+    if type(marks) == dict:
+        marks = [marks]
     try:
-        if type(body) == list:
-            for mark in body:
-                insert_mark(mark)
-            return "null", 202
-        elif type(body) == dict:
-            body = insert_mark(body)
-            return json.dumps(body), 201
-    except KeyError:
-        return "You must include at least @ and ~", 400
+        for mark in marks:
+            assert "@" in mark
+            assert "~" in mark
+    except AssertionError:
+        raise HTTPException("Must include @ and ~ with all marks", 400)
+
+    for mark in marks:
+        insert_mark(mark)
+    return "null", 202
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
