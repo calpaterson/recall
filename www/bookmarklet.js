@@ -76,10 +76,14 @@ core.add(
                     mark.title = sandbox.find("#hyperlink-title").val();
                     mark.hyperlink = sandbox.find("#hyperlink-url").val();
                 }
+                
                 mark["@"] = email;
                 marks.push(mark);
-
-                var factsEntered = sandbox.find("#about-facts")[0].value.split(/ *, */);
+                
+                var factsEntered = sandbox.find("#about-facts")[0].value.split(/ ?, */);
+                if (factsEntered.length === 1 && factsEntered[0] === ""){
+                    factsEntered = [];
+                }
                 var facts = {};
                 var factTime = markTime;
                 for (var i=0; i<factsEntered.length; i++){
@@ -101,7 +105,7 @@ core.add(
                     },
                     "failure": function(){
                         button.textContent = "Failure!";
-			button.classList.remove("disabled");
+                        button.classList.remove("disabled");
                     },
                     "marks": marks
                 };
