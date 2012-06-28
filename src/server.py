@@ -22,12 +22,13 @@ import json
 import os
 import time
 import uuid
+import signal
 
 from flask import Flask, request, make_response, Response
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
 import bcrypt
-from gevent import monkey
+from gevent import monkey, signal as gevent_signal, shutdown
 from gevent.wsgi import WSGIServer
 import requests
 
@@ -340,5 +341,7 @@ if __name__ == "__main__":
     if "RECALL_DEBUG_MODE" not in settings:
         monkey.patch_socket()
 
+    for sig in [signal.SIGQUIT, signal.SIGTERM]:
+        gevent_signal(sig, shutdown)
     http_server = WSGIServer(('', int(settings["RECALL_API_PORT"])), app)
     http_server.serve_forever()
