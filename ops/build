@@ -62,6 +62,14 @@ clean_out_temporary_files () {
 }
 
 build_artefact () {
+    if [[ ! $BUILD_NUMBER ]]
+    then
+	PREVIOUS_DEV_BUILD=$OPS_DIR/artefacts/recall_0-DEV_all.deb
+	if [[ -f $PREVIOUS_DEV_BUILD ]]
+	then
+	    rm $PREVIOUS_DEV_BUILD
+	fi
+    fi
     fakeroot dpkg-deb --build $BUILD_DIR $OPS_DIR/artefacts/recall.deb
     dpkg-name $OPS_DIR/artefacts/recall.deb
 }
