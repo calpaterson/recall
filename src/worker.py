@@ -25,28 +25,24 @@ import time
 import requests
 from redis import Redis
 
-_settings = {}
-
-def load_settings():
-    for name in os.environ:
-        if name.startswith("RECALL_"):
-            _settings[name] = os.environ[name]
+import convenience
+from convenience import settings
 
 def index_new_marks():
     def index(name, value):
         url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
-            hostname = _settings["RECALL_ELASTICSEARCH_HOST"],
-            port = int(_settings["RECALL_ELASTICSEARCH_PORT"]),
-            index = _settings["RECALL_ELASTICSEARCH_INDEX"],
+            hostname = settings["RECALL_ELASTICSEARCH_HOST"],
+            port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
+            index = settings["RECALL_ELASTICSEARCH_INDEX"],
             type = "mark",
             id = name)
         requests.post(url, data=json.dumps(value))
 
     def redis_connection():
         return Redis(
-            host=_settings["RECALL_REDIS_HOST"],
-            port=int(_settings["RECALL_REDIS_PORT"]),
-            db=int(_settings["RECALL_REDIS_DB"]))
+            host=settings["RECALL_REDIS_HOST"],
+            port=int(settings["RECALL_REDIS_PORT"]),
+            db=int(settings["RECALL_REDIS_DB"]))
 
     def pop_mark():
         connection = redis_connection()
@@ -59,8 +55,8 @@ def index_new_marks():
 
     def build_from_links(mark):
         url = "http://{hostname}:{port}/linked/{email}/{unixtime}".format(
-            hostname = _settings["RECALL_API_HOST"],
-            port = _settings["RECALL_API_PORT"],
+            hostname = settings["RECALL_API_HOST"],
+            port = settings["RECALL_API_PORT"],
             email = mark["@"],
             unixtime = mark["~"])
         print url
@@ -79,6 +75,6 @@ def index_new_marks():
         pass
 
 if __name__ == "__main__":
-    load_settings()
+    convenience.load_settings()
     while(True):
         index_new_marks()

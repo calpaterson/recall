@@ -23,6 +23,7 @@ import os
 import time
 import uuid
 import signal
+import traceback
 
 from flask import Flask, request, make_response, Response
 from pymongo import Connection, DESCENDING, ASCENDING
@@ -33,8 +34,7 @@ from gevent.wsgi import WSGIServer
 import requests
 
 import convenience
-
-settings = {}
+from convenience import settings
 
 app = Flask(__name__)
 
@@ -45,6 +45,7 @@ class HTTPException(Exception):
         self.machine_readable = machine_readable
 
 def handle_exception(exception):
+    print traceback.format_exc(),
     def json_error(message):
         document = {"human_readable": message}
         if hasattr(exception, "machine_readable") and \
@@ -60,23 +61,6 @@ def handle_exception(exception):
         return json_error("Unknown exception: " + exception.message), 500
 
 app.handle_exception = handle_exception
-
-def load_settings():
-    if "RECALL_DEBUG_MODE" in os.environ:
-        settings.update({
-                "RECALL_MONGODB_DB_NAME": "recall",
-                "RECALL_MONGODB_HOST": "localhost",
-                "RECALL_MONGODB_PORT": "27017",
-                "RECALL_API_BASE_URL": "https://localhost:5000",
-                "RECALL_MARK_LIMIT": "100",
-                "RECALL_API_PORT": "5000",
-                "RECALL_REDIS_HOST": "localhost",
-                "RECALL_REDIS_PORT": "6379",
-                "RECALL_REDIS_DB": "14",
-                })
-    for name in os.environ:
-        if name.startswith("RECALL_"):
-            settings[name] = os.environ[name]
 
 def db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
@@ -337,7 +321,7 @@ def linked(who, when):
     return json.dumps(list(found))
 
 if __name__ == "__main__":
-    load_settings()
+    convenience.load_settings()
     if "RECALL_DEBUG_MODE" not in settings:
         monkey.patch_socket()
 

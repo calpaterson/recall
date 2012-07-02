@@ -27,29 +27,47 @@ from functools import wraps
 import requests
 import pymongo
 
+settings = {}
+
 def get_db():
-    settings = get_settings()
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return pymongo.Connection(host=settings["RECALL_MONGODB_HOST"],
                               port=int(settings["RECALL_MONGODB_PORT"]))[db_name]
 
-def get_settings():
-    return dict(filter(lambda x: x[0].startswith("RECALL_"), os.environ.items()))
+def load_settings():
+    if "RECALL_DEBUG_MODE" in os.environ:
+        settings.update({
+                "RECALL_API_BASE_URL": "https://localhost:5000",
+                "RECALL_API_PORT": "5000",
+                "RECALL_ELASTICSEARCH_HOST": "localhost",
+                "RECALL_ELASTICSEARCH_PORT": "9200",
+                "RECALL_ELASTICSEARCH_INDEX": "test",
+                "RECALL_MARK_LIMIT": "100",
+                "RECALL_MONGODB_DB_NAME": "recall",
+                "RECALL_MONGODB_HOST": "localhost",
+                "RECALL_MONGODB_PORT": "27017",
+                "RECALL_REDIS_DB": "14",
+                "RECALL_REDIS_HOST": "localhost",
+                "RECALL_REDIS_PORT": "6379",
+                })
+        print "Using debug mode settings"
+    else:
+        for name in os.environ:
+            if name.startswith("RECALL_"):
+                settings[name] = os.environ[name]
 
 def get_recall_server_api_url():
-    settings = get_settings()
     return "http://" + settings["RECALL_API_HOST"] + ":" +\
-        get_settings()["RECALL_API_PORT"]
+        settings["RECALL_API_PORT"]
 
 def get_es_base_url():
-    settings = get_settings()
     return "http://" + settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
-        str(get_settings()["RECALL_ELASTICSEARCH_PORT"])
+        settings["RECALL_ELASTICSEARCH_PORT"]
 
 def get_es_mark_url():
     return "{es_base_url}/{index}/mark".format(
         es_base_url=get_es_base_url(),
-        index=get_settings()["RECALL_ELASTICSEARCH_INDEX"])
+        index=settings["RECALL_ELASTICSEARCH_INDEX"])
 
 
 def wipe_mongodb():
@@ -61,7 +79,7 @@ def wipe_mongodb():
 def wipe_elastic_search():
     url = "{search_url}/{index}".format(
         search_url = get_es_base_url(),
-        index = get_settings()["RECALL_ELASTICSEARCH_INDEX"])
+        index = settings["RECALL_ELASTICSEARCH_INDEX"])
     requests.delete(url)
 
 def post_mark(user, mark):
