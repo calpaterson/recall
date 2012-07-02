@@ -39,6 +39,7 @@ class WorkerTests(unittest.TestCase):
         mark = {"@": user.email, "~": 0, "#": "Please index me!"}
         convenience.post_mark(
             user, mark)
+        convenience.wipe_mongodb()
 
         def inner_assert():
             url = convenience.get_recall_server_api_url()
