@@ -134,13 +134,18 @@ core.add(
 
         var marks = function(message){
             authenticate();
+	    var url = recall_config["api-base-url"] + "/mark";
+	    if (message.hasOwnProperty("q")){
+		url += "?q="
+		url += encodeURIComponent(message["q"])
+	    }
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);
-                    message.display(marks);
+                    message.callback(marks);
                 },
                 "get",
-                recall_config["api-base-url"] + "/mark",
+		url,
                 {"maximum": 50}, // FIXME
                 "application/json",
                 {"X-Email": email,

@@ -176,15 +176,19 @@ core.add(
     {
         var sandbox;
 
-        var contents;
-
         var hadAuthLastTime = false;
 
-        var display = function(marks){
-            sandbox.deleteContentsOf("#list-of-marks");
-            for (var i = 0; i < marks.length; i++){
-                sandbox.append("#list-of-marks", markToElement(marks[i]));
-            }
+        var search = function(event){
+	    var displayMarks = function(marks){
+		sandbox.deleteContentsOf("#list-of-marks");
+		for (var i = 0; i < marks.length; i++){
+                    sandbox.append("#list-of-marks", markToElement(marks[i]));
+		}
+	    }
+	    sandbox.publish("get-marks?",
+			    { "q": sandbox.find("#v-search-field")[0].value,
+			      "callback": displayMarks });
+	    return false;
         };
 
         var humanTime = function(unixtime){
@@ -202,7 +206,7 @@ core.add(
                 sandbox.offdom.find(hyperlink, ".hyperlink-title")[0].textContent = mark.title;
                 sandbox.offdom.find(hyperlink, ".when")[0].textContent = humanTime(mark["~"]);
                 return hyperlink;
-            } else {
+            } else if (mark.hasOwnProperty("#")) {
                 var comment = sandbox.find("#comment-template")[0].cloneNode(true);
                 comment.id = "mark-" + mark["@"] + "-" + mark["~"];
                 sandbox.offdom.find(comment, ".who")[0].textContent = mark["@"];
@@ -213,9 +217,6 @@ core.add(
         };
 
         var show = function(){
-            if (!hadAuthLastTime){
-                sandbox.publish("get-marks?", {"display": display});
-            }
             sandbox.find()[0].hidden = false;
             return false;
         };
@@ -229,6 +230,7 @@ core.add(
             sandbox = sandbox_;
             sandbox.subscribe("show-view", show);
             sandbox.subscribe("hide-all", hide);
+	    sandbox.bind("#v-search-button", "click", search)
         };
     }());
 
