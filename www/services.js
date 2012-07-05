@@ -107,9 +107,9 @@ core.add(
             sandbox.asynchronous(
                 function(status, content){
                     if (status === 201){
-			message.success();
+                        message.success();
                     } else if (status === 202){
-			message.success();
+                        message.success();
                     } else{
                         message.failure();
                     }
@@ -134,18 +134,18 @@ core.add(
 
         var marks = function(message){
             authenticate();
-	    var url = recall_config["api-base-url"] + "/mark";
-	    if (message.hasOwnProperty("q")){
-		url += "?q="
-		url += encodeURIComponent(message["q"])
-	    }
+            var url = recall_config["api-base-url"] + "/mark";
+            if (message.hasOwnProperty("q")){
+                url += "?q=";
+                url += encodeURIComponent(message.q);
+            }
             sandbox.asynchronous(
                 function(status, content){
                     var marks = JSON.parse(content);
                     message.callback(marks);
                 },
                 "get",
-		url,
+                url,
                 {"maximum": 50}, // FIXME
                 "application/json",
                 {"X-Email": email,

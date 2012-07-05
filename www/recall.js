@@ -179,16 +179,16 @@ core.add(
         var hadAuthLastTime = false;
 
         var search = function(event){
-	    var displayMarks = function(marks){
-		sandbox.deleteContentsOf("#list-of-marks");
-		for (var i = 0; i < marks.length; i++){
+            var displayMarks = function(marks){
+                sandbox.deleteContentsOf("#list-of-marks");
+                for (var i = 0; i < marks.length; i++){
                     sandbox.append("#list-of-marks", markToElement(marks[i]));
-		}
-	    }
-	    sandbox.publish("get-marks?",
-			    { "q": sandbox.find("#v-search-field")[0].value,
-			      "callback": displayMarks });
-	    return false;
+                }
+            };
+            sandbox.publish("get-marks?",
+                            { "q": sandbox.find("#v-search-field")[0].value,
+                              "callback": displayMarks });
+            return false;
         };
 
         var humanTime = function(unixtime){
@@ -230,7 +230,7 @@ core.add(
             sandbox = sandbox_;
             sandbox.subscribe("show-view", show);
             sandbox.subscribe("hide-all", hide);
-	    sandbox.bind("#v-search-button", "click", search)
+            sandbox.bind("#v-search-button", "click", search);
         };
     }());
 
