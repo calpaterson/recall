@@ -25,16 +25,11 @@ import pymongo
 import requests
 
 import convenience
-
-_settings = {
-    "RECALL_API_HOST": os.environ["RECALL_API_HOST"],
-    "RECALL_API_PORT": os.environ["RECALL_API_PORT"],
-    }
+from convenience import settings
 
 class LowLevelMarkAPITests(unittest.TestCase):
     def setUp(self):
-        self.recall_api_url = "http://" + _settings["RECALL_API_HOST"] +\
-            ":" + _settings["RECALL_API_PORT"]
+        convenience.load_settings()
 
     def tearDown(self):
         convenience.wipe_mongodb();
