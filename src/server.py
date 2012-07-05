@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from sys import argv
+import sys
 import json
 import os
 import time
@@ -45,7 +46,7 @@ class HTTPException(Exception):
         self.machine_readable = machine_readable
 
 def handle_exception(exception):
-    print traceback.format_exc(),
+    # print traceback.format_exc(),
     def json_error(message):
         document = {"human_readable": message}
         if hasattr(exception, "machine_readable") and \
@@ -180,10 +181,24 @@ def results_to_marks(body):
         marks.append(mark["_source"])
     return marks
 
-def search(query):
-    url = convenience.get_es_mark_url() +  "/_search?q={query}".format(
-        query=query)
-    r = requests.get(url)
+def search(query_string):
+    who = "example"
+    def inner_query_builder():
+        return {"text":{"_all": query_string}}
+    def filter_builder():
+        return {"or": [ {"not": {"term":{"%private":True}}}, {"term":{"@":who}}]}
+    query = json.dumps(
+        {
+            "query": {
+                "filtered":{
+                    "query" : inner_query_builder(),
+                    "filter": filter_builder()
+                    }
+                }
+            }
+        )
+    url = convenience.get_es_mark_url() +  "/_search?"
+    r = requests.get(url, data=query)
     return results_to_marks(r.content)
 
 def marks(spec_additions={}):
@@ -325,7 +340,5 @@ if __name__ == "__main__":
     if "RECALL_DEBUG_MODE" not in settings:
         monkey.patch_socket()
 
-    for sig in [signal.SIGQUIT, signal.SIGTERM]:
-        gevent_signal(sig, shutdown)
     http_server = WSGIServer(('', int(settings["RECALL_API_PORT"])), app)
     http_server.serve_forever()

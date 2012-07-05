@@ -27,15 +27,15 @@ from pymongo import Connection
 from werkzeug.datastructures import Headers
 import requests
 import pymongo
-import convenience
 
+import convenience
+from convenience import settings
 import server
 
 class ServerTests(unittest.TestCase):
     def setUp(self):
-        server.app.testing = True
         self.client = server.app.test_client()
-        server.load_settings()
+        convenience.load_settings()
 
     def tearDown(self):
         convenience.wipe_mongodb()
@@ -76,7 +76,7 @@ class ServerTests(unittest.TestCase):
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
-        self.assertEquals(user_in_db["verified"], 0)
+        self.assertIn("verified", user_in_db)
         self.assertNotIn("email_verified", user_in_db)
 
     def test_verify_email_with_wrong_email(self):
@@ -206,7 +206,7 @@ class ServerTests(unittest.TestCase):
             u"~": 0,
             u"#": "Hello",
             u"@": email,
-            u"%url": server.settings["RECALL_API_BASE_URL"] + u"/mark/" + email + "/0",
+            u"%url": settings["RECALL_API_BASE_URL"] + u"/mark/" + email + "/0",
             u"%private": True,
             u"£created": 0
             }
@@ -221,21 +221,21 @@ class ServerTests(unittest.TestCase):
 
         email_marks = json.loads(
             self.client.get("/mark", headers=headers).data)
-        self.assertEqual([expected_mark], email_marks)
+        convenience.assert_marks_equal([expected_mark], email_marks)
 
         public_email_marks = json.loads(self.client.get("/mark/" + email).data)
-        self.assertEqual([], public_email_marks)
+        convenience.assert_marks_equal([], public_email_marks)
 
         private_email_marks = json.loads(
             self.client.get("/mark/" + email, headers=headers).data)
-        self.assertEqual([expected_mark], private_email_marks)
+        convenience.assert_marks_equal([expected_mark], private_email_marks)
 
         specific_mark_response = self.client.get("/mark/" + email + "/0")
         self.assertEqual(404, specific_mark_response.status_code)
 
         specific_mark_with_auth = json.loads(
             self.client.get("/mark/" + email + "/0", headers=headers).data)
-        self.assertEqual(expected_mark, specific_mark_with_auth)
+        convenience.assert_marks_equal(expected_mark, specific_mark_with_auth)
 
     def test_cannot_create_public_mark_without_who_and_when(self):
         _, email, password = self._create_test_user()
@@ -272,21 +272,21 @@ class ServerTests(unittest.TestCase):
         user2_headers = Headers({"X-Email": user2, "X-Password": password2})
 
         expected_mark = {u"#": "Hello!", u"@": user1,
-                         u"%url": server.settings["RECALL_API_BASE_URL"] + u"/mark/" + user1 + "/0",
+                         u"%url": settings["RECALL_API_BASE_URL"] + u"/mark/" + user1 + "/0",
                          u"~": 0, u"£created": 0}
 
         response = self.client.get(
             "/mark/" + user1 + "/0", headers=user2_headers)
         actual_mark = json.loads(response.data)
-        self.assertEqual(expected_mark, actual_mark)
+        convenience.assert_marks_equal(expected_mark, actual_mark)
 
         response = self.client.get("/mark/" + user1, headers=user2_headers)
         actual_marks = json.loads(response.data)
-        self.assertEqual([expected_mark], actual_marks)
+        convenience.assert_marks_equal([expected_mark], actual_marks)
 
         response = self.client.get("/mark", headers=user2_headers)
         actual_marks = json.loads(response.data)
-        self.assertEqual([expected_mark], actual_marks)
+        convenience.assert_marks_equal([expected_mark], actual_marks)
 
 
     def test_bulk_addition_of_marks(self):
@@ -348,7 +348,7 @@ class ServerTests(unittest.TestCase):
 
 
     def test_trying_to_get_many_marks_at_once_is_refused(self):
-        expected_mark_limit = server.settings["RECALL_MARK_LIMIT"] = 2
+        expected_mark_limit = settings["RECALL_MARK_LIMIT"] = 2
         _, email, password = self._create_test_user()
         headers = Headers({"X-Email": email, "X-Password": password})
         marks = []
