@@ -38,6 +38,7 @@ def load_settings():
     if "RECALL_DEBUG_MODE" in os.environ:
         settings.update({
                 "RECALL_API_BASE_URL": "https://localhost:5000",
+                "RECALL_API_HOST": "localhost",
                 "RECALL_API_PORT": "5000",
                 "RECALL_ELASTICSEARCH_HOST": "localhost",
                 "RECALL_ELASTICSEARCH_PORT": "9200",
@@ -87,14 +88,29 @@ def post_mark(user, mark):
     data = json.dumps(mark)
     headers = user.headers()
     headers["content-type"] = "application/json"
-    requests.post(url, data=data, headers=headers)
+    return requests.post(url, data=data, headers=headers)
 
 def get_linked(user, who, when):
     url = get_recall_server_api_url() + "/linked/" + who + "/" + str(when)
     response = requests.get(url, headers=user.headers())
     return json.loads(response.content)
 
-def assert_marks_equal(mark1_, mark2_):
+def assert_marks_equal(marklist1, marklist2):
+    if type(marklist1) == type(marklist2) == type({}):
+        return assert_individual_marks_equal(marklist1, marklist2)
+    key_function = lambda x: x["~"]
+    sorted_marklist1 = sorted(marklist1, key=key_function)
+    sorted_marklist2 = sorted(marklist2, key=key_function)
+    for index in xrange(0, len(sorted_marklist1)):
+        try:
+            assert_individual_marks_equal(
+                sorted_marklist1[index], sorted_marklist2[index])
+        except IndexError:
+            raise AssertionError("Marks not equal: \n%s\n%s" %
+                                 (pformat(marklist1), pformat(marklist2)))
+
+
+def assert_individual_marks_equal(mark1_, mark2_):
     field = None
     try:
         fields = mark1_.keys()
@@ -107,7 +123,8 @@ def assert_marks_equal(mark1_, mark2_):
             assert field in mark2_
             assert mark1_[field] == mark2_[field]
     except AssertionError:
-        raise AssertionError("Marks not equal: \n%s\n%s" % (pformat(mark1_), pformat(mark2_)))
+        raise AssertionError("Marks not equal: \n%s\n%s" %
+                             (pformat(mark1_), pformat(mark2_)))
 
 _test_user_counter = 1
 def create_test_user():
@@ -152,6 +169,8 @@ def with_patience(test, seconds=5, gap=0.1):
                 continue
             else:
                 raise e
+        except:
+            raise e
 
 def on_json(f):
     def decorated(*args, **kwargs):
