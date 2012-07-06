@@ -17,21 +17,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sys import argv
-import sys
 import json
 import os
-import time
-import uuid
 import signal
+import sys
+import time
 import traceback
+import uuid
 
 from flask import Flask, request, make_response, Response, g
+from gevent import monkey, signal as gevent_signal
+from gevent.wsgi import WSGIServer
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
 import bcrypt
-from gevent import monkey, signal as gevent_signal
-from gevent.wsgi import WSGIServer
 import requests
 
 import convenience
@@ -46,7 +45,7 @@ class HTTPException(Exception):
         self.machine_readable = machine_readable
 
 def handle_exception(exception):
-    print traceback.format_exc(),
+    print >> sys.stderr, traceback.format_exc(),
     def json_error(message):
         document = {"human_readable": message}
         if hasattr(exception, "machine_readable") and \
