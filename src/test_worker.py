@@ -54,29 +54,29 @@ class WorkerTests(unittest.TestCase):
     def test_cant_search_for_private_marks_anonymously(self):
         user = convenience.create_test_user()
         mark1 = {"@": user.email, "~": 0, "#": "Khajiit has no words for you", "%private": True}
-        mark2 = {"@": user.email, "~": 0, "#": "Khajiit has some words for you"}
+        mark2 = {u"@": user.email, u"~": 0, u"#": u"Khajiit has some words for you"}
         convenience.post_mark(user, mark1)
         convenience.post_mark(user, mark2)
 
 
         url = convenience.get_recall_server_api_url()
-        url += "/mark1?q=Khajiit"
+        url += "/mark?q=Khajiit"
 
         def inner_assert():
-            response = requests.get(url, headers=user.headers())
+            response = requests.get(url)
             content = json.loads(response.content)
             self.assertEquals(200, response.status_code)
-            self.assertEquals([mark2], content)
+            convenience.assert_marks_equal([mark2], content)
 
         convenience.with_patience(inner_assert)
 
-    def test_cant_search_for_private_marks_anonymously(self):
+    def test_can_search_for_own_private_marks(self):
         user1 = convenience.create_test_user()
         user2 = convenience.create_test_user()
         mark1 = {"@": user1.email, "~": 0, "#": "My secret mark", "%private": True}
         mark2 = {u"@": user2.email, u"~": 0, u"#": u"Someone else's secret mark"}
-        r1 = convenience.post_mark(user1, mark1)
-        r2 = convenience.post_mark(user2, mark2)
+        convenience.post_mark(user1, mark1)
+        convenience.post_mark(user2, mark2)
 
         url = convenience.get_recall_server_api_url()
         url += "/mark?q=secret"
