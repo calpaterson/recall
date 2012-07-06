@@ -20,17 +20,15 @@
 import unittest
 import json
 import time
-import os
 
-import bcrypt
 from pymongo import Connection
 from werkzeug.datastructures import Headers
 import requests
-import pymongo
 
 import convenience
-from convenience import settings
 import server
+
+settings = convenience.settings
 
 class ServerTests(unittest.TestCase):
     def setUp(self):

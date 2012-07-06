@@ -169,8 +169,8 @@ def with_patience(test, seconds=5, gap=0.1):
                 continue
             else:
                 raise e
-        except:
-            raise e
+        except Exception:
+            raise
 
 def on_json(f):
     def decorated(*args, **kwargs):

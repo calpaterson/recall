@@ -19,14 +19,13 @@
 
 import json
 import os
-import signal
 import sys
 import time
 import traceback
 import uuid
 
 from flask import Flask, request, make_response, Response, g
-from gevent import monkey, signal as gevent_signal
+from gevent import monkey
 from gevent.wsgi import WSGIServer
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
@@ -34,9 +33,10 @@ import bcrypt
 import requests
 
 import convenience
-from convenience import settings
 
 app = Flask(__name__)
+
+settings = convenience.settings
 
 class HTTPException(Exception):
     def __init__(self, message, status_code, machine_readable=None):
