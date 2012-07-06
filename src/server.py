@@ -30,7 +30,7 @@ from flask import Flask, request, make_response, Response, g
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
 import bcrypt
-from gevent import monkey, signal as gevent_signal, shutdown
+from gevent import monkey, signal as gevent_signal
 from gevent.wsgi import WSGIServer
 import requests
 
@@ -186,11 +186,15 @@ def results_to_marks(body):
     return marks
 
 def search(query_string):
-    who = "example"
     def inner_query_builder():
         return {"text":{"_all": query_string}}
     def filter_builder():
-        return {"or": [ {"not": {"term":{"%private":True}}}, {"term":{"@":who}}]}
+        privacy_clause = {"not": {"term":{"%private":True}}}
+        if g.user is not None:
+            who = g.user["email"].split("@")[0] # FIXME
+            return {"or": [ privacy_clause, {"term":{"@":who}}]}
+        else:
+            return privacy_clause
     query = json.dumps(
         {
             "query": {
