@@ -1,3 +1,6 @@
 #!/bin/sh
 
-python /usr/share/recall/src/server.py
+python /usr/share/recall/src/server.py &
+SERVER_PID=$!
+
+trap 'kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
