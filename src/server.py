@@ -26,7 +26,7 @@ import uuid
 import signal
 import traceback
 
-from flask import Flask, request, make_response, Response
+from flask import Flask, request, make_response, Response, g
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
 import bcrypt
@@ -46,7 +46,7 @@ class HTTPException(Exception):
         self.machine_readable = machine_readable
 
 def handle_exception(exception):
-    # print traceback.format_exc(),
+    print traceback.format_exc(),
     def json_error(message):
         document = {"human_readable": message}
         if hasattr(exception, "machine_readable") and \
@@ -114,26 +114,33 @@ def unixtime():
     else:
         return int(time.time())
 
-def is_authorised(require_attempt=False):
-    email = request.headers.get("X-Email", None)
-    password = request.headers.get("X-Password", None)
-    if email is None or password is None:
-        if require_attempt:
+@app.before_request
+def authentication():
+    try:
+        email = request.headers["X-Email"]
+        password = request.headers["X-Password"]
+        g.user = db().users.find_one(
+            {"email": email, "password_hash": {"$exists": True}})
+        assert g.user["password_hash"] == bcrypt.hashpw(
+            password, g.user["password_hash"])
+    except KeyError:
+        g.user = None
+    except AssertionError:
+        raise HTTPException("Email or password or both do not match", 403)
+
+def require_authentication(f):
+    def decorated(*args, **kwargs):
+        if g.user is None:
             raise HTTPException("You must include authentication headers", 400)
-        return False
-    user = db().users.find_one(
-        {"email": email, "password_hash": {"$exists": True}})
-    if user is None:
-        return False
-    if user["password_hash"] != bcrypt.hashpw(password, user["password_hash"]):
-        return False
-    return user
+        return f(*args, **kwargs)
+    return decorated
 
 def make_mark_url(mark):
     return settings["RECALL_API_BASE_URL"] + "/mark/" \
         + mark[u"@"] + "/" + str(int(mark["~"]))
 
 @app.route("/mark", methods=["POST"])
+@require_authentication
 def add_marks():
     def insert_mark(body):
         assert "~" in body and "@" in body, "Must include @ and ~ with all marks"
@@ -143,9 +150,6 @@ def add_marks():
         del body["_id"]
         redis_connection().lpush("marks", json.dumps(body))
         return body
-
-    if not is_authorised(require_attempt=True):
-        raise HTTPException("Email or password or both do not match", 403)
 
     marks = json.loads(request.data)
 
@@ -232,10 +236,9 @@ def _build_spec(spec_additions):
     return spec
 
 def _respect_privacy(spec):
-    user = is_authorised()
-    if user:
+    if g.user:
         spec.update({"$or": [
-                {"@": user["email"]},
+                {"@": g.user["email"]},
                 {"%private": {"$exists": False}}]})
     else:
         spec.update({"%private": {"$exists": False}})
@@ -246,10 +249,9 @@ def get_mark(email, time):
             "@": email,
             "~": int(time)}
     try:
-        user = is_authorised()
-        if user:
+        if g.user:
             spec = {"$or": [
-                    {"@": user["email"]},
+                    {"@": g.user["email"]},
                     {"%private": {"$exists" : False}}
                     ]}
             spec.update({"~": int(time)})
@@ -275,7 +277,7 @@ def user(email):
             "firstName",
             "surname",
             "email"])
-    if is_authorised() == user:
+    if g.user == user:
         return_value["self"] = True
     return json.dumps(return_value), 200
 
