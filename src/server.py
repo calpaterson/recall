@@ -25,10 +25,11 @@ import traceback
 import uuid
 
 from flask import Flask, request, make_response, Response, g
-from gevent import monkey
-from gevent.wsgi import WSGIServer
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
+from tornado.httpserver import HTTPServer
+from tornado.ioloop import IOLoop
+from tornado.wsgi import WSGIContainer
 import bcrypt
 import requests
 
@@ -342,8 +343,7 @@ def linked(who, when):
 
 if __name__ == "__main__":
     convenience.load_settings()
-    if "RECALL_DEBUG_MODE" not in settings:
-        monkey.patch_socket()
 
-    http_server = WSGIServer(('', int(settings["RECALL_API_PORT"])), app)
-    http_server.serve_forever()
+    http_server = HTTPServer(WSGIContainer(app))
+    http_server.listen(int(settings["RECALL_API_PORT"]))
+    IOLoop.instance().start()
