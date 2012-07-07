@@ -197,6 +197,7 @@ def search(query_string):
             return privacy_clause
     query = json.dumps(
         {
+            "size": 100,
             "query": {
                 "filtered":{
                     "query" : inner_query_builder(),
