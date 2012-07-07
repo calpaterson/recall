@@ -37,21 +37,38 @@ def get_db():
 def load_settings():
     if "RECALL_DEBUG_MODE" in os.environ:
         settings.update({
-                "RECALL_API_BASE_URL": "https://localhost:5000",
+                "RECALL_API_BASE_URL": "https://localhost:7777",
                 "RECALL_API_HOST": "localhost",
-                "RECALL_API_PORT": "6000",
+                "RECALL_API_PORT": "7777",
                 "RECALL_ELASTICSEARCH_HOST": "localhost",
                 "RECALL_ELASTICSEARCH_PORT": "9200",
-                "RECALL_ELASTICSEARCH_INDEX": "test",
+                "RECALL_ELASTICSEARCH_INDEX": "recalldebug",
                 "RECALL_MARK_LIMIT": "100",
-                "RECALL_MONGODB_DB_NAME": "recallTest",
+                "RECALL_MONGODB_DB_NAME": "recalldebug",
                 "RECALL_MONGODB_HOST": "localhost",
                 "RECALL_MONGODB_PORT": "27017",
-                "RECALL_REDIS_DB": "14",
+                "RECALL_REDIS_DB": "7",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
                 })
         print "Using debug mode settings"
+    elif "RECALL_TEST_MODE" in os.environ:
+        settings.update({
+                "RECALL_API_BASE_URL": "https://localhost:6666",
+                "RECALL_API_HOST": "localhost",
+                "RECALL_API_PORT": "6666",
+                "RECALL_ELASTICSEARCH_HOST": "localhost",
+                "RECALL_ELASTICSEARCH_PORT": "9200",
+                "RECALL_ELASTICSEARCH_INDEX": "recalltest",
+                "RECALL_MARK_LIMIT": "100",
+                "RECALL_MONGODB_DB_NAME": "test",
+                "RECALL_MONGODB_HOST": "localhost",
+                "RECALL_MONGODB_PORT": "27017",
+                "RECALL_REDIS_DB": "6",
+                "RECALL_REDIS_HOST": "localhost",
+                "RECALL_REDIS_PORT": "6379",
+                })
+        print "Using test mode settings"
     else:
         for name in os.environ:
             if name.startswith("RECALL_"):
