@@ -123,7 +123,7 @@ def authentication():
             {"email": email, "password_hash": {"$exists": True}})
         assert g.user["password_hash"] == bcrypt.hashpw(
             password, g.user["password_hash"])
-    except KeyError:
+    except KeyError, TypeError:
         g.user = None
     except AssertionError:
         raise HTTPException("Email or password or both do not match", 403)
