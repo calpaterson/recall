@@ -1,3 +1,7 @@
 #!/bin/sh
 
 python /usr/share/recall/src/server.py
+
+PID=$!
+
+trap 'kill $PID' SIGINT SIGTERM EXIT
