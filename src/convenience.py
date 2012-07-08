@@ -89,7 +89,6 @@ def get_es_mark_url():
         es_base_url=get_es_base_url(),
         index=settings["RECALL_ELASTICSEARCH_INDEX"])
 
-
 def wipe_mongodb():
     for collection_name in get_db().collection_names():
         if collection_name == u"system.indexes":
@@ -146,8 +145,15 @@ def assert_individual_marks_equal(mark1_, mark2_):
                              (pformat(mark1_), pformat(mark2_)))
 
 _test_user_counter = 1
-def create_test_user():
-    global _test_user_counter
+def create_test_user(fixture_user=False):
+    if fixture_user:
+        pseudonym = email = password = "example@example.com"
+    else:
+        global _test_user_counter
+        pseudonym = "example" + str(_test_user_counter)
+        email = pseudonym + "@example.com"
+        _test_user_counter += 1
+
     class User(object):
         email = None
         def __init__(self, pseudonym, email, password):
@@ -158,14 +164,11 @@ def create_test_user():
         def headers(self):
             return {"x-email": self.email, "x-password": self.password}
 
-    pseudonym = "example" + str(_test_user_counter)
-    email = pseudonym + "@example.com"
     password = email
     post_data = json.dumps({"pseudonym": pseudonym, "email": email})
     url = get_recall_server_api_url() + "/user"
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
-    _test_user_counter += 1
 
     email_key = get_db().users.find_one({"email": email})["email_key"]
 
