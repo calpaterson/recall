@@ -304,7 +304,7 @@ def request_invite():
 
 @app.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
-    if "RECALL_TEST_MODE" in settings:
+    if "RECALL_TEST_MODE" in settings or "RECALL_DEBUG_MODE" in settings:
         salt = bcrypt.gensalt(1)
     else:
         salt = bcrypt.gensalt()
