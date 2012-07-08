@@ -151,7 +151,7 @@ def create_test_user(fixture_user=False):
     else:
         global _test_user_counter
         pseudonym = "example" + str(_test_user_counter)
-        email = pseudonym + "@example.com"
+        email = password = pseudonym + "@example.com"
         _test_user_counter += 1
 
     class User(object):
@@ -164,7 +164,6 @@ def create_test_user(fixture_user=False):
         def headers(self):
             return {"x-email": self.email, "x-password": self.password}
 
-    password = email
     post_data = json.dumps({"pseudonym": pseudonym, "email": email})
     url = get_recall_server_api_url() + "/user"
     requests.post(url, data=post_data,

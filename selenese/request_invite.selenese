@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost/" />
+<title>request invite</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">request invite</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=r-i-first-name</td>
+	<td>Cal</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=r-i-surname</td>
+	<td>Paterson</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=r-i-email</td>
+	<td>cal@calpaterson.com</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=r-i-submit</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForTextPresent</td>
+	<td></td>
+	<td>Sent!</td>
+</tr>
+<tr>
+	<td>verifyText</td>
+	<td>id=r-i-submit</td>
+	<td>Sent!</td>
+</tr>
+</tbody></table>
+</body>
+</html>
