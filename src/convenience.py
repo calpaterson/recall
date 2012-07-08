@@ -50,6 +50,7 @@ def load_settings():
                 "RECALL_REDIS_DB": "7",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
+                "RECALL_DEBUG_MODE": "true"
                 })
         print "Using debug mode settings"
     elif "RECALL_TEST_MODE" in os.environ:
@@ -67,6 +68,7 @@ def load_settings():
                 "RECALL_REDIS_DB": "6",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
+                "RECALL_TEST_MODE": "true"
                 })
         print "Using test mode settings"
     else:
