@@ -2,8 +2,6 @@
 
 import os
 
-import requests
-
 import convenience
 
 settings = convenience.settings
