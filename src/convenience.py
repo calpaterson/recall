@@ -177,7 +177,7 @@ def create_test_user(fixture_user=False):
                   headers={"content-type": "application/json"})
     return User(pseudonym, email, password)
 
-def with_patience(test, seconds=30, gap=0.1):
+def with_patience(test, seconds=7, gap=0.1):
     give_up = int(time.time()) + seconds
     while(True):
         try:
