@@ -24,6 +24,7 @@ from copy import deepcopy
 from pprint import pformat
 from functools import wraps
 
+from redis import Redis
 import requests
 import pymongo
 
@@ -33,6 +34,12 @@ def get_db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return pymongo.Connection(host=settings["RECALL_MONGODB_HOST"],
                               port=int(settings["RECALL_MONGODB_PORT"]))[db_name]
+
+def redis_connection():
+    return Redis(
+        host=settings["RECALL_REDIS_HOST"],
+        port=int(settings["RECALL_REDIS_PORT"]),
+        db=int(settings["RECALL_REDIS_DB"]))
 
 def load_settings():
     if "RECALL_DEBUG_MODE" in os.environ:
@@ -106,7 +113,8 @@ def post_mark(user, mark):
     data = json.dumps(mark)
     headers = user.headers()
     headers["content-type"] = "application/json"
-    return requests.post(url, data=data, headers=headers)
+    response = requests.post(url, data=data, headers=headers)
+    return response
 
 def get_linked(user, who, when):
     url = get_recall_server_api_url() + "/linked/" + who + "/" + str(when)
@@ -114,35 +122,33 @@ def get_linked(user, who, when):
     return json.loads(response.content)
 
 def assert_marks_equal(marklist1, marklist2):
-    if type(marklist1) == type(marklist2) == type({}):
-        return assert_individual_marks_equal(marklist1, marklist2)
-    key_function = lambda x: x["~"]
-    sorted_marklist1 = sorted(marklist1, key=key_function)
-    sorted_marklist2 = sorted(marklist2, key=key_function)
-    for index in xrange(0, len(sorted_marklist1)):
-        try:
-            assert_individual_marks_equal(
-                sorted_marklist1[index], sorted_marklist2[index])
-        except IndexError:
-            raise AssertionError("Marks not equal: \n%s\n%s" %
-                                 (pformat(marklist1), pformat(marklist2)))
-
-
-def assert_individual_marks_equal(mark1_, mark2_):
-    field = None
     try:
-        fields = mark1_.keys()
-        fields += mark2_.keys()
-        for field in set(fields):
-            if type(field) == str or type(field) == unicode:
-                if field.startswith(u"%") or field.startswith(u"£"):
-                    continue
-            assert field in mark1_
-            assert field in mark2_
-            assert mark1_[field] == mark2_[field]
+        if type(marklist1) == type(marklist2) == type({}):
+            return _assert_individual_marks_equal(marklist1, marklist2)
+        assert len(marklist1) == len(marklist2)
+        key_function = lambda x: x["~"]
+        sorted_marklist1 = sorted(marklist1, key=key_function)
+        sorted_marklist2 = sorted(marklist2, key=key_function)
+        for index in xrange(0, len(sorted_marklist1)):
+            _assert_individual_marks_equal(
+                sorted_marklist1[index], sorted_marklist2[index])
     except AssertionError:
-        raise AssertionError("Marks not equal: \n%s\n%s" %
-                             (pformat(mark1_), pformat(mark2_)))
+        raise AssertionError(
+            "Marks not equal (percent and pound fields ignored): \n%s\n%s" %
+            (pformat(marklist1), pformat(marklist2)))
+
+
+def _assert_individual_marks_equal(mark1_, mark2_):
+    field = None
+    fields = mark1_.keys()
+    fields += mark2_.keys()
+    for field in set(fields):
+        if type(field) == str or type(field) == unicode:
+            if field.startswith(u"%") or field.startswith(u"£"):
+                continue
+        assert field in mark1_
+        assert field in mark2_
+        assert mark1_[field] == mark2_[field]
 
 _test_user_counter = 1
 def create_test_user(fixture_user=False):
@@ -168,6 +174,7 @@ def create_test_user(fixture_user=False):
     url = get_recall_server_api_url() + "/user"
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
+
 
     email_key = get_db().users.find_one({"email": email})["email_key"]
 

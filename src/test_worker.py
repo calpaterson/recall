@@ -87,5 +87,53 @@ class WorkerTests(unittest.TestCase):
 
         convenience.with_patience(inner_assert)
 
+    def test_tags_are_included_with_marks(self):
+        user = convenience.create_test_user()
+        marks = [
+            {"@": user.email, "~": 0, "#": "Hello, World!"},
+            {":": {"@": user.email, "~": 0}, "~": 1, "about": "greeting", "@":user.email}]
+        convenience.post_mark(user, marks)
+
+        url = convenience.get_recall_server_api_url() + "/mark?q=world"
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            convenience.assert_marks_equal(
+                [{u"@": unicode(user.email), u"~": 0, u"#": u"Hello, World!", u"about": [u"greeting"]}],
+                content)
+
+        convenience.with_patience(inner_assert)
+
+    @unittest.expectedFailure
+    def test_can_browse_by_tag(self):
+        user = convenience.create_test_user()
+        marks = [
+            {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
+            {"@": user.email, "~": 0, "#": "Hello, World!"},
+            {":": {"@": user.email, "~": 0}, "~": 1, "about": "greeting", "@": user.email},
+            ]
+        convenience.post_mark(user, marks)
+
+        url = convenience.get_recall_server_api_url() + "/mark?q=world&about=greeting"
+
+        expected_marklist = [{u"@": unicode(user.email),
+                              u"~": 0,
+                              u"#": u"Hello, World!",
+                              u"about": [u"greeting"]}]
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+            # import pdb; pdb.set_trace()
+            # assert_marks_equal should fail but possibly ignores second element
+            convenience.assert_marks_equal(expected_marklist, content)
+
+        convenience.with_patience(inner_assert)
+        self.fail()
+
 if __name__ == "__main__":
     unittest.main()

@@ -18,33 +18,45 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import time
 
 import requests
-from redis import Redis
 
 import convenience
 
 settings = convenience.settings
 
-def index_new_marks():
-    def index(name, value):
-        url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
+def index_root(root):
+    url = "http://{hostname}:{port}/{index_root}/{type}/{id}".format(
+        hostname = settings["RECALL_ELASTICSEARCH_HOST"],
+        port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
+        index_root = settings["RECALL_ELASTICSEARCH_INDEX"],
+        type = "mark",
+        id = root["@"] + str(root["~"]))
+    db = convenience.get_db()
+    facts = db.marks.find({":": {"@": root["@"], "~": root["~"]}})
+    for fact in facts:
+        root.setdefault("about", []).append(fact["about"])
+    requests.post(url, data=json.dumps(root))
+
+def index_fact(fact):
+    db = convenience.get_db()
+    root = db.marks.find_one({"@": fact[":"]["@"], "~": fact[":"]["~"]})
+    try:
+        root.setdefault("about", []).append(fact["about"])
+        del root["_id"]
+        url = "http://{hostname}:{port}/{index_root}/{type}/{id}".format(
             hostname = settings["RECALL_ELASTICSEARCH_HOST"],
             port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
-            index = settings["RECALL_ELASTICSEARCH_INDEX"],
+            index_root = settings["RECALL_ELASTICSEARCH_INDEX"],
             type = "mark",
-            id = name)
-        requests.post(url, data=json.dumps(value))
+            id = root["@"] + str(root["~"]))
+        requests.post(url, data=json.dumps(root))
+    except:
+        pass
 
-    def redis_connection():
-        return Redis(
-            host=settings["RECALL_REDIS_HOST"],
-            port=int(settings["RECALL_REDIS_PORT"]),
-            db=int(settings["RECALL_REDIS_DB"]))
-
+def index_new_marks():
     def pop_mark():
-        connection = redis_connection()
+        connection = convenience.redis_connection()
         entry = connection.blpop("marks")
         mark_as_string = entry[1]
         return json.loads(mark_as_string)
@@ -54,9 +66,12 @@ def index_new_marks():
 
     mark = pop_mark()
     if is_root(mark):
-        index(mark["@"] + str(mark["~"]), mark)
+        index_root(mark)
     else:
-        pass
+        index_fact(mark)
+
+def main():
+    pass
 
 if __name__ == "__main__":
     convenience.load_settings()
