@@ -106,7 +106,6 @@ class WorkerTests(unittest.TestCase):
 
         convenience.with_patience(inner_assert)
 
-    @unittest.expectedFailure
     def test_can_browse_by_tag(self):
         user = convenience.create_test_user()
         marks = [
@@ -128,12 +127,9 @@ class WorkerTests(unittest.TestCase):
             content = json.loads(response.content)
             self.assertEquals(200, response.status_code)
             self.assertNotEquals([], content)
-            # import pdb; pdb.set_trace()
-            # assert_marks_equal should fail but possibly ignores second element
             convenience.assert_marks_equal(expected_marklist, content)
 
         convenience.with_patience(inner_assert)
-        self.fail()
 
 if __name__ == "__main__":
     unittest.main()

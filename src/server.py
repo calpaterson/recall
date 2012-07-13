@@ -46,7 +46,8 @@ class HTTPException(Exception):
         self.machine_readable = machine_readable
 
 def handle_exception(exception):
-    print >> sys.stderr, traceback.format_exc(),
+    if "RECALL_TEST_MODE" in settings:
+        print >> sys.stderr, traceback.format_exc(),
     def json_error(message):
         document = {"human_readable": message}
         if hasattr(exception, "machine_readable") and \
@@ -168,8 +169,22 @@ def add_marks():
 
 @app.route("/mark", methods=["GET"])
 def get_all_marks():
+    def split_tags(tag_string):
+        tags = tag_string.split(" ")
+        return tags if tags != [""] else []
     if "q" in request.args:
-        return search(request.args["q"])
+        query = SearchQueryBuilder()
+        query.with_keywords(request.args["q"])
+        if g.user is not None:
+            query.as_user(g.user)
+        for tag in split_tags(request.args.get("about", "")):
+            query.about(tag)
+        for tag in split_tags(request.args.get("not_about", "")):
+            query.not_about(tag)
+
+        url = convenience.get_es_mark_url() +  "/_search?"
+        r = requests.get(url, data=json.dumps(query.build()))
+        return results_to_marks(r.content)
     else:
         return marks()
 
@@ -185,30 +200,56 @@ def results_to_marks(body):
         marks.append(mark["_source"])
     return marks
 
-def search(query_string):
-    def inner_query_builder():
-        return {"text":{"_all": query_string}}
-    def filter_builder():
-        privacy_clause = {"not": {"term":{"%private":True}}}
-        if g.user is not None:
-            who = g.user["email"].split("@")[0] # FIXME
-            return {"or": [ privacy_clause, {"term":{"@":who}}]}
-        else:
-            return privacy_clause
-    query = json.dumps(
-        {
-            "size": 100,
-            "query": {
+class SearchQueryBuilder(object):
+    def __init__(self):
+        self.with_keywords("")
+        self.of_size(100)
+        self.respecting_privacy()
+
+    def with_keywords(self, string):
+        self.query_string = {"text": {"_all": string}}
+        return self
+
+    def respecting_privacy(self):
+        self.filters = [
+                {"not": {"term": {"%private": True}}}
+                ]
+        return self
+
+    def of_size(self, size):
+        self.size = size
+        return self
+
+    def about(self, tag):
+        self.filters.append(
+            {"term": {"about": tag}})
+        return self
+
+    def not_about(self, tag):
+        self.filters.append(
+            {"not": {"term": {"about": tag}}})
+        return self
+
+    def as_user(self, user):
+        # Have not worked out how to correctly escape @ for elasticsearch
+        at_sign_workaround = user["email"].split("@")[0]
+        self.filters.append(
+            {"term": {"@": at_sign_workaround}})
+        return self
+
+    def build(self):
+        built_query = {
+            "size": self.size,
+            "query":{
                 "filtered":{
-                    "query" : inner_query_builder(),
-                    "filter": filter_builder()
+                    "query": self.query_string,
+                    "filter": {"and": self.filters,}
                     }
                 }
             }
-        )
-    url = convenience.get_es_mark_url() +  "/_search?"
-    r = requests.get(url, data=query)
-    return results_to_marks(r.content)
+        from pprint import pprint
+        pprint(built_query)
+        return built_query
 
 def marks(spec_additions={}):
     spec = _build_spec(spec_additions)
