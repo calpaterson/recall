@@ -87,7 +87,7 @@ class WorkerTests(unittest.TestCase):
 
         convenience.with_patience(inner_assert)
 
-    def test_tags_are_included_with_marks(self):
+    def test_facts_are_included_with_marks(self):
         user = convenience.create_test_user()
         marks = [
             {"@": user.email, "~": 0, "#": "Hello, World!"},
@@ -106,7 +106,7 @@ class WorkerTests(unittest.TestCase):
 
         convenience.with_patience(inner_assert)
 
-    def test_can_browse_by_tag(self):
+    def test_can_browse_by_single_fact(self):
         user = convenience.create_test_user()
         marks = [
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
@@ -121,6 +121,35 @@ class WorkerTests(unittest.TestCase):
                               u"~": 0,
                               u"#": u"Hello, World!",
                               u"about": [u"greeting"]}]
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+            convenience.assert_marks_equal(expected_marklist, content)
+
+        convenience.with_patience(inner_assert)
+
+    def test_can_browse_by_multiple_about_facts(self):
+        user = convenience.create_test_user()
+        marks = [
+            {"@": user.email, "~": 0, "#": "Hello, World!"},
+            {"@": user.email, "~": 2, "#": "My name is Kurt Cobain!"},
+            {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            ]
+        convenience.post_mark(user, marks)
+
+        url = convenience.get_recall_server_api_url() + "/mark?q=world&about=greeting+suicidal"
+
+        expected_marklist = [{u"@": unicode(user.email),
+                              u"~": 3,
+                              u"#": u"Goodbye, Cruel World!",
+                              u"about": [u"greeting", u"suicidal"]}]
 
         def inner_assert():
             response = requests.get(url)
