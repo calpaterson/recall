@@ -34,8 +34,8 @@ core.add(
         };
 
         var saveTabSelection = function(event){
-            sandbox.set("bookmarklet-tab-selection",
-                        $(event.target).attr("href"));
+            var href = event.target.getAttribute("href");
+            sandbox.set("bookmarklet-tab-selection", href);
         };
 
         var preloadHyperlinkTabFields = function(){
