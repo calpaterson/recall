@@ -32,14 +32,14 @@ def index_root(root):
         index_root = settings["RECALL_ELASTICSEARCH_INDEX"],
         type = "mark",
         id = root["@"] + str(root["~"]))
-    db = convenience.get_db()
+    db = convenience.db()
     facts = db.marks.find({":": {"@": root["@"], "~": root["~"]}})
     for fact in facts:
         root.setdefault("about", []).append(fact["about"])
     requests.post(url, data=json.dumps(root))
 
 def index_fact(fact):
-    db = convenience.get_db()
+    db = convenience.db()
     root = db.marks.find_one({"@": fact[":"]["@"], "~": fact[":"]["~"]})
     try:
         root.setdefault("about", []).append(fact["about"])

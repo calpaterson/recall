@@ -32,6 +32,13 @@ class WorkerTests(unittest.TestCase):
         convenience.wipe_mongodb()
         convenience.wipe_elastic_search()
 
+    def assert_search_results_equal(self, url, expected_marklist):
+        response = requests.get(url)
+        content = json.loads(response.content)
+        self.assertEquals(200, response.status_code)
+        self.assertNotEquals([], content)
+        convenience.assert_marks_equal(expected_marklist, content)
+
     def test_can_search_for_marks(self):
         user = convenience.create_test_user()
         mark = {"@": user.email, "~": 0, "#": "Please index me!"}
@@ -39,7 +46,7 @@ class WorkerTests(unittest.TestCase):
             user, mark)
 
         def inner_assert():
-            url = convenience.get_recall_server_api_url()
+            url = convenience.api_url()
             url += "/mark?q=index"
             response = requests.get(url)
             content = json.loads(response.content)
@@ -51,13 +58,15 @@ class WorkerTests(unittest.TestCase):
 
     def test_cant_search_for_private_marks_anonymously(self):
         user = convenience.create_test_user()
-        mark1 = {"@": user.email, "~": 0, "#": "Khajiit has no words for you", "%private": True}
-        mark2 = {u"@": user.email, u"~": 0, u"#": u"Khajiit has some words for you"}
+        mark1 = {"@": user.email, "~": 0,
+                 "#": "Khajiit has no words for you", "%private": True}
+        mark2 = {u"@": user.email, u"~": 0,
+                 u"#": u"Khajiit has some words for you"}
         convenience.post_mark(user, mark1)
         convenience.post_mark(user, mark2)
 
 
-        url = convenience.get_recall_server_api_url()
+        url = convenience.api_url()
         url += "/mark?q=Khajiit"
 
         def inner_assert():
@@ -71,12 +80,14 @@ class WorkerTests(unittest.TestCase):
     def test_can_search_for_own_private_marks(self):
         user1 = convenience.create_test_user()
         user2 = convenience.create_test_user()
-        mark1 = {"@": user1.email, "~": 0, "#": "My secret mark", "%private": True}
-        mark2 = {u"@": user2.email, u"~": 0, u"#": u"Someone else's secret mark"}
+        mark1 = {"@": user1.email, "~": 0, "#": "My secret mark",
+                 "%private": True}
+        mark2 = {u"@": user2.email, u"~": 0,
+                 u"#": u"Someone else's secret mark"}
         convenience.post_mark(user1, mark1)
         convenience.post_mark(user2, mark2)
 
-        url = convenience.get_recall_server_api_url()
+        url = convenience.api_url()
         url += "/mark?q=secret"
 
         def inner_assert():
@@ -91,17 +102,19 @@ class WorkerTests(unittest.TestCase):
         user = convenience.create_test_user()
         marks = [
             {"@": user.email, "~": 0, "#": "Hello, World!"},
-            {":": {"@": user.email, "~": 0}, "~": 1, "about": "greeting", "@":user.email}]
+            {":": {"@": user.email, "~": 0}, "~": 1, "about": "greeting",
+             "@":user.email}]
         convenience.post_mark(user, marks)
 
-        url = convenience.get_recall_server_api_url() + "/mark?q=world"
+        url = convenience.api_url() + "/mark?q=world"
 
         def inner_assert():
             response = requests.get(url)
             content = json.loads(response.content)
             self.assertEquals(200, response.status_code)
             convenience.assert_marks_equal(
-                [{u"@": unicode(user.email), u"~": 0, u"#": u"Hello, World!", u"about": [u"greeting"]}],
+                [{u"@": unicode(user.email), u"~": 0, u"#": u"Hello, World!",
+                  u"about": [u"greeting"]}],
                 content)
 
         convenience.with_patience(inner_assert)
@@ -111,11 +124,12 @@ class WorkerTests(unittest.TestCase):
         marks = [
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
             {"@": user.email, "~": 0, "#": "Hello, World!"},
-            {":": {"@": user.email, "~": 0}, "~": 1, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 0}, "~": 1, "about": "greeting",
+             "@": user.email},
             ]
         convenience.post_mark(user, marks)
 
-        url = convenience.get_recall_server_api_url() + "/mark?q=world&about=greeting"
+        url = convenience.api_url() + "/mark?q=world&about=greeting"
 
         expected_marklist = [{u"@": unicode(user.email),
                               u"~": 0,
@@ -137,14 +151,18 @@ class WorkerTests(unittest.TestCase):
             {"@": user.email, "~": 0, "#": "Hello, World!"},
             {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
-            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal",
+             "@": user.email},
             ]
         convenience.post_mark(user, marks)
 
-        url = convenience.get_recall_server_api_url() + "/mark?q=world&about=greeting+suicidal"
+        url = convenience.api_url() + "/mark?q=world&about=greeting+suicidal"
 
         expected_marklist = [{u"@": unicode(user.email),
                               u"~": 3,
@@ -166,14 +184,18 @@ class WorkerTests(unittest.TestCase):
             {"@": user.email, "~": 0, "#": "Hello, World!"},
             {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
-            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal",
+             "@": user.email},
             ]
         convenience.post_mark(user, marks)
 
-        url = convenience.get_recall_server_api_url() + "/mark?q=world&not_about=suicidal"
+        url = convenience.api_url() + "/mark?q=world&not_about=suicidal"
 
         expected_marklist = [{u"@": unicode(user.email),
                               u"~": 0,
@@ -195,13 +217,16 @@ class WorkerTests(unittest.TestCase):
             {"@": user.email, "~": 0, "#": "Hello, World!"},
             {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
-            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal",
+             "@": user.email},
             ]
         convenience.post_mark(user, marks)
 
-        url = convenience.get_recall_server_api_url() + "/mark?q=world&not_about=suicidal+greeting"
+        url = convenience.api_url() + "/mark?q=world&not_about=suicidal+greeting"
 
         expected_marklist = [{u"@": unicode(user.email),
                               u"~": 2,
@@ -223,14 +248,18 @@ class WorkerTests(unittest.TestCase):
             {"@": user.email, "~": 0, "#": "Hello, World!"},
             {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
-            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 2}, "~": 4, "about": "informative", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 7, "about": "greeting", "@": user.email},
-            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 2}, "~": 4, "about": "informative",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "greeting",
+             "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal",
+             "@": user.email},
             ]
         convenience.post_mark(user, marks)
 
-        url = convenience.get_recall_server_api_url() + "/mark?q=world&not_about=suicidal&about=greeting"
+        url = convenience.api_url() + "/mark?q=world&not_about=suicidal&about=greeting"
 
         expected_marklist = [{u"@": unicode(user.email),
                               u"~": 0,
@@ -238,15 +267,8 @@ class WorkerTests(unittest.TestCase):
                               u"about": [u"greeting"],
                               }]
 
-        def inner_assert():
-            response = requests.get(url)
-            content = json.loads(response.content)
-            self.assertEquals(200, response.status_code)
-            self.assertNotEquals([], content)
-            convenience.assert_marks_equal(expected_marklist, content)
-
-        convenience.with_patience(inner_assert)
-
+        convenience.with_patience(lambda: self.assert_search_results_equal(
+                url, expected_marklist))
 
 if __name__ == "__main__":
     unittest.main()

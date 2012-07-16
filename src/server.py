@@ -221,13 +221,11 @@ class SearchQueryBuilder(object):
         return self
 
     def about(self, tag):
-        self.filters.append(
-            {"term": {"about": tag}})
+        self.filters.append({"term": {"about": tag}})
         return self
 
     def not_about(self, tag):
-        self.filters.append(
-            {"not": {"term": {"about": tag}}})
+        self.filters.append({"not": {"term": {"about": tag}}})
         return self
 
     def as_user(self, user):
@@ -238,7 +236,7 @@ class SearchQueryBuilder(object):
         return self
 
     def build(self):
-        built_query = {
+        return {
             "size": self.size,
             "query":{
                 "filtered":{
@@ -247,9 +245,6 @@ class SearchQueryBuilder(object):
                     }
                 }
             }
-        from pprint import pprint
-        pprint(built_query)
-        return built_query
 
 def marks(spec_additions={}):
     spec = _build_spec(spec_additions)

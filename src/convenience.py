@@ -30,7 +30,7 @@ import pymongo
 
 settings = {}
 
-def get_db():
+def db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return pymongo.Connection(host=settings["RECALL_MONGODB_HOST"],
                               port=int(settings["RECALL_MONGODB_PORT"]))[db_name]
@@ -83,7 +83,7 @@ def load_settings():
             if name.startswith("RECALL_"):
                 settings[name] = os.environ[name]
 
-def get_recall_server_api_url():
+def api_url():
     return "http://" + settings["RECALL_API_HOST"] + ":" +\
         settings["RECALL_API_PORT"]
 
@@ -97,10 +97,10 @@ def get_es_mark_url():
         index=settings["RECALL_ELASTICSEARCH_INDEX"])
 
 def wipe_mongodb():
-    for collection_name in get_db().collection_names():
+    for collection_name in db().collection_names():
         if collection_name == u"system.indexes":
             continue
-        get_db().drop_collection(collection_name)
+        db().drop_collection(collection_name)
 
 def wipe_elastic_search():
     url = "{search_url}/{index}".format(
@@ -109,7 +109,7 @@ def wipe_elastic_search():
     requests.delete(url)
 
 def post_mark(user, mark):
-    url = get_recall_server_api_url() + "/mark"
+    url = api_url() + "/mark"
     data = json.dumps(mark)
     headers = user.headers()
     headers["content-type"] = "application/json"
@@ -117,7 +117,7 @@ def post_mark(user, mark):
     return response
 
 def get_linked(user, who, when):
-    url = get_recall_server_api_url() + "/linked/" + who + "/" + str(when)
+    url = api_url() + "/linked/" + who + "/" + str(when)
     response = requests.get(url, headers=user.headers())
     return json.loads(response.content)
 
@@ -171,15 +171,15 @@ def create_test_user(fixture_user=False):
             return {"x-email": self.email, "x-password": self.password}
 
     post_data = json.dumps({"pseudonym": pseudonym, "email": email})
-    url = get_recall_server_api_url() + "/user"
+    url = api_url() + "/user"
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
 
 
-    email_key = get_db().users.find_one({"email": email})["email_key"]
+    email_key = db().users.find_one({"email": email})["email_key"]
 
     post_data = json.dumps({"password": password, "email": email})
-    url = get_recall_server_api_url() + "/user/" + email_key
+    url = api_url() + "/user/" + email_key
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
     return User(pseudonym, email, password)

@@ -12,7 +12,7 @@ def main():
     convenience.wipe_mongodb()
     convenience.wipe_elastic_search()
     convenience.create_test_user(fixture_user=True)
-    db = convenience.get_db()
+    db = convenience.db()
     db.users.insert({
             "surname" : "Paterson",
             "firstName" : "Cal",
