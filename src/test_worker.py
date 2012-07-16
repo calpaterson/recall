@@ -135,7 +135,7 @@ class WorkerTests(unittest.TestCase):
         user = convenience.create_test_user()
         marks = [
             {"@": user.email, "~": 0, "#": "Hello, World!"},
-            {"@": user.email, "~": 2, "#": "My name is Kurt Cobain!"},
+            {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
             {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
             {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
             {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal", "@": user.email},
@@ -159,6 +159,94 @@ class WorkerTests(unittest.TestCase):
             convenience.assert_marks_equal(expected_marklist, content)
 
         convenience.with_patience(inner_assert)
+
+    def test_can_browse_by_not_about_facts(self):
+        user = convenience.create_test_user()
+        marks = [
+            {"@": user.email, "~": 0, "#": "Hello, World!"},
+            {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
+            {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 2}, "~": 5, "about": "suicidal", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            ]
+        convenience.post_mark(user, marks)
+
+        url = convenience.get_recall_server_api_url() + "/mark?q=world&not_about=suicidal"
+
+        expected_marklist = [{u"@": unicode(user.email),
+                              u"~": 0,
+                              u"#": u"Hello, World!",
+                              u"about": [u"greeting"]}]
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+            convenience.assert_marks_equal(expected_marklist, content)
+
+        convenience.with_patience(inner_assert)
+
+    def test_can_browse_by_multiple_not_about_facts(self):
+        user = convenience.create_test_user()
+        marks = [
+            {"@": user.email, "~": 0, "#": "Hello, World!"},
+            {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
+            {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 6, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            ]
+        convenience.post_mark(user, marks)
+
+        url = convenience.get_recall_server_api_url() + "/mark?q=world&not_about=suicidal+greeting"
+
+        expected_marklist = [{u"@": unicode(user.email),
+                              u"~": 2,
+                              u"#": u"My name is Kurt Cobain, world!",
+                              }]
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+            convenience.assert_marks_equal(expected_marklist, content)
+
+        convenience.with_patience(inner_assert)
+
+    def test_can_mix_about_and_not_about_facts(self):
+        user = convenience.create_test_user()
+        marks = [
+            {"@": user.email, "~": 0, "#": "Hello, World!"},
+            {"@": user.email, "~": 2, "#": "My name is Kurt Cobain, world!"},
+            {"@": user.email, "~": 3, "#": "Goodbye, Cruel World!"},
+            {":": {"@": user.email, "~": 0}, "~": 4, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 2}, "~": 4, "about": "informative", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "greeting", "@": user.email},
+            {":": {"@": user.email, "~": 3}, "~": 7, "about": "suicidal", "@": user.email},
+            ]
+        convenience.post_mark(user, marks)
+
+        url = convenience.get_recall_server_api_url() + "/mark?q=world&not_about=suicidal&about=greeting"
+
+        expected_marklist = [{u"@": unicode(user.email),
+                              u"~": 0,
+                              u"#": u"Hello, World!",
+                              u"about": [u"greeting"],
+                              }]
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+            convenience.assert_marks_equal(expected_marklist, content)
+
+        convenience.with_patience(inner_assert)
+
 
 if __name__ == "__main__":
     unittest.main()
