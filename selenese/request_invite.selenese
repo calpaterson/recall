@@ -42,7 +42,7 @@
 	<td>Sent!</td>
 </tr>
 <tr>
-	<td>verifyText</td>
+	<td>assertText</td>
 	<td>id=r-i-submit</td>
 	<td>Sent!</td>
 </tr>
