@@ -175,6 +175,7 @@ def get_all_marks():
     if "q" in request.args:
         query = SearchQueryBuilder()
         query.with_keywords(request.args["q"])
+        query.respecting_privacy()
         if g.user is not None:
             query.as_user(g.user)
         for tag in split_tags(request.args.get("about", "")):
@@ -202,9 +203,7 @@ def results_to_marks(body):
 
 class SearchQueryBuilder(object):
     def __init__(self):
-        self.with_keywords("")
         self.of_size(100)
-        self.respecting_privacy()
 
     def with_keywords(self, string):
         self.query_string = {"text": {"_all": string}}
