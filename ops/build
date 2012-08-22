@@ -45,7 +45,7 @@ build_jquery_if_needed () {
 	cd $PROJECT_ROOT
     fi
 }
-
+cd ..
 insert_web_resources () {
     build_bootstrap_if_needed
     build_jquery_if_needed
@@ -56,9 +56,23 @@ insert_web_resources () {
 insert_python_resources () {
     cp -R $PROJECT_ROOT/src $BUILD_DIR/usr/share/recall/
 }
+
+move_config_file () {
+    mv $BUILD_DIR/usr/share/recall/www/config.js $BUILD_DIR/etc/recall/config.js
+}
     
 clean_out_temporary_files () {
     find $OPS_DIR/debian/ -name '*~' -exec rm '{}' ';'
+}
+
+insert_documentation () {
+    cp $PROJECT_ROOT/LICENCE $BUILD_DIR/usr/share/doc/recall/copyright
+    # touch $BUILD_DIR/usr/share/doc/recall/changelog.Debian
+    # gzip --best $BUILD_DIR/usr/share/doc/recall/changelog.Debian
+}
+
+remove_gitignores () {
+    rm `find $BUILD_DIR -name '*gitignore*'`
 }
 
 build_artefact () {
@@ -74,12 +88,6 @@ build_artefact () {
     dpkg-name $OPS_DIR/artefacts/recall.deb
 }
 
-insert_documentation () {
-    cp $PROJECT_ROOT/LICENCE $BUILD_DIR/usr/share/doc/recall/copyright
-    # touch $BUILD_DIR/usr/share/doc/recall/changelog.Debian
-    # gzip --best $BUILD_DIR/usr/share/doc/recall/changelog.Debian
-}
-
 push_tags_if_on_ci () {
     if [[ $BUILD_NUMBER ]]
     then
@@ -91,7 +99,9 @@ create_build_directory
 set_version
 insert_web_resources
 insert_python_resources
+move_config_file
 insert_documentation
 clean_out_temporary_files
+remove_gitignores
 build_artefact
 push_tags_if_on_ci
