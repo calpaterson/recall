@@ -23,7 +23,7 @@ makeSandbox = function(core, moduleName) {
         return core.dom.queryWithin(moduleName, selector);
     };
     interface_.bind = function (element, event, handler){
-        core.dom.bind(element, event, handler);
+        core.dom.bind(moduleName, element, event, handler);
     };
     interface_.append = function(selector, element){
         core.dom.append(moduleName, selector, element);

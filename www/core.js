@@ -60,37 +60,36 @@ core = (
         core.dom = {
             // Domain object model
             queryWithin: function(moduleName, selector){
-                var module = $("#" + moduleName);
-                if (module.length > 1){
-                    throw "#" + moduleName + " is used more than once";
-                }
                 if (selector !== undefined){
-                    return $(module).find(selector);
+                    return document.querySelectorAll("#" + moduleName + " " + selector);
                 } else {
-                    return $(module);
+                    return document.querySelectorAll("#" + moduleName);
                 }
             },
-            bind: function(element, event, handler){
+            bind: function(moduleName, selector, eventName, handler){
                 // FIXME Should take moduleName
-                $(element).bind(event, handler);
+                var elements = this.queryWithin(moduleName, selector);
+                for (var index = 0; index < elements.length; index++){
+                    elements[index]["on" + eventName] = handler;
+                }
             },
             append: function(moduleName, selector, element){
                 core.dom.queryWithin(moduleName, selector).append(element);
             },
             deleteContentsOf: function(moduleName, selector){
-                $(selector).children().remove("*");
+                document.querySelectorAll(selector).children().remove("*");
             },
             hiddenWrapHack : function(moduleName, selector){
-                core.dom.queryWithin(moduleName, selector).wrap(
+                $(core.dom.queryWithin(moduleName, selector)).wrap(
                     '<div hidden=true></div>');
             },
             unHiddenWrapHack : function(moduleName, selector){
-                core.dom.queryWithin(moduleName, selector).unwrap();
+                $(core.dom.queryWithin(moduleName, selector)).unwrap();
             }
         };
         core.offdom = {
             find: function(element, selector){
-                return $(element).find(selector);
+                return element.querySelectorAll(selector);
             }
         };
         core.asynchronous = function(handler, verb, url, data, mime, headers){
