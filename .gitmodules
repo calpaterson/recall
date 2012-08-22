@@ -7,6 +7,3 @@
 [submodule "www/third-party/jquery"]
 	path = www/third-party/jquery
 	url = git://github.com/jquery/jquery.git
-[submodule "www/third-party/jasmine"]
-	path = www/third-party/jasmine
-	url = git://github.com/pivotal/jasmine.git
