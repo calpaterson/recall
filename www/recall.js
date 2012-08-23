@@ -317,36 +317,6 @@ core.add(
     }());
 
 core.add(
-    "problem-box",
-    function(){
-        var sandbox;
-
-        var info = function(message){
-            var infobox = sandbox.find("#info-template")[0].cloneNode(true);
-            infobox.id = undefined;
-            infobox.hidden = false;
-            infobox.classList.add("alert-success");
-            sandbox.offdom.find(infobox, ".info-contents")[0].textContent = message;
-            sandbox.append(infobox);
-        };
-
-        var error = function(message){
-            var infobox = sandbox.find("#info-template")[0].cloneNode(true);
-            infobox.id = undefined;
-            infobox.hidden = false;
-            infobox.classList.add("alert-error");
-            sandbox.offdom.find(infobox, ".info-contents")[0].textContent = message;
-            sandbox.append(infobox);
-        };
-
-        return function(sandbox_){
-            sandbox = sandbox_;
-            sandbox.subscribe("info", info);
-            sandbox.subscribe("error", error);
-        };
-    }());
-
-core.add(
     "bookmarklet",
     function(){
         var sandbox;
@@ -398,7 +368,7 @@ core.add(
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show);
 
-            var allNavbarLinks = sandbox.find(".show");
+            var allNavbarLinks = sandbox.find(".recall-show");
             for (var i = 0; i<allNavbarLinks.length; i++){
                 allNavbarLinks[i].classList.remove("active");
             }
@@ -454,7 +424,7 @@ core.add(
                 show = "verify-email-form";
             }
             moveTo(show);
-            sandbox.bind(".show", "click", function(event){
+            sandbox.bind(".recall-show", "click", function(event){
                              moveTo(event.currentTarget.id.slice(5));
                          });
             sandbox.publish("logged-in?",

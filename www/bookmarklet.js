@@ -24,12 +24,11 @@ core.add(
             var tabSelection = sandbox.get(
                 "bookmarklet-tab-selection");
             if (tabSelection){
-                sandbox.find(".active").removeClass("active");
-                sandbox.find(tabSelection).addClass("active");
-                sandbox.find(tabSelection.slice(0, -8)).addClass("active");
+                sandbox.find(tabSelection)[0].classList.add("active");
+                sandbox.find(tabSelection.slice(0, -8))[0].classList.add("active");
             } else {
-                sandbox.find("#hyperlink-tab-content").addClass("active");
-                sandbox.find("#hyperlink-tab").addClass("active");
+                sandbox.find("#hyperlink-tab-content")[0].classList.add("active");
+                sandbox.find("#hyperlink-tab")[0].classList.add("active");
             }
         };
 
@@ -44,11 +43,9 @@ core.add(
             for (var i = 1; i < banana_split.length; i++){
                 var sub_split = banana_split[i].split("=");
                 if (sub_split[0] === "title"){
-                    sandbox.find("#hyperlink-title").val(
-                        decodeURIComponent(sub_split[1]));
+                    sandbox.find("#hyperlink-title")[0].value = decodeURIComponent(sub_split[1]);
                 } else if (sub_split[0] === "url"){
-                    sandbox.find("#hyperlink-url").val(
-                        decodeURIComponent(sub_split[1]));
+                    sandbox.find("#hyperlink-url")[0].value = decodeURIComponent(sub_split[1]);
                 }
             }
         };
@@ -69,12 +66,11 @@ core.add(
                 if (private_){
                     mark["%private"] = true;
                 }
-                if (sandbox.find("#comment-tab-content").hasClass("active")){
-                    mark["#"] = sandbox.find("#comment-body").val();
-                } else if (sandbox.find("#hyperlink-tab-content").hasClass(
-                               "active")){
-                    mark.title = sandbox.find("#hyperlink-title").val();
-                    mark.hyperlink = sandbox.find("#hyperlink-url").val();
+                if (sandbox.find("#comment-tab-content")[0].classList.contains("active")){
+                    mark["#"] = sandbox.find("#comment-body")[0].value;
+                } else if (sandbox.find("#hyperlink-tab-content")[0].classList.contains("active")){
+                    mark.title = sandbox.find("#hyperlink-title")[0].value;
+                    mark.hyperlink = sandbox.find("#hyperlink-url")[0].value;
                 }
                 
                 mark["@"] = email;

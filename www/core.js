@@ -77,14 +77,19 @@ core = (
                 core.dom.queryWithin(moduleName, selector).append(element);
             },
             deleteContentsOf: function(moduleName, selector){
-                document.querySelectorAll(selector).children().remove("*");
+                document.querySelectorAll(selector)[0].children = [];
             },
             hiddenWrapHack : function(moduleName, selector){
-                $(core.dom.queryWithin(moduleName, selector)).wrap(
-                    '<div hidden=true></div>');
+                var elements = this.queryWithin(moduleName, selector);
+                for(var index = 0; index < elements.length; index++){
+                    elements[index].style.display = "none";
+                }
             },
             unHiddenWrapHack : function(moduleName, selector){
-                $(core.dom.queryWithin(moduleName, selector)).unwrap();
+                var elements = this.queryWithin(moduleName, selector);
+                for(var index = 0; index < elements.length; index++){
+                    elements[index].style.display = "block";
+                }
             }
         };
         core.offdom = {

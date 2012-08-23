@@ -25,16 +25,10 @@
           content="Recall is a decentralised social bookmarking service">
     <meta name="author" content="Cal Paterson">
 
-    <link href="third-party/bootstrap/css/bootstrap.css"
-          rel="stylesheet">
+    <link href="third-party/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="third-party/bootstrap/css/bootstrap-responsive.css"
           rel="stylesheet">
     <link href="style.css" rol="stylesheet">
-
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-        <script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
   </head>
 
   <body>
@@ -43,47 +37,28 @@
       <div class="navbar-inner">
         <div class="container">
 
-          <!-- Icon when collapsed -->
-          <a class="btn btn-navbar" data-toggle="collapse"
-             data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-
           <a class="brand" href="#">Recall (closed beta)</a>
           <ul id="navbar-list" class="nav nav-collapse">
-            <li id="show-about" class="show">
+            <li id="show-about" class="recall-show">
               <a href="#">About</a>
             </li>
-            <li id="show-view" class="show">
+            <li id="show-view" class="recall-show">
               <a href="#">View</a>
             </li>
-            <div hidden="true">
-              <li id="show-import-bookmarks" class="show navbar-user">
-                <a href="#">Import Bookmarks</a>
-              </li>
-            </div>
-            <div hidden="true">
-              <li id="show-login" class="show navbar-visitor">
-                <a href="#">Login</a>
-              </li>
-            </div>
-            <div hidden="true">
-              <li id="show-bookmarklet" class="show navbar-user">
-                <a href="#">Bookmarklet</a>
-              </li>
-            </div>
-            <div hidden="true">
-              <li id="logout" class="navbar-user">
-                <a href="#">Logout</a>
-              </li>
-            </div>
-            <div hidden="true">
-              <form class="navbar-user navbar-form pull-right">
-                <button id="recall-version" class="btn disabled"/>
-              </form>
-            </div>
+            <li id="show-import-bookmarks" class="recall-show navbar-user" style="display: none">
+              <a href="#">Import Bookmarks</a>
+            <li id="show-login" class="recall-show navbar-visitor">
+              <a href="#">Login</a>
+            </li>
+            <li id="show-bookmarklet" class="recall-show navbar-user" style="display: none">
+              <a href="#">Bookmarklet</a>
+            </li>
+            <li id="logout" class="navbar-user" style="display: none">
+              <a href="#">Logout</a>
+            </li>
+            <form class="navbar-user navbar-form pull-right" style="display: none">
+              <button id="recall-version" class="btn disabled"/>
+            </form>
           </ul>
         </div>
       </div>
@@ -190,32 +165,32 @@
             </div>
           </div>
         </div>
-	<div class="span12">
+        <div class="span12">
           <h6>Image Credits</h6>
           <ul>
             <li>
               Elephant photograph is a derivative work of
               <a href="http://www.flickr.com/photos/shnapthat/6464681311/">
-		"Asian Elephant, Elephas maximus"</a> photograph by
+                "Asian Elephant, Elephas maximus"</a> photograph by
               <a href="http://www.flickr.com/people/arran_edmonstone_photography/">
-		Arran Edmonstone</a> and licenced under
+                Arran Edmonstone</a> and licenced under
               <a href="http://creativecommons.org/licenses/by/2.0/">CC-BY</a></li>
             <li>
               Cargo ship photograph is a derivative work of
               <a href="http://www.flickr.com/photos/shnapthat/6464681311/">
-		"Singapore Ship Docks (PSA)"</a> photograph by Flickr user
+                "Singapore Ship Docks (PSA)"</a> photograph by Flickr user
               <a href="http://www.flickr.com/photos/shnapthat/6464681311/">
-		ShnapThat!"</a> and licenced under
+                ShnapThat!"</a> and licenced under
               <a href="http://creativecommons.org/licenses/by/2.0/">CC-BY</a></li>
             <li>
               Paddington station photograph is a derivative work of
               <a href="http://www.flickr.com/photos/pikerslanefarm/2711032095/">
-		"Paddington Station Right"</a> photograph by
+                "Paddington Station Right"</a> photograph by
               <a href="http://www.flickr.com/people/pikerslanefarm/">
-		Amanda Slater</a> and licenced under
+                Amanda Slater</a> and licenced under
               <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en">CC-BY-SA</a></li>
           </ul>
-	</div>
+        </div>
       </div>
       
       <div id="verify-email-form" class="row" hidden="true">
@@ -290,22 +265,67 @@
         </div>
       </div>
       
+
+      <!-- <div class="tabbable"> -->
+      <!--      <ul class="nav nav-tabs"> -->
+      <!--        <li class="active"><a href="#tab1" data-toggle="tab">Section 1</a></li> -->
+      <!--        <li><a href="#tab2" data-toggle="tab">Section 2</a></li> -->
+      <!--      </ul> -->
+      <!--      <div class="tab-content"> -->
+      <!--        <div class="tab-pane active" id="tab1"> -->
+      <!--          <p>I'm in Section 1.</p> -->
+      <!--        </div> -->
+      <!--        <div class="tab-pane" id="tab2"> -->
+      <!--          <p>Howdy, I'm in Section 2.</p> -->
+      <!--        </div> -->
+      <!--      </div> -->
+      <!-- </div> -->
+
       <div id="view" hidden="true">
-	<div class="container">
-	  <div class="row">
-	  </div>
-	  <div class="row">
-	    <div class="span8 offset2">
-	      <form class="well form-inline">
-		<input id="v-search-field" type="text" class="span6">
-		<button id="v-search-button" class="btn btn-primary">Search</button>
-	      </form>
-	    </div>
-	  </div>
-	</div>
-        <div id="list-of-marks" class="container">
+
+        <div class="container tabbable">
+          <ul class="nav nav-tabs">
+            <li style="cursor:no-drop">
+              <a style="text-decoration:line-through">Your most recent marks</a>
+            </li>
+            <li class="active">
+              <a>Search marks</a>
+            </li>
+          </ul>
         </div>
+        
+        <div class="row">
+          <div class="span4">
+            <form class="form-vertical">
+	      <!-- <p style="font-size: 10px"> -->
+	      <!-- 	You can refine a search by requiring or forbidding the presence -->
+	      <!-- 	of certain facts: -->
+	      <!-- </p> -->
+
+
+            </form>
+          </div>
+          <div class="span8">
+            <form class="form-inline">
+              <input id="v-search-field" type="text" class="input-xlarge">
+              <button id="v-search-button" class="btn btn-primary">Search</button>
+            </form>
+            <div id="list-of-marks" class="container">
+            </div>
+          </div>
+        </div>
+        
         <div id="templates" hidden="true">
+	  <div id="v-filter-template" >
+	    <div class="btn-group" style="float: right">
+              <button class="btn btn-inverse disabled">Some tag</button>
+              <button class="btn btn-success">Require</button>
+              <button class="btn btn-danger">Exclude</button>
+	    </div>
+	    <br/>
+	    <br/>
+	  </div>
+
           <div id="comment-template" class="row show-grid">
             <div class="mark comment span8 offset2">
               <span class="who">An unknown stranger</span>
@@ -316,7 +336,7 @@
               <span class="when">some time ago</span>
             </div>
           </div>
-          
+        
           <div id="hyperlink-template" class="row show-grid">
             <div class="mark hyperlink span8 offset2">
               <span class="who">An unknown stranger</span>
@@ -330,11 +350,11 @@
             </div>
           </div>
         </div>
+      
       </div>
       
-      <!-- End of container -->
     </div>
-    
+
     <!-- Javascript -->
     <script src="third-party/jquery/dist/jquery.js"></script>
     <script src="third-party/jquery-timeago/jquery.timeago.js"></script>
