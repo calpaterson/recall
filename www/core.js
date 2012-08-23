@@ -98,17 +98,19 @@ core = (
             }
         };
         core.asynchronous = function(handler, verb, url, data, mime, headers){
-            $.ajax(url,
-                  {
-                      type: verb,
-                      data: data,
-                      contentType: mime,
-                      headers: headers,
-                      complete: function(jqXHR, textStatus){
-                          handler(jqXHR.status, jqXHR.responseText);
-                      }
-                  }
-                  );
+	    var request = new XMLHttpRequest();
+	    request.onload = function(xhrProgressEvent){
+		handler(
+		    xhrProgressEvent.currentTarget.status,
+		    xhrProgressEvent.currentTarget.responseText);
+	    }
+	    request.open(verb, url)
+	    for (key in headers){
+		if (headers.hasOwnProperty(key)){
+		    request.setRequestHeader(key, headers[key]);
+		}
+	    }
+	    request.send(data);
         };
         return core;
     }()
