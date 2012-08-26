@@ -190,10 +190,21 @@ core.add(
                               "callback": displayMarks });
             return false;
         };
-
-        var humanTime = function(unixtime){
-            var then = new Date(unixtime * 1000);
-            return $.timeago(then); // FIXME
+        
+        var humanTime = function(then){
+            var minute = new Date(60 * 1000);
+            var hour = new Date(minute * 60);
+            var day = new Date(hour * 24);
+            var since = then - new Date();
+            if (since > day){
+                return new Date(then).toLocaleDateString();
+            } else if (since > hour) {
+                return "some hours ago";
+            } else if (since > minute) {
+                return "some minutes ago";
+            } else {
+                return "seconds ago";
+            }
         };
 
         var markToElement = function(mark){
@@ -276,7 +287,7 @@ core.add(
             var button = sandbox.find("#m-i-import")[0];
             button.classList.add("disabled");
             button.textContent = "Importing...";
-            var bookmarksFile = $("#m-i-bookmarks-file-input")[0].files[0];
+            var bookmarksFile = sandbox.find("#m-i-bookmarks-file-input")[0].files[0];
             var reader = new FileReader();
             reader.onload = function(event){
                 var contents = event.target.result;

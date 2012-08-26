@@ -98,19 +98,19 @@ core = (
             }
         };
         core.asynchronous = function(handler, verb, url, data, mime, headers){
-	    var request = new XMLHttpRequest();
-	    request.onload = function(xhrProgressEvent){
-		handler(
-		    xhrProgressEvent.currentTarget.status,
-		    xhrProgressEvent.currentTarget.responseText);
-	    }
-	    request.open(verb, url)
-	    for (key in headers){
-		if (headers.hasOwnProperty(key)){
-		    request.setRequestHeader(key, headers[key]);
-		}
-	    }
-	    request.send(data);
+            var request = new XMLHttpRequest();
+            request.onload = function(xhrProgressEvent){
+                handler(
+                    xhrProgressEvent.currentTarget.status,
+                    xhrProgressEvent.currentTarget.responseText);
+            };
+            request.open(verb, url);
+            for (var key in headers){
+                if (headers.hasOwnProperty(key)){
+                    request.setRequestHeader(key, headers[key]);
+                }
+            }
+            request.send(data);
         };
         return core;
     }()
