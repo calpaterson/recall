@@ -18,10 +18,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-import logging
 import traceback
 
 import requests
+from bs4 import BeautifulSoup
 
 import convenience
 
@@ -30,16 +30,32 @@ settings = convenience.settings
 def index(record):
     def is_root(record):
         return ":" not in record
+    def get_fulltext(mark):
+        if "hyperlink" in mark:
+            response = requests.get(mark["hyperlink"])
+            if response.status_code in xrange(200, 300):
+                mark["£fulltext"] = BeautifulSoup(response.content).get_text()
+            else:
+                print "Unable to download"
 
     db = convenience.db()
 
     if is_root(record):
         mark = record
     else:
-        mark = db.marks.find_one({"@": record[":"]["@"], "~": record[":"]["~"]})
+        mark = db.marks.find_one(
+            {"@": record[":"]["@"], "~": record[":"]["~"]})
 
     if "_id" in mark:
         del mark["_id"]
+
+    facts = db.marks.find({":": {"@": mark["@"], "~": mark["~"]}})
+    for fact in facts:
+        mark.setdefault("about", []).append(fact["about"])
+
+    get_fulltext(mark)
+
+    print "Reindexing: {mark}".format(mark=mark)
 
     url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
         hostname = settings["RECALL_ELASTICSEARCH_HOST"],
@@ -47,11 +63,6 @@ def index(record):
         index = settings["RECALL_ELASTICSEARCH_INDEX"],
         type = "mark",
         id = mark["@"] + str(mark["~"]))
-    facts = db.marks.find({":": {"@": mark["@"], "~": mark["~"]}})
-    for fact in facts:
-        mark.setdefault("about", []).append(fact["about"])
-    print "Reindexing: {mark}".format(
-        mark=mark)
     requests.post(url, data=json.dumps(mark))
 
 
