@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
+import traceback
 
 import requests
 
@@ -25,55 +27,51 @@ import convenience
 
 settings = convenience.settings
 
-def index_root(root):
-    url = "http://{hostname}:{port}/{index_root}/{type}/{id}".format(
+def index(record):
+    def is_root(record):
+        return ":" not in record
+
+    db = convenience.db()
+
+    if is_root(record):
+        mark = record
+    else:
+        mark = db.marks.find_one({"@": record[":"]["@"], "~": record[":"]["~"]})
+
+    if "_id" in mark:
+        del mark["_id"]
+
+    url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
         hostname = settings["RECALL_ELASTICSEARCH_HOST"],
         port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
-        index_root = settings["RECALL_ELASTICSEARCH_INDEX"],
+        index = settings["RECALL_ELASTICSEARCH_INDEX"],
         type = "mark",
-        id = root["@"] + str(root["~"]))
-    db = convenience.db()
-    facts = db.marks.find({":": {"@": root["@"], "~": root["~"]}})
+        id = mark["@"] + str(mark["~"]))
+    facts = db.marks.find({":": {"@": mark["@"], "~": mark["~"]}})
     for fact in facts:
-        root.setdefault("about", []).append(fact["about"])
-    requests.post(url, data=json.dumps(root))
+        mark.setdefault("about", []).append(fact["about"])
+    print "Reindexing: {mark}".format(
+        mark=mark)
+    requests.post(url, data=json.dumps(mark))
 
-def index_fact(fact):
-    db = convenience.db()
-    root = db.marks.find_one({"@": fact[":"]["@"], "~": fact[":"]["~"]})
-    try:
-        root.setdefault("about", []).append(fact["about"])
-        del root["_id"]
-        url = "http://{hostname}:{port}/{index_root}/{type}/{id}".format(
-            hostname = settings["RECALL_ELASTICSEARCH_HOST"],
-            port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
-            index_root = settings["RECALL_ELASTICSEARCH_INDEX"],
-            type = "mark",
-            id = root["@"] + str(root["~"]))
-        requests.post(url, data=json.dumps(root))
-    except:
-        pass
 
-def index_new_marks():
+def index_new_mark():
     def pop_mark():
         connection = convenience.redis_connection()
         entry = connection.blpop("marks")
         mark_as_string = entry[1]
         return json.loads(mark_as_string)
 
-    def is_root(mark):
-        return ":" not in mark
-
     mark = pop_mark()
-    if is_root(mark):
-        index_root(mark)
-    else:
-        index_fact(mark)
+    index(mark)
 
 def main():
-    pass
-
-if __name__ == "__main__":
     convenience.load_settings()
     while(True):
-        index_new_marks()
+        try:
+            index_new_mark()
+        except Exception as e:
+            traceback.print_exc(e)
+
+if __name__ == "__main__":
+    main()
