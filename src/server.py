@@ -197,9 +197,12 @@ def get_all_marks_by_email(email):
 @convenience.on_json
 def results_to_marks(body):
     marks = []
-    for mark in body["hits"]["hits"]:
-        marks.append(mark["_source"])
-    return marks
+    try:
+        for mark in body["hits"]["hits"]:
+            marks.append(mark["_source"])
+        return marks
+    except KeyError:
+        raise HTTPException("no results", 404)
 
 class SearchQueryBuilder(object):
     def __init__(self):
