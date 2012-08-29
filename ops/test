@@ -5,6 +5,10 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 
 export RECALL_TEST_MODE=true
 
+cd $PROJECT_ROOT/ops/data/
+python -m SimpleHTTPServer 8777 &
+cd -
+WEBSERVER_PID=$!
 python ${PROJECT_ROOT}/src/server.py &
 SERVER_PID=$!
 python ${PROJECT_ROOT}/src/worker.py &
@@ -13,6 +17,6 @@ WORKER_PID=$!
 # Hack to wait for servers to start
 sleep 2
 
-trap 'kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
+trap 'kill $WEBSERVER_PID; kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
 
 python -m unittest discover -s $PROJECT_ROOT -v

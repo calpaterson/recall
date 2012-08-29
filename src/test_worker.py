@@ -270,5 +270,22 @@ class WorkerTests(unittest.TestCase):
         convenience.with_patience(lambda: self.assert_search_results_equal(
                 url, expected_marklist))
 
+    def test_can_download_fulltext(self):
+        user = convenience.create_test_user()
+        marks = [{"@": user.email, "~": 0,
+                  "hyperlink": "http://localhost:8777/index.html",
+                  "title": "Hello, World!"}]
+        convenience.post_mark(user, marks)
+
+        url = convenience.api_url() + "/mark?=hippopotamus"
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+
+        convenience.with_patience(inner_assert)
+
 if __name__ == "__main__":
     unittest.main()
