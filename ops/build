@@ -5,6 +5,7 @@ set -x
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR=$OPS_DIR/build.d
 PROJECT_ROOT=$OPS_DIR/..
+ALTAR_ROOT=$PROJECT_ROOT/../altar
 
 create_build_directory () {
     if [[ -d $BUILD_DIR ]]
@@ -45,7 +46,7 @@ build_jquery_if_needed () {
 	cd $PROJECT_ROOT
     fi
 }
-cd ..
+
 insert_web_resources () {
     build_bootstrap_if_needed
     build_jquery_if_needed
