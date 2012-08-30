@@ -287,5 +287,23 @@ class WorkerTests(unittest.TestCase):
 
         convenience.with_patience(inner_assert)
 
+    @unittest.expectedFailure
+    def test_will_reindex_old_root_records(self):
+        user = convenience.create_test_user()
+        db = convenience.db()
+        db.marks.insert({"hyperlink": "http://localhost:8777/index.html",
+                         "@": "foobar!", "~": 0})
+        url = convenience.api_url() + "/mark?q=hippopotamus"
+
+        def inner_assert():
+            response = requests.get(url)
+            content = json.loads(response.content)
+            print user.email
+            print content
+            self.assertEquals(200, response.status_code)
+            self.assertNotEquals([], content)
+
+        convenience.with_patience(inner_assert)
+
 if __name__ == "__main__":
     unittest.main()
