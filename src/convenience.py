@@ -20,9 +20,11 @@
 import os
 import json
 import time
+import sys
 from copy import deepcopy
 from pprint import pformat
 from functools import wraps
+import logging
 
 from redis import Redis
 import requests
@@ -34,6 +36,13 @@ def db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
     return pymongo.Connection(host=settings["RECALL_MONGODB_HOST"],
                               port=int(settings["RECALL_MONGODB_PORT"]))[db_name]
+
+def logger(name):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(logging.StreamHandler(sys.stdout))
+    return logger
+
 
 def redis_connection():
     return Redis(
@@ -107,6 +116,9 @@ def wipe_elastic_search():
         search_url = get_es_base_url(),
         index = settings["RECALL_ELASTICSEARCH_INDEX"])
     requests.delete(url)
+
+def wipe_redis():
+    pass
 
 def post_mark(user, mark):
     url = api_url() + "/mark"

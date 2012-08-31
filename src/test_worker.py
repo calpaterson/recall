@@ -287,12 +287,12 @@ class WorkerTests(unittest.TestCase):
 
         convenience.with_patience(inner_assert)
 
-    @unittest.expectedFailure
     def test_will_reindex_old_root_records(self):
         user = convenience.create_test_user()
         db = convenience.db()
         db.marks.insert({"hyperlink": "http://localhost:8777/index.html",
                          "@": "foobar!", "~": 0})
+        # import pdb; pdb.set_trace()
         url = convenience.api_url() + "/mark?q=hippopotamus"
 
         def inner_assert():
