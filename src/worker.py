@@ -31,7 +31,7 @@ settings = convenience.settings
 
 logger = None
 
-user_agent = "Recall - see https://recall.calpaterson.com/bot.html"
+user_agent = "Recall - email cal@calpaterson.com for support"
 
 def may_fetch(hyperlink):
     url_obj = urlparse(hyperlink)
@@ -43,7 +43,7 @@ def may_fetch(hyperlink):
     robots_parser.read()
     allowed = robots_parser.can_fetch(user_agent, hyperlink)
     if not allowed:
-        logger.warn("robots.txt prevents download of " + hyperlink)
+        logger.warn("Not allowed to fetch " + hyperlink)
     return allowed
 
 
@@ -89,8 +89,6 @@ def index(record):
 
     get_fulltext(mark)
 
-    logger.info("Adding to index: {mark}".format(mark=mark))
-
     url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
         hostname = settings["RECALL_ELASTICSEARCH_HOST"],
         port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
@@ -98,6 +96,7 @@ def index(record):
         type = "mark",
         id = mark["@"] + str(mark["~"]))
     requests.post(url, data=json.dumps(mark))
+    logger.info("Indexed: {who}/{when}".format(who=mark["@"], when=mark["~"]))
 
 
 def append_stale_marks_to_queue():
@@ -108,8 +107,9 @@ def append_stale_marks_to_queue():
                 "$or": [
                     {"£last_indexed": {"$exists": False}},
                     {"£last_indexed": {"$lt": one_week_ago}}],
-                "£q": {"$exists": False}}))
-    if stale_roots is not None:
+                "£q": {"$exists": False},
+                "£created": {"$lt": one_week_ago}}))
+    if stale_roots is not None and stale_roots != []:
         logger.info("Got {n} stale root records".format(n=len(stale_roots)))
         connection = convenience.redis_connection()
         for root_record in stale_roots:
@@ -117,17 +117,14 @@ def append_stale_marks_to_queue():
                             {"$set": {"£q": True}})
             del root_record["_id"]
             connection.lpush("marks", json.dumps(root_record))
-    else:
-        logger.debug("Got 0 stale root records")
 
 
 def next_record():
     connection = convenience.redis_connection()
-    logger.info("Waiting on next record")
     try:
         return json.loads(connection.blpop("marks", timeout=1)[1])
     except TypeError:
-        logger.debug("No new records")
+        pass
 
 
 def main():

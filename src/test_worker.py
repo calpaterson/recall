@@ -291,8 +291,8 @@ class WorkerTests(unittest.TestCase):
         user = convenience.create_test_user()
         db = convenience.db()
         db.marks.insert({"hyperlink": "http://localhost:8777/index.html",
-                         "@": "foobar!", "~": 0})
-        # import pdb; pdb.set_trace()
+                         "@": "foobar!", "~": 0,
+                         "£created": 0})
         url = convenience.api_url() + "/mark?q=hippopotamus"
 
         def inner_assert():
