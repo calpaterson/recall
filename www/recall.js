@@ -171,7 +171,7 @@ core.add(
     }());
 
 core.add(
-    "view",
+    "marks",
     function()
     {
         var sandbox;
@@ -192,19 +192,21 @@ core.add(
         };
         
         var humanTime = function(then){
-            var minute = new Date(60 * 1000);
-            var hour = new Date(minute * 60);
-            var day = new Date(hour * 24);
-            var since = then - new Date();
-            if (since > day){
-                return new Date(then).toLocaleDateString();
-            } else if (since > hour) {
-                return "some hours ago";
-            } else if (since > minute) {
-                return "some minutes ago";
-            } else {
-                return "seconds ago";
-            }
+	    var then_ = new Date(then * 1000);
+            // var minute = new Date(60 * 1000);
+            // var hour = new Date(minute * 60);
+            // var day = new Date(hour * 24);
+            // var since = new Date() - then_;
+            // if (since > day){
+            return then_.toLocaleTimeString() +
+		" - " + then_.toLocaleDateString();
+            // } else if (since > hour) {
+            //     return "some hours ago";
+            // } else if (since > minute) {
+            //     return "some minutes ago";
+            // } else {
+            //     return "seconds ago";
+            // }
         };
 
         var markToElement = function(mark){
@@ -239,7 +241,7 @@ core.add(
 
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("show-view", show);
+            sandbox.subscribe("show-marks", show);
             sandbox.subscribe("hide-all", hide);
             sandbox.bind("#v-search-button", "click", search);
         };
@@ -368,84 +370,49 @@ core.add(
     }());
 
 core.add(
-    "navbar",
+    "navigation",
     function(){
         var sandbox;
-
-        var previousMode;
 
         var moveTo = function(show){
             sandbox.set("last-show", show);
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show);
-
-            var allNavbarLinks = sandbox.find(".recall-show");
-            for (var i = 0; i<allNavbarLinks.length; i++){
-                allNavbarLinks[i].classList.remove("active");
-            }
-
-            var navbarLinkForNewShow = sandbox.find("#show-" + show);
-            if (navbarLinkForNewShow.length !== 0){
-                navbarLinkForNewShow[0].classList.add("active");
-            }
-        };
-
-        var navbarMode = function(mode){
-            if (mode === "visitor"){
-                if(previousMode){
-                    sandbox.hiddenWrapHack(".navbar-" + previousMode);
-                }
-                sandbox.unHiddenWrapHack(".navbar-visitor");
-            } else if (mode === "user"){
-                if(previousMode){
-                    sandbox.hiddenWrapHack(".navbar-" + previousMode);
-                }
-                sandbox.unHiddenWrapHack(".navbar-user");
-            }
-            previousMode = mode;
-        };
-
-        var setVersion = function(){
-            var set = function(status, content){
-                if (status !== 200){
-                    version = "Development Version";
-                } else {
-                    version = "Version " + content;
-                }
-                sandbox.find("#recall-version")[0].textContent = version;         
-            };
-            sandbox.asynchronous(set, "get", recall_config["www-base-url"] + "/version");
         };
 
         var logout = function(){
             sandbox.publish("logout");
+	    sandbox.find("#logout")[0].style.display = "none";
+	    sandbox.find("#show-login")[0].style.display = "";
             moveTo("about");
-            navbarMode("visitor");
-            localStorage.clear();
         };
+
+	var login = function(){
+	    sandbox.find("#show-login")[0].style.display = "none";
+	    sandbox.find("#logout")[0].style.display = "";
+	};
 
         return function(sandbox_){
             sandbox = sandbox_;
-            setVersion();
             var show = sandbox.get("last-show");
-            if (show === null){
-                show = "about";
-            }
             if (document.documentURI.match("email_key")){
-                show = "verify-email-form";
-            }
-            moveTo(show);
+                moveTo("verify-email-form");
+            } else if (show === null){
+		moveTo("about");
+            } else {
+		moveTo(show);
+	    }
             sandbox.bind(".recall-show", "click", function(event){
-                             moveTo(event.currentTarget.id.slice(5));
-                         });
-            sandbox.publish("logged-in?",
-                            {"success": function(){ navbarMode("user");},
-                             "failure": function(){ navbarMode("visitor");}
-                             });
+                moveTo(event.currentTarget.id.slice(5));
+            });
             sandbox.bind("#logout", "click", logout);
-            sandbox.subscribe("login", function(){ navbarMode("user");});
+            sandbox.subscribe("logged-in", login);
             sandbox.subscribe("show-post-login", function(){
-                                  moveTo("view");
-                              });
+                moveTo("marks");
+            });
+	    sandbox.publish("logged-in?", {
+		"success": login,
+		"failure": logout
+	    });
         };
     }());

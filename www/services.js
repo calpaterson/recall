@@ -27,6 +27,7 @@ core.add(
                     sandbox.set("email", message.email);
                     sandbox.set("password", message.password);
                     message.success(user);
+		    sandbox.publish("logged-in")
                 } else {
                     message.failure();
                 }

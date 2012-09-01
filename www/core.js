@@ -74,7 +74,7 @@ core = (
                 }
             },
             append: function(moduleName, selector, element){
-                core.dom.queryWithin(moduleName, selector).append(element);
+                core.dom.queryWithin(moduleName, selector)[0].appendChild(element);
             },
             deleteContentsOf: function(moduleName, selector){
                 document.querySelectorAll(selector)[0].children = [];

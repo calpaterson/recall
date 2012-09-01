@@ -1,3 +1,22 @@
 .secret {
     display: none !important; 
 }
+
+.recall-disabled-link {
+    pointer-events: none;
+    text-decoration: none;
+    cursor: default;
+    color: gray !important;
+}
+
+a {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: purple
+}
+
+.recall-show:visited {
+    color: #0088cc;
+}
