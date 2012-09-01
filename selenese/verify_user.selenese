@@ -43,7 +43,12 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>link=Login</td>
+	<td>link=Sign Out</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Sign In</td>
 	<td></td>
 </tr>
 <tr>
@@ -63,17 +68,17 @@
 </tr>
 <tr>
 	<td>waitForVisible</td>
-	<td>recall-version</td>
+	<td>logout</td>
 	<td></td>
 </tr>
 <tr>
-	<td>assertText</td>
-	<td>id=recall-version</td>
-	<td>Version 0</td>
+	<td>assertVisible</td>
+	<td>id=logout</td>
+	<td></td>
 </tr>
 <tr>
 	<td>click</td>
-	<td>link=Logout</td>
+	<td>link=Sign Out</td>
 	<td></td>
 </tr>
 </tbody></table>

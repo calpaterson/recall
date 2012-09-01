@@ -380,14 +380,12 @@ core.add(
             sandbox.publish("show-" + show);
         };
 
-        var logout = function(){
-            sandbox.publish("logout");
+        var vistorMode = function(){
 	    sandbox.find("#logout")[0].style.display = "none";
 	    sandbox.find("#show-login")[0].style.display = "";
-            moveTo("about");
         };
 
-	var login = function(){
+	var userMode = function(){
 	    sandbox.find("#show-login")[0].style.display = "none";
 	    sandbox.find("#logout")[0].style.display = "";
 	};
@@ -402,17 +400,26 @@ core.add(
             } else {
 		moveTo(show);
 	    }
+
             sandbox.bind(".recall-show", "click", function(event){
                 moveTo(event.currentTarget.id.slice(5));
             });
-            sandbox.bind("#logout", "click", logout);
-            sandbox.subscribe("logged-in", login);
+	    
+            sandbox.bind("#logout", "click", function(){
+		vistorMode()
+		sandbox.publish("logout");
+	    });
+	    
+            sandbox.subscribe("logged-in", userMode);
+	    
+
             sandbox.subscribe("show-post-login", function(){
                 moveTo("marks");
             });
+	    
 	    sandbox.publish("logged-in?", {
-		"success": login,
-		"failure": logout
+		"success": userMode,
+		"failure": vistorMode
 	    });
         };
     }());

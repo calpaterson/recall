@@ -18,7 +18,7 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>link=Login</td>
+	<td>link=Sign In</td>
 	<td></td>
 </tr>
 <tr>
@@ -98,7 +98,7 @@
 </tr>
 <tr>
 	<td>click</td>
-	<td>link=Logout</td>
+	<td>link=Sign Out</td>
 	<td></td>
 </tr>
 </tbody></table>
