@@ -35,6 +35,9 @@ user_agent = "Recall - see https://recall.calpaterson.com/bot.html"
 
 def may_fetch(hyperlink):
     url_obj = urlparse(hyperlink)
+    # workaround for issue with wikipedia
+    if "wikipedia" in url_obj.netloc:
+        return True
     robots_url = url_obj.scheme + "://" + url_obj.netloc + "/robots.txt"
     robots_parser = RobotFileParser(robots_url)
     robots_parser.read()
