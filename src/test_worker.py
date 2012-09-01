@@ -83,7 +83,8 @@ class WorkerTests(unittest.TestCase):
         mark1 = {"@": user1.email, "~": 0, "#": "My secret mark",
                  "%private": True}
         mark2 = {u"@": user2.email, u"~": 0,
-                 u"#": u"Someone else's secret mark"}
+                 u"#": u"Someone else's secret mark",
+                 "%private": True}
         convenience.post_mark(user1, mark1)
         convenience.post_mark(user2, mark2)
 
@@ -298,8 +299,6 @@ class WorkerTests(unittest.TestCase):
         def inner_assert():
             response = requests.get(url)
             content = json.loads(response.content)
-            print user.email
-            print content
             self.assertEquals(200, response.status_code)
             self.assertNotEquals([], content)
 

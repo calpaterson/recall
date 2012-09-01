@@ -175,9 +175,11 @@ def get_all_marks():
     if "q" in request.args:
         query = SearchQueryBuilder()
         query.with_keywords(request.args["q"])
-        query.respecting_privacy()
         if g.user is not None:
             query.as_user(g.user)
+        else:
+            query.anonymously()
+
         for tag in split_tags(request.args.get("about", "")):
             query.about(tag)
         for tag in split_tags(request.args.get("not_about", "")):
@@ -205,18 +207,23 @@ def results_to_marks(body):
         raise HTTPException("no results", 404)
 
 class SearchQueryBuilder(object):
+    class IncoherentSearchQueryException(Exception):
+        pass
+
     def __init__(self):
         self.of_size(100)
+        self.as_user_set = False
+        self.filters = []
 
     def with_keywords(self, string):
         self.query_string = {"text": {"_all": string}}
         return self
 
-    def respecting_privacy(self):
-        self.filters = [
-                {"not": {"term": {"%private": True}}}
-                ]
-        return self
+    # def respecting_privacy(self):
+    #     self.filters = [
+    #             {"not": {"term": {"%private": True}}}
+    #             ]
+    #     return self
 
     def of_size(self, size):
         self.size = size
@@ -231,10 +238,24 @@ class SearchQueryBuilder(object):
         return self
 
     def as_user(self, user):
+        if self.as_user_set:
+            raise IncoherentSearchQueryException(
+                "Tried to search as user but already anonymous")
+        self.as_user_set = True
         # Have not worked out how to correctly escape @ for elasticsearch
         at_sign_workaround = user["email"].split("@")[0]
         self.filters.append(
-            {"term": {"@": at_sign_workaround}})
+            {"or": [
+                    {"term": {"@": at_sign_workaround}},
+                    {"not": {"term": {"%private": True}}}]})
+        return self
+
+    def anonymously(self):
+        if self.as_user_set:
+            raise IncoherentSearchQueryException(
+                "Tried to search anonymously but user has already been set")
+        self.as_user_set = True
+        self.filters.append({"not": {"term": {"%private": True}}})
         return self
 
     def build(self):
