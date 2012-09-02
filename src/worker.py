@@ -19,7 +19,7 @@
 
 import json
 from urlparse import urlparse
-from robotparser import RobotFileParser
+import robotexclusionrulesparser as rerp
 import time
 
 import requests
@@ -31,17 +31,15 @@ settings = convenience.settings
 
 logger = None
 
-user_agent = "Recall - email cal@calpaterson.com for support"
+user_agent = "Recall (like Googlebot/2.1) - email cal@calpaterson.com for support"
 
 def may_fetch(hyperlink):
     url_obj = urlparse(hyperlink)
-    # workaround for issue with wikipedia
-    if "wikipedia" in url_obj.netloc:
-        return True
     robots_url = url_obj.scheme + "://" + url_obj.netloc + "/robots.txt"
-    robots_parser = RobotFileParser(robots_url)
-    robots_parser.read()
-    allowed = robots_parser.can_fetch(user_agent, hyperlink)
+    robots_parser = rerp.RobotExclusionRulesParser()
+    robots_parser.user_agent = user_agent
+    robots_parser.fetch(robots_url)
+    allowed = robots_parser.is_allowed(user_agent, hyperlink)
     if not allowed:
         logger.warn("Not allowed to fetch " + hyperlink)
     return allowed
