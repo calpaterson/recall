@@ -116,8 +116,6 @@ core = (
     }()
 );
 
-$(document).ready(
-    function(){
-        core.startAll();
-    }
-);
+document.addEventListener("DOMContentLoaded", function(){
+    core.startAll();
+});

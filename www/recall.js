@@ -30,7 +30,6 @@ core.add(
         };
         return function(sandbox_){
             sandbox = sandbox_;
-            $('#about-carousel').carousel({interval: 5000});
             sandbox.subscribe("show-about", show);
             sandbox.subscribe("hide-all", hide);
         };
@@ -192,14 +191,14 @@ core.add(
         };
         
         var humanTime = function(then){
-	    var then_ = new Date(then * 1000);
+            var then_ = new Date(then * 1000);
             // var minute = new Date(60 * 1000);
             // var hour = new Date(minute * 60);
             // var day = new Date(hour * 24);
             // var since = new Date() - then_;
             // if (since > day){
             return then_.toLocaleTimeString() +
-		" - " + then_.toLocaleDateString();
+                " - " + then_.toLocaleDateString();
             // } else if (since > hour) {
             //     return "some hours ago";
             // } else if (since > minute) {
@@ -248,10 +247,19 @@ core.add(
     }());
 
 core.add(
-    "import-bookmarks",
+    "getting-started",
     function(){
         var sandbox;
 
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
+        var show = function(){
+            sandbox.find()[0].hidden = false;
+            return false;
+        };
         var netscapeElementToMark = function(element, email){
             var htmlDecode = function(text){
                 var div = document.createElement("div");
@@ -292,47 +300,25 @@ core.add(
             var bookmarksFile = sandbox.find("#m-i-bookmarks-file-input")[0].files[0];
             var reader = new FileReader();
             reader.onload = function(event){
-                var contents = event.target.result;
-                var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
-                var matches = contents.match(bookmarkRegex);
-                var bookmarks = [];
-                for (var each in matches){
-                    var dom = HTMLtoDOM(matches[each]);
-                    var element = $(dom).find("a")[0];
-                    var bookmark = netscapeElementToMark(element);
-                    if (bookmark){
-                        bookmarks.push(bookmark);
-                    }
-                }
-                sandbox.publish("new-marks", bookmarks);
+                alert("bookmark import temporarily disabled");
+                // var contents = event.target.result;
+                // var bookmarkRegex = /<[Aa][\W|\w]+?[Aa]>/gi;
+                // var matches = contents.match(bookmarkRegex);
+                // var bookmarks = [];
+                // for (var each in matches){
+                //     var dom = HTMLtoDOM(matches[each]);
+                //     var element = $(dom).find("a")[0];
+                //     var bookmark = netscapeElementToMark(element);
+                //     if (bookmark){
+                //         bookmarks.push(bookmark);
+                //     }
+                // }
+                // sandbox.publish("new-marks", bookmarks);
                 button.textContent = "Imported!";
             };
             reader.readAsText(bookmarksFile, "UTF-8");
             return false;
         };
-
-        var hide = function(){
-            sandbox.find()[0].hidden = true;
-            return false;
-        };
-
-        var show = function(success){
-            sandbox.find()[0].hidden = false;
-            return false;
-        };
-
-        return function(sandbox_){
-            sandbox = sandbox_;
-            sandbox.subscribe("hide-all", hide);
-            sandbox.subscribe("show-import-bookmarks", show);
-            sandbox.bind("#m-i-import", "click", importBookmarks);
-        };
-    }());
-
-core.add(
-    "bookmarklet",
-    function(){
-        var sandbox;
 
         var insertJavasciptLink = function(){
             var insert = function(status, content){
@@ -351,21 +337,12 @@ core.add(
             );
         };
 
-        var hide = function(){
-            sandbox.find()[0].hidden = true;
-            return false;
-        };
-
-        var show = function(){
-            sandbox.find()[0].hidden = false;
-            return false;
-        };
-        
-        return function(sandbox_){
+        return function (sandbox_){
             sandbox = sandbox_;
-            insertJavasciptLink();
-            sandbox.subscribe("show-bookmarklet", show);
+            sandbox.subscribe("show-getting-started", show);
             sandbox.subscribe("hide-all", hide);
+            insertJavasciptLink();
+            sandbox.bind("#m-i-import", "click", importBookmarks);
         };
     }());
 
@@ -380,15 +357,32 @@ core.add(
             sandbox.publish("show-" + show);
         };
 
-        var vistorMode = function(){
-	    sandbox.find("#logout")[0].style.display = "none";
-	    sandbox.find("#show-login")[0].style.display = "";
+        var vistorModeDisplay = {
+            showing: ["#show-login", "#show-about"],
+            hiding: ["#show-getting-started", "#logout"]
         };
 
-	var userMode = function(){
-	    sandbox.find("#show-login")[0].style.display = "none";
-	    sandbox.find("#logout")[0].style.display = "";
-	};
+        var userModeDisplay = {
+            showing: vistorModeDisplay.hiding,
+            hiding: vistorModeDisplay.showing
+        };
+
+        var flip = function(display){
+            display.hiding.map(function(id){
+                sandbox.find(id)[0].style.display = "none";
+            });
+            display.showing.map(function(id){
+                sandbox.find(id)[0].style.display = "";
+            });
+        };
+
+        var vistorMode = function(){
+            flip(vistorModeDisplay);
+        };
+
+        var userMode = function(){
+            flip(userModeDisplay);
+        };
 
         return function(sandbox_){
             sandbox = sandbox_;
@@ -396,30 +390,30 @@ core.add(
             if (document.documentURI.match("email_key")){
                 moveTo("verify-email-form");
             } else if (show === null){
-		moveTo("about");
+                moveTo("about");
             } else {
-		moveTo(show);
-	    }
+                moveTo(show);
+            }
 
             sandbox.bind(".recall-show", "click", function(event){
                 moveTo(event.currentTarget.id.slice(5));
             });
-	    
+            
             sandbox.bind("#logout", "click", function(){
-		vistorMode()
-		sandbox.publish("logout");
-	    });
-	    
+                vistorMode();
+                sandbox.publish("logout");
+            });
+            
             sandbox.subscribe("logged-in", userMode);
-	    
+            
 
             sandbox.subscribe("show-post-login", function(){
                 moveTo("marks");
             });
-	    
-	    sandbox.publish("logged-in?", {
-		"success": userMode,
-		"failure": vistorMode
-	    });
+            
+            sandbox.publish("logged-in?", {
+                "success": userMode,
+                "failure": vistorMode
+            });
         };
     }());

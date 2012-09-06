@@ -35,21 +35,8 @@ build_bootstrap_if_needed () {
     fi
 }
 
-build_jquery_if_needed () {
-    JQUERY_DIR=$PROJECT_ROOT/www/third-party/jquery
-    if [[ ! -f $JQUERY_DIR/dist/jquery.js ]]
-    then
-	cd $JQUERY_DIR
-	git submodule init
-	git submodule update
-	make
-	cd $PROJECT_ROOT
-    fi
-}
-
 insert_web_resources () {
     build_bootstrap_if_needed
-    build_jquery_if_needed
     cp -R $PROJECT_ROOT/www $BUILD_DIR/usr/share/recall/www/
     echo $VERSION > $BUILD_DIR/usr/share/recall/www/version
 }

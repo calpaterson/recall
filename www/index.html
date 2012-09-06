@@ -22,7 +22,8 @@
     <title>Recall</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-          content="Recall is a decentralised social bookmarking service">
+          content="Search through your existing bookmarks, including their
+		   content within two minutes of signing up.">
     <meta name="author" content="Cal Paterson">
 
     <link href="third-party/bootstrap/css/bootstrap.css" rel="stylesheet">
@@ -38,134 +39,92 @@
         <div class="span2">
           <h1>⇐ Recall</h1>
         </div>
-        <div class="span8" style="font-size: large; margin: 0.5em; margin-left: 30px">
+        <div class="span8" style="font-size: large; margin: 0.5em;
+				  margin-left: 30px">
           <a id="show-about" class="recall-show" href="#">About</a>
           <a id="show-getting-started" class="recall-show" href="#">Getting Started</a>
-	  <a id="show-marks" class="recall-show" href="#">Marks</a>
+	  <a id="show-marks" class="recall-show" href="#">Search</a>
 	  <a id="show-login" class="recall-show" href="#">Sign In</a>
 	  <a id="logout" class="recall-show" href="#">Sign Out</a>
 	</div>
       </div>
 
-      <div id="about" class="row" hidden="true">
-        <div class="span6">
-          <div id="about-carousel" class="carousel slide">
-            <div class="carousel-inner">
-              <div class="active item">
-                <img src="images/port.jpeg" width="600" height="600">
-                <div class="carousel-caption">
-                  <h4>Import/Export</h4>
-                  <p>
-                    Recall can import your existing bookmarks from
-                    your web browser and you can export your data
-                    whenever you like.
-                  </p>
-                </div>
+      <div id="about">
+	<div class="row">
+	  <div class="span6"
+	       style="margin-top: 50px; margin-bottom: 50px; text-align:center">
+	    <h1>Search through your existing bookmarks, <em>including their contents</em>, within two minutes of signing up.</h1>
+	    <p>
+	      <h4>(It's totally <strong>free</strong>!)</h4>
+	    <br/>
+	      Organising and navigating bookmarks is such a hassle that most
+	      people skip on even using them because it's such a pain.  Recall
+	      allows you to search on your bookmarks and their contents,
+	      making it a snap to retrieve that page you bookmarked last
+	      month.
+	  </div>
+	<div id="request-invite-form">
+          <div class="span6" style="text-align: center">
+            <form class="form-vertical">
+              <select id="r-i-type">
+		<option>Use my real name</option>
+		<option>Use a pseudonym</option>
+              </select>
+	      
+              <div id="r-i-real-name">
+		<label>First Name</label>
+		<input id="r-i-first-name" type="text"
+                       placeholder="Enter first name here">
+		<label>Surname</label>
+		<input id="r-i-surname" type="text"
+                       placeholder="Enter surname here">
               </div>
-              <div class="item">
-                <img src="images/elephant.jpeg" width="600" height="600">
-                <div class="carousel-caption">
-                  <h4>Never forget</h4>
-                  <p>
-                    Recall remembers the websites you see and want to return to later.
-                  </p>
-                </div>
+              <div id="r-i-pseudonym-div" hidden="true">
+		<label>Pseudonym</label>
+		<input id="r-i-pseudonym" type="text"
+                       placeholder="Enter pseudonym here">
               </div>
-              <div class="item">
-                <img src="images/paddington.jpeg" width="600" height="600">
-                <div class="carousel-caption">
-                  <h4>Cross Platform</h4>
-                  <p>
-                    Recall will work on your Android, iPhone or iPad.
-                  </p>
-                </div>
-              </div>
-            </div>
+	      
+              <label>Email Address (Will be public)</label>
+              <input id="r-i-email" type="text"
+                     placeholder="Enter email address here"> <br/>
+              <button id="r-i-submit" class="btn btn-primary btn-large"
+                      type="submit">Request an Invite
+		<p>
+		  <div style="font-size: small;">It's free!</div>
+	      </button>
+            </form>
           </div>
-        </div>
-        <div class="span6">
-          <p>
-            <h1>Recall - bookmark your interests</h1>
-          </p>
-          <p>
-            Recall is a bookmarking web application that allows you to bookmark
-            more than just web pages.  
-          </p>
-          <p>
-            <h3>You can bookmark <u>topics</u>, <u>web pages</u>
-              or <u>places</u> from any web browser, including the one on your
-              smart phone.</h3>
-          </p>
-          <p>
-            Currently, Recall is in a closed, invitation-only beta.
-            Features are still being added.  Eventually it will open
-            to the public, but in the meantime you can <strong>request
-              an invite below</strong>.
-          </p>
-          <p>
-            No invite is required for viewing.
-          </p>
-          <div id="request-invite-form">
-            <div class="well span3">
-              <p>
-                <h3>Request an Invite</h3>
-              </p>
-              <form class="form-vertical">
-                <select id="r-i-type">
-                  <option>Use my real name</option>
-                  <option>Use a pseudonym</option>
-                </select>
-
-                <div id="r-i-real-name">
-                  <label>First Name</label>
-                  <input id="r-i-first-name" type="text"
-                         placeholder="Enter first name here">
-                  <label>Surname</label>
-                  <input id="r-i-surname" type="text"
-                         placeholder="Enter surname here">
-                </div>
-                <div id="r-i-pseudonym-div" hidden="true">
-                  <label>Pseudonym</label>
-                  <input id="r-i-pseudonym" type="text"
-                         placeholder="Enter pseudonym here">
-                </div>
-
-                <label>Email Address (Will be public)</label>
-                <input id="r-i-email" type="text"
-                       placeholder="Enter email address here"> <br/>
-                <button id="r-i-submit" class="btn btn-primary btn-large"
-                        type="submit">Request an Invite</button>
-              </form>
-            </div>
-          </div>
-        </div>
-        <div class="span12">
-          <h6>Image Credits</h6>
-          <ul>
-            <li>
-              Elephant photograph is a derivative work of
-              <a href="http://www.flickr.com/photos/shnapthat/6464681311/">
-                "Asian Elephant, Elephas maximus"</a> photograph by
-              <a href="http://www.flickr.com/people/arran_edmonstone_photography/">
-                Arran Edmonstone</a> and licenced under
-              <a href="http://creativecommons.org/licenses/by/2.0/">CC-BY</a></li>
-            <li>
-              Cargo ship photograph is a derivative work of
-              <a href="http://www.flickr.com/photos/shnapthat/6464681311/">
-                "Singapore Ship Docks (PSA)"</a> photograph by Flickr user
-              <a href="http://www.flickr.com/photos/shnapthat/6464681311/">
-                ShnapThat!"</a> and licenced under
-              <a href="http://creativecommons.org/licenses/by/2.0/">CC-BY</a></li>
-            <li>
-              Paddington station photograph is a derivative work of
-              <a href="http://www.flickr.com/photos/pikerslanefarm/2711032095/">
-                "Paddington Station Right"</a> photograph by
-              <a href="http://www.flickr.com/people/pikerslanefarm/">
-                Amanda Slater</a> and licenced under
-              <a href="http://creativecommons.org/licenses/by-sa/2.0/deed.en">CC-BY-SA</a></li>
-          </ul>
-        </div>
+	</div>
+	</div>
+	  
+	<div class="row">
+	  <div class="span4">
+	    <h2>Saving your bookmarks in a web browser means you can't access them at home or work</h2>
+	    <ul>
+	      <li>Recall lets you search the <em>contents</em>
+		of your bookmarks, not just the titles!
+	      <li>Recall shows other bookmarks that also match what you're
+		looking for - useful if you've forgotten to add something
+	    </ul>
+	  </div>
+	  <div class="span4">
+	    <h2>Share your bookmarks everywhere you go</h2>
+	    <ul>
+	      <li>Recall can import your existing bookmarks from any
+		web browser or from other services
+	    </ul>
+	  </div>
+	  <div class="span4">
+	    <h2>Stop putting your bookmarks into complicated heirarchical folders and start <em>searching</em></h2>
+	    <ul>
+	      <li>Don't be tied to your browser - access and search through
+		your bookmarks from anywhere
+	    </ul>
+	  </div>
+	</div>
       </div>
+
       
       <div id="verify-email-form" class="row" hidden="true">
         <div class="offset4 span4 well">
@@ -206,61 +165,49 @@
         </div>
       </div>
 
-      <div id="import-bookmarks" class="row" hidden="true">
-        <div class="offset4 span4 well">
-          <h3>Import Your Old Bookmarks From a Web Browser or Social
-            Bookmarking Service</h3>
-          <p>
+      <div id="getting-started" hidden="true">
+	<div class="row">
+	  <div class="span12">
+	    <h2>Getting Started</h2>
+	  </div>
+	</div>
+	
+	<div class="row">
+          <div class="span12">
+            <h3>Step 1: Import your existing bookmarks</h3>
+	    Any web browser and most social bookmarking services will
+	    allow you to export your bookmarks as an HTML file (sometimes
+	    this is called "Netscape Navigator" format).  You can import
+	    this file format into Recall here:
+            <form class="form-vertical">
+              <input id="m-i-bookmarks-file-input" type="file">
+              <br/>
+              <button id="m-i-import" class="btn btn-primary"
+                      type="submit">Import</button>
+            </form>
+          </div>
+	</div>
 
-            Many web browsers and social bookmarking services allow you
-            to export your bookmarks as a file (in a format sometimes
-            called "Netscape Navigator" format).  You can import this
-            file to Recall.
-          </p>
-          <form class="form-vertical">
-            <input id="m-i-bookmarks-file-input" type="file">
-            <br/>
-            <button id="m-i-import" class="btn btn-primary"
-                    type="submit">Import</button>
-          </form>
-        </div>
-      </div>
-
-      <div id="bookmarklet" class="row" hidden="true">
-        <div class="offset4 span4">
-          <h3>Using the Recall Bookmarklet</h3>
-          <p>
-            You can use the bookmarklet to mark from a web browser.  Drag the
-            hyperlink below onto your bookmarks toolbar.
-          </p>
-          <p>
-            <a class="bookmarklet" id="bookmarklet-a" href="#">mark this</a>
-          </p>
-        </div>
+	<div class="row">
+          <div class="span12">
+	    <h3>Step 2: Install extension or bookmarklet</h3>
+	    If you're using Google Chrome, you can install a browser
+	    extension.  Other browsers can use this bookmarklet:
+            <a class="bookmarklet" id="bookmarklet-a" href="#"
+	       >mark this</a>
+          </div>
+	</div>
       </div>
       
 
-      <!-- <div class="tabbable"> -->
-      <!--      <ul class="nav nav-tabs"> -->
-      <!--        <li class="active"><a href="#tab1" data-toggle="tab">Section 1</a></li> -->
-      <!--        <li><a href="#tab2" data-toggle="tab">Section 2</a></li> -->
-      <!--      </ul> -->
-      <!--      <div class="tab-content"> -->
-      <!--        <div class="tab-pane active" id="tab1"> -->
-      <!--          <p>I'm in Section 1.</p> -->
-      <!--        </div> -->
-      <!--        <div class="tab-pane" id="tab2"> -->
-      <!--          <p>Howdy, I'm in Section 2.</p> -->
-      <!--        </div> -->
-      <!--      </div> -->
-      <!-- </div> -->
-
       <div id="marks" hidden="true">
+	<br/>
         <div class="row">
           <div class="span12">
-            <form class="form-inline">
+            <form class="form-inline" style="text-align: center">
               <input id="v-search-field" type="text" class="input-xxlarge">
-              <button id="v-search-button" class="btn btn-primary">Search</button>
+              <button id="v-search-button"
+		      class="btn btn-primary">Search</button>
             </form>
             <div id="list-of-marks" class="container">
             </div>
@@ -308,8 +255,6 @@
     </div>
 
     <!-- Javascript -->
-    <script src="third-party/jquery/dist/jquery.js"></script>
-    <script src="third-party/bootstrap/js/bootstrap-carousel.js"></script>
     <script src="config.js"></script>
     <script src="core.js"></script>
     <script src="sandbox.js"></script>

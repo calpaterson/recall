@@ -1,6 +1,3 @@
 [submodule "www/third-party/bootstrap"]
 	path = www/third-party/bootstrap
 	url = git@github.com:twitter/bootstrap
-[submodule "www/third-party/jquery"]
-	path = www/third-party/jquery
-	url = git://github.com/jquery/jquery.git
