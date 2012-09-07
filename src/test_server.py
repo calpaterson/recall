@@ -45,14 +45,15 @@ class ServerTests(unittest.TestCase):
         test_user = convenience.create_test_user()
         return test_user.pseudonym, test_user.email, test_user.password
 
-## BAD TESTS (8)
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
-        url = "/user"
+        url = self._base_url() + "/user"
         post_data = json.dumps({"firstName": "Joe", "surname": "Bloggs",
                                 "email": "joe@bloggs.com"})
-        response = self.client.post(url, data=post_data)
+        response = requests.post(url, data=post_data)
         self.assertEquals(expected_status_code, response.status_code)
+
+## BAD TESTS (7)
 
     def test_request_invite_with_pseudonym(self):
         response = self.client.post("/user", data=json.dumps(
@@ -321,14 +322,13 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(202, post_response.status_code)
         self.assertEqual(expected_response_data, actual_response_data)
 
-## BAD TESTS (5)
 
     def test_marks_with_reserved_keys_refused(self):
         def assertError(expected_response_data, mark):
-            url = "/mark"
+            url = self._base_url() + "/mark"
             post_data = json.dumps(mark)
-            response = self.client.post(url, data=post_data, headers=headers)
-            response_data = json.loads(response.data)
+            response = requests.post(url, data=post_data, headers=headers)
+            response_data = json.loads(response.content)
             self.assertEqual(400, response.status_code, msg=post_data)
             self.assertEqual(expected_response_data, response_data)
 
@@ -349,6 +349,9 @@ class ServerTests(unittest.TestCase):
         assertError(expected_response_dollar, problematic_marks[0])
         assertError(expected_response_dollar, problematic_marks[1])
         assertError(expected_response_pound, problematic_marks[2])
+
+
+## BAD TESTS (2)
 
 
     def test_trying_to_get_many_marks_at_once_is_refused(self):
@@ -402,26 +405,30 @@ class ServerTests(unittest.TestCase):
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([4, 3], mark_times)
 
+
+## END BAD TESTS
+
+
     def test_get_marks_since(self):
         _, email, password = self._create_test_user()
         headers = Headers({"X-Email": email, "X-Password": password})
         marks = []
         for time in xrange(0, 5):
             marks.append({"@": email, "~": time})
-        url = "/mark"
+        url = self._base_url() + "/mark"
         post_data = json.dumps(marks)
-        self.client.post(url, data=post_data, headers=headers)
+        requests.post(url, data=post_data, headers=headers)
 
-        url = "/mark?since=1"
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
+        url = self._base_url() + "/mark?since=1"
+        response = requests.get(url, headers=headers)
+        response_data = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([4, 3, 2], mark_times)
 
-        url = "/mark/%s?since=1" % email
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
+        url = self._base_url() + "/mark/%s?since=1" % email
+        response = requests.get(url, headers=headers)
+        response_data = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([4, 3, 2], mark_times)
@@ -433,25 +440,24 @@ class ServerTests(unittest.TestCase):
         marks = []
         for time in xrange(0, 5):
             marks.append({"@": email, "~": time})
-        url = "/mark"
+        url = self._base_url() + "/mark"
         post_data = json.dumps(marks)
-        self.client.post(url, data=post_data, headers=headers)
+        requests.post(url, data=post_data, headers=headers)
 
-        url = "/mark?before=3"
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
+        url = self._base_url() + "/mark?before=3"
+        response = requests.get(url, headers=headers)
+        response_data = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([2, 1, 0], mark_times)
 
-        url = "/mark/%s?before=3" % email
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
+        url = self._base_url() + "/mark/%s?before=3" % email
+        response = requests.get(url, headers=headers)
+        response_data = json.loads(response.content)
         self.assertEqual(200, response.status_code)
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([2, 1, 0], mark_times)
 
-## END BAD TESTS
 
     def test_can_check_existance_of_user(self):
         user = convenience.create_test_user()
