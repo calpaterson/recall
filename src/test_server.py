@@ -45,6 +45,7 @@ class ServerTests(unittest.TestCase):
         test_user = convenience.create_test_user()
         return test_user.pseudonym, test_user.email, test_user.password
 
+## BAD TESTS (8)
     def test_request_invite_with_real_name(self):
         expected_status_code = 202
         url = "/user"
@@ -174,6 +175,8 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(json.loads(response.data), expected_data)
 
 
+## END BAD TESTS
+
     def test_create_public_mark(self):
         user = convenience.create_test_user()
         mark = {"~": 0, "@": user.email, "#": "Hello!"}
@@ -209,31 +212,34 @@ class ServerTests(unittest.TestCase):
             u"£created": 0
             }
 
-        url = "/mark"
+        url = self._base_url() + "/mark"
         post_data = json.dumps(mark)
-        response = self.client.post(url, headers=headers, data=post_data)
+        response = requests.post(url, headers=headers, data=post_data)
         self.assertEqual(response.status_code, 202)
 
-        public_marks = json.loads(self.client.get("/mark").data)
+        public_marks = json.loads(requests.get(url).content)
         self.assertEqual([], public_marks)
 
         email_marks = json.loads(
-            self.client.get("/mark", headers=headers).data)
+            requests.get(url, headers=headers).content)
         convenience.assert_marks_equal([expected_mark], email_marks)
 
-        public_email_marks = json.loads(self.client.get("/mark/" + email).data)
+        public_email_marks = json.loads(requests.get(url + "/" + email).content)
         convenience.assert_marks_equal([], public_email_marks)
 
         private_email_marks = json.loads(
-            self.client.get("/mark/" + email, headers=headers).data)
+            requests.get(url + "/" + email, headers=headers).content)
         convenience.assert_marks_equal([expected_mark], private_email_marks)
 
-        specific_mark_response = self.client.get("/mark/" + email + "/0")
+        specific_mark_response = requests.get(url + "/" + email + "/0")
         self.assertEqual(404, specific_mark_response.status_code)
 
         specific_mark_with_auth = json.loads(
-            self.client.get("/mark/" + email + "/0", headers=headers).data)
+            requests.get(url + "/" + email + "/0", headers=headers).content)
         convenience.assert_marks_equal(expected_mark, specific_mark_with_auth)
+
+
+## BAD TESTS (2)
 
     def test_cannot_create_public_mark_without_who_and_when(self):
         _, email, password = self._create_test_user()
@@ -286,6 +292,7 @@ class ServerTests(unittest.TestCase):
         actual_marks = json.loads(response.data)
         convenience.assert_marks_equal([expected_mark], actual_marks)
 
+## END BAD TESTS
 
     def test_bulk_addition_of_marks(self):
         user = convenience.create_test_user()
@@ -316,6 +323,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(202, post_response.status_code)
         self.assertEqual(expected_response_data, actual_response_data)
 
+## BAD TESTS (5)
 
     def test_marks_with_reserved_keys_refused(self):
         def assertError(expected_response_data, mark):
@@ -445,6 +453,8 @@ class ServerTests(unittest.TestCase):
         mark_times = map(lambda mark: mark["~"], response_data)
         self.assertEqual([2, 1, 0], mark_times)
 
+## END BAD TESTS
+
     def test_can_check_existance_of_user(self):
         user = convenience.create_test_user()
         response = requests.get(self._base_url() + "/user/" + user.email)
@@ -459,9 +469,9 @@ class ServerTests(unittest.TestCase):
         self.assertIn("self", json.loads(response.content))
 
     def test_non_existent_user_gives_404(self):
-        response = self.client.get("/user/god")
+        response = requests.get(self._base_url() + "/user/god")
         self.assertEquals(404, response.status_code)
-        self.assertEqual(None, json.loads(response.data))
+        self.assertEqual(None, json.loads(response.content))
 
     def test_error_handler_always_returns_json_object(self):
         try:
