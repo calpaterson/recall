@@ -170,7 +170,7 @@ core.add(
     }());
 
 core.add(
-    "marks",
+    "search",
     function()
     {
         var sandbox;
@@ -240,7 +240,7 @@ core.add(
 
         return function(sandbox_){
             sandbox = sandbox_;
-            sandbox.subscribe("show-marks", show);
+            sandbox.subscribe("show-search", show);
             sandbox.subscribe("hide-all", hide);
             sandbox.bind("#v-search-button", "click", search);
         };
@@ -355,6 +355,7 @@ core.add(
             sandbox.set("last-show", show);
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show);
+	    history.pushState({}, "Recall", "/" + show + "/")
         };
 
         var vistorModeDisplay = {
@@ -389,7 +390,9 @@ core.add(
             var show = sandbox.get("last-show");
             if (document.documentURI.match("email_key")){
                 moveTo("verify-email-form");
-            } else if (show === null){
+            } else if (window.location.pathname !== "/"){
+		moveTo(window.location.pathname.slice(1, -1));
+	    } else if (show === null){
                 moveTo("about");
             } else {
                 moveTo(show);
