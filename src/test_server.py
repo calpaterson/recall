@@ -53,13 +53,13 @@ class ServerTests(unittest.TestCase):
         response = requests.post(url, data=post_data)
         self.assertEquals(expected_status_code, response.status_code)
 
-## BAD TESTS (7)
-
     def test_request_invite_with_pseudonym(self):
-        response = self.client.post("/user", data=json.dumps(
+        response = requests.post(self._base_url() + "/user", data=json.dumps(
                 {"pseudonym": "jb", "email": "jb@bloggs.com"}))
         self.assertEqual(202, response.status_code)
 
+
+## BAD TESTS (6)
     def test_verify_email(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
