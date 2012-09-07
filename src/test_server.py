@@ -239,8 +239,6 @@ class ServerTests(unittest.TestCase):
         convenience.assert_marks_equal(expected_mark, specific_mark_with_auth)
 
 
-## BAD TESTS (2)
-
     def test_cannot_create_public_mark_without_who_and_when(self):
         _, email, password = self._create_test_user()
         headers = Headers({"X-Email": email, "X-Password": password})
@@ -250,26 +248,27 @@ class ServerTests(unittest.TestCase):
         expected_response_data = {
             "human_readable": "Must include @ and ~ with all marks"}
 
-        url = "/mark"
+        url = self._base_url() + "/mark"
         post_data = json.dumps(mark1)
-        response = self.client.post(url, headers=headers, data=post_data)
-        response_data = json.loads(response.data)
+        response = requests.post(url, headers=headers, data=post_data)
+        response_data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response_data, expected_response_data)
 
         post_data = json.dumps(mark2)
-        response = self.client.post(url, headers=headers, data=post_data)
-        response_data = json.loads(response.data)
+        response = requests.post(url, headers=headers, data=post_data)
+        response_data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response_data, expected_response_data)
+
 
     def test_get_public_marks_of_others_while_authed(self):
         _, user1, password1 = self._create_test_user()
         user1_headers = Headers({"X-Email": user1, "X-Password": password1})
 
         post_data = json.dumps({"~": 0, "@": user1, "#": "Hello!"})
-        response = self.client.post(
-            "/mark", data=post_data, headers=user1_headers)
+        response = requests.post(
+            self._base_url() + "/mark", data=post_data, headers=user1_headers)
         self.assertEqual(response.status_code, 202)
 
         _, user2, password2 = self._create_test_user()
@@ -279,20 +278,19 @@ class ServerTests(unittest.TestCase):
                          u"%url": settings["RECALL_API_BASE_URL"] + u"/mark/" + user1 + "/0",
                          u"~": 0, u"£created": 0}
 
-        response = self.client.get(
-            "/mark/" + user1 + "/0", headers=user2_headers)
-        actual_mark = json.loads(response.data)
+        response = requests.get(
+            self._base_url() + "/mark/" + user1 + "/0", headers=user2_headers)
+        actual_mark = json.loads(response.content)
         convenience.assert_marks_equal(expected_mark, actual_mark)
 
-        response = self.client.get("/mark/" + user1, headers=user2_headers)
-        actual_marks = json.loads(response.data)
+        response = requests.get(self._base_url() + "/mark/" + user1, headers=user2_headers)
+        actual_marks = json.loads(response.content)
         convenience.assert_marks_equal([expected_mark], actual_marks)
 
-        response = self.client.get("/mark", headers=user2_headers)
-        actual_marks = json.loads(response.data)
+        response = requests.get(self._base_url() + "/mark", headers=user2_headers)
+        actual_marks = json.loads(response.content)
         convenience.assert_marks_equal([expected_mark], actual_marks)
 
-## END BAD TESTS
 
     def test_bulk_addition_of_marks(self):
         user = convenience.create_test_user()
