@@ -45,6 +45,24 @@ insert_python_resources () {
     cp -R $PROJECT_ROOT/src $BUILD_DIR/usr/share/recall/
 }
 
+insert_python_bundle () {
+    if [[ ! -f $OPS_DIR/artefacts/requirements.md5 ]]
+    then
+	touch $OPS_DIR/artefacts/requirements.md5
+    fi
+    EXPECTED=`md5sum $PROJECT_ROOT/requirements`
+    SUM=`cat $OPS_DIR/artefacts/requirements.md5`
+    if [[ $EXPECTED != $SUM ]]
+    then
+	pip bundle $BUILD_DIR/usr/share/recall/bundle.zip -r $PROJECT_ROOT/requirements
+	cp $BUILD_DIR/usr/share/recall/bundle.zip $OPS_DIR/artefacts/bundle.zip
+	md5sum $PROJECT_ROOT/requirements > $OPS_DIR/artefacts/requirements.md5
+    else
+	echo "REUSING OLD BUNDLE"
+	cp $OPS_DIR/artefacts/bundle.zip $BUILD_DIR/usr/share/recall/bundle.zip
+    fi
+}
+
 move_config_file () {
     mv $BUILD_DIR/usr/share/recall/www/config.js $BUILD_DIR/etc/recall/config.js
 }
@@ -87,6 +105,7 @@ create_build_directory
 set_version
 insert_web_resources
 insert_python_resources
+insert_python_bundle
 move_config_file
 insert_documentation
 clean_out_temporary_files

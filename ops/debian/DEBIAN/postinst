@@ -11,3 +11,11 @@ then
 else
     echo "Config file already installed, reusing"
 fi
+
+echo "Building environement..."
+virtualenv --python=python2 /var/recall/environment/
+. /var/recall/environment/bin/activate
+pip install /usr/share/recall/bundle.zip
+deactivate
+echo "...done"
+

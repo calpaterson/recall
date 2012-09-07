@@ -1,7 +1,8 @@
 #!/bin/sh
 
+. /var/recall/environment/
 python /usr/share/recall/src/server.py
 
 PID=$!
 
-trap 'kill $PID' SIGINT SIGTERM EXIT
+trap 'kill $PID; deactivate' SIGINT SIGTERM EXIT

@@ -2,6 +2,11 @@
 config.json
 config.js
 *pyc
-ops/artefacts/*deb
+ops/artefacts/
 *ropeproject*
 build.d
+bin
+include
+lib
+local
+share

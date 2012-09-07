@@ -3,7 +3,7 @@ Package: recall
 Section: web
 Priority: optional
 Architecture: all
-Depends: python (>= 2.7), mongodb-server (>= 2.0), redis-server (>= 2.2), elasticsearch (>= 0.19.4)
+Depends: python (>= 2.7), mongodb-server (>= 2.0), redis-server (>= 2.2), elasticsearch (>= 0.19.4), python-virtualenv, python-pip, build-essential
 Maintainer: Cal Paterson <cal@calpaterson.com>
 Description: social bookmarking server and web application
  Recall is a program for bookmarking many different types of things
