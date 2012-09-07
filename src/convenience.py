@@ -34,8 +34,10 @@ settings = {}
 
 def db():
     db_name = settings["RECALL_MONGODB_DB_NAME"]
-    return pymongo.Connection(host=settings["RECALL_MONGODB_HOST"],
-                              port=int(settings["RECALL_MONGODB_PORT"]))[db_name]
+    return pymongo.Connection(
+        settings["RECALL_MONGODB_HOST"],
+        int(settings["RECALL_MONGODB_PORT"]))[db_name]
+
 
 def logger(name):
     logger = logging.getLogger(name)

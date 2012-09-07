@@ -63,7 +63,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         self.client.post(url, data=post_data)
 
-        db = server.db()
+        db = convenience.db()
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
@@ -82,7 +82,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         self.client.post(url, data=post_data)
 
-        db = server.db()
+        db = convenience.db()
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key
@@ -112,7 +112,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
 
-        db = server.db()
+        db = convenience.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
@@ -133,7 +133,7 @@ class ServerTests(unittest.TestCase):
                 "human_readable": "No such email_key or wrong email"})
 
 
-        db = server.db()
+        db = convenience.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)
@@ -143,7 +143,7 @@ class ServerTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         self.client.post(url, data=post_data)
 
-        db = server.db()
+        db = convenience.db()
         email_key = db.users.find_one()["email_key"]
 
         url = "/user/" + email_key

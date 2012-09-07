@@ -64,18 +64,6 @@ def handle_exception(exception):
 
 app.handle_exception = handle_exception
 
-def db():
-    db_name = settings["RECALL_MONGODB_DB_NAME"]
-    return Connection(
-        settings["RECALL_MONGODB_HOST"],
-        int(settings["RECALL_MONGODB_PORT"]))[db_name]
-
-def redis_connection():
-    return Redis(
-        host=settings["RECALL_REDIS_HOST"],
-        port=int(settings["RECALL_REDIS_PORT"]),
-        db=int(settings["RECALL_REDIS_DB"]))
-
 def has_no_problematic_keys(mark):
     mark_queue = []
     current = mark
@@ -120,7 +108,7 @@ def authentication():
     try:
         email = request.headers["X-Email"]
         password = request.headers["X-Password"]
-        g.user = db().users.find_one(
+        g.user = convenience.db().users.find_one(
             {"email": email, "password_hash": {"$exists": True}})
         assert g.user["password_hash"] == bcrypt.hashpw(
             password, g.user["password_hash"])
@@ -147,9 +135,9 @@ def add_marks():
         assert "~" in body and "@" in body, "Must include @ and ~ with all marks"
         has_no_problematic_keys(body)
         body[u"£created"] = unixtime()
-        db().marks.insert(body)
+        convenience.db().marks.insert(body)
         del body["_id"]
-        redis_connection().lpush("marks", json.dumps(body))
+        convenience.redis_connection().lpush("marks", json.dumps(body))
         return body
 
     marks = json.loads(request.data)
@@ -272,7 +260,7 @@ class SearchQueryBuilder(object):
 def marks(spec_additions={}):
     spec = _build_spec(spec_additions)
     limit = int(request.args.get("maximum", 0))
-    rs = db().marks.find(spec, sort=[("~", DESCENDING)],
+    rs = convenience.db().marks.find(spec, sort=[("~", DESCENDING)],
                          limit=limit)
     marks = []
     counter = 0
@@ -321,7 +309,7 @@ def get_mark(email, time):
             spec.update({"~": int(time)})
     except KeyError:
         pass
-    mark = db().marks.find_one(spec)
+    mark = convenience.db().marks.find_one(spec)
     try:
         del(mark[u"_id"])
         mark[u"%url"] = make_mark_url(mark)
@@ -331,7 +319,7 @@ def get_mark(email, time):
 
 @app.route("/user/<email>", methods=["GET"])
 def user(email):
-    users = db().users
+    users = convenience.db().users
     user = users.find_one({"email": email})
     if user is None:
         return "null", 404
@@ -357,8 +345,8 @@ def request_invite():
         return "You must provide an email field", 400
     body["email_key"] = str(uuid.uuid4())
     body["registered"] = unixtime()
-    db().users.ensure_index("email", unique=True)
-    db().users.insert(body, safe=True)
+    convenience.db().users.ensure_index("email", unique=True)
+    convenience.db().users.insert(body, safe=True)
     return "null", 202
 
 @app.route("/user/<email_key>", methods=["POST"])
@@ -373,13 +361,13 @@ def verify_email(email_key):
             "verified": {"$exists": False}}
     update = {"$set": {"password_hash": password_hash,
                        "verified": unixtime()}}
-    success = db().users.update(spec, update, safe=True)["updatedExisting"]
+    success = convenience.db().users.update(spec, update, safe=True)["updatedExisting"]
     if not success:
-        if db().users.find_one({"email_key": email_key, "email": json.loads(request.data)["email"]}):
+        if convenience.db().users.find_one({"email_key": email_key, "email": json.loads(request.data)["email"]}):
             raise HTTPException("Already verified", 403)
         else:
             raise HTTPException("No such email_key or wrong email", 404)
-    user = db().users.find_one({"email_key": email_key})
+    user = convenience.db().users.find_one({"email_key": email_key})
     return json.dumps(blacklist(
             user, ["_id", "email_key", "password_hash"])), 201
 
@@ -395,7 +383,7 @@ def linked(who, when):
              }
             ]}
     found = []
-    for mark in db().marks.find(spec).sort(":", ASCENDING):
+    for mark in convenience.db().marks.find(spec).sort(":", ASCENDING):
         del(mark[u"_id"])
         mark[u"%url"] = make_mark_url(mark)
         found.append(mark)
