@@ -355,7 +355,9 @@ core.add(
             sandbox.set("last-show", show);
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show);
-	    history.pushState({}, "Recall", "/" + show + "/")
+            if (typeof history !== "undefined"){
+                history.pushState({}, "Recall", "/" + show + "/");
+            }
         };
 
         var vistorModeDisplay = {
@@ -391,8 +393,8 @@ core.add(
             if (document.documentURI.match("email_key")){
                 moveTo("verify-email-form");
             } else if (window.location.pathname !== "/"){
-		moveTo(window.location.pathname.slice(1, -1));
-	    } else if (show === null){
+                moveTo(window.location.pathname.slice(1, -1));
+            } else if (show === null){
                 moveTo("about");
             } else {
                 moveTo(show);
