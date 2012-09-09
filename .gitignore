@@ -5,7 +5,7 @@ config.js
 ops/artefacts/
 *ropeproject*
 build.d
-bin
+^bin
 include
 lib
 local
