@@ -58,19 +58,17 @@ class ServerTests(unittest.TestCase):
                 {"pseudonym": "jb", "email": "jb@bloggs.com"}))
         self.assertEqual(202, response.status_code)
 
-
-## BAD TESTS (6)
     def test_verify_email(self):
-        url = "/user"
+        url = self._base_url() + "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
-        self.client.post(url, data=post_data)
+        requests.post(url, data=post_data)
 
         db = convenience.db()
         email_key = db.users.find_one()["email_key"]
 
-        url = "/user/" + email_key
+        url = self._base_url() +  "/user/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
-        response = self.client.post(url, data=post_data)
+        response = requests.post(url, data=post_data)
         self.assertEqual(201, response.status_code)
 
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
@@ -79,6 +77,7 @@ class ServerTests(unittest.TestCase):
         self.assertIn("verified", user_in_db)
         self.assertNotIn("email_verified", user_in_db)
 
+    ## BAD TESTS (5)
     def test_verify_email_with_wrong_email(self):
         url = "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
