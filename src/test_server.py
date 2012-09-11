@@ -77,19 +77,18 @@ class ServerTests(unittest.TestCase):
         self.assertIn("verified", user_in_db)
         self.assertNotIn("email_verified", user_in_db)
 
-    ## BAD TESTS (5)
     def test_verify_email_with_wrong_email(self):
-        url = "/user"
+        url = self._base_url() + "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
-        self.client.post(url, data=post_data)
+        requests.post(url, data=post_data)
 
         db = convenience.db()
         email_key = db.users.find_one()["email_key"]
 
-        url = "/user/" + email_key
+        url = self._base_url() + "/user/" + email_key
         post_data = json.dumps({"email" : "wrong email", "password": "password"})
-        response = self.client.post(url, data=post_data)
-        response_data = json.loads(response.data)
+        response = requests.post(url, data=post_data)
+        response_data = json.loads(response.content)
         self.assertEqual(404, response.status_code)
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
@@ -99,16 +98,16 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn("password", user_in_db)
 
     def test_verify_email_with_wrong_key(self):
-        url = "/user"
+        url =  self._base_url() + "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
-        self.client.post(url, data=post_data)
+        requests.post(url, data=post_data)
 
         email_key = "blah, blah, blah"
 
-        url = "/user/" + email_key
+        url = self._base_url() + "/user/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
-        response = self.client.post(url, data=post_data)
-        response_data = json.loads(response.data)
+        response = requests.post(url, data=post_data)
+        response_data = json.loads(response.content)
         self.assertEqual(404, response.status_code)
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
@@ -119,20 +118,19 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn("password", user_in_db)
 
     def test_verify_email_without_requesting_invite_first(self):
-        url = "/user"
+        url = self._base_url() + "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
-        self.client.post(url, data=post_data)
+        requests.post(url, data=post_data)
 
         email_key = "blah, blah, blah"
 
-        url = "/user/" + email_key
+        url = self._base_url() + "/user/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
-        response = self.client.post(url, data=post_data)
-        response_data = json.loads(response.data)
+        response = requests.post(url, data=post_data)
+        response_data = json.loads(response.content)
         self.assertEqual(404, response.status_code)
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
-
 
         db = convenience.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
@@ -140,25 +138,25 @@ class ServerTests(unittest.TestCase):
         self.assertNotIn("password", user_in_db)
 
     def test_verify_email_second_time(self):
-        url = "/user"
+        url = self._base_url() + "/user"
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
-        self.client.post(url, data=post_data)
+        requests.post(url, data=post_data)
 
         db = convenience.db()
         email_key = db.users.find_one()["email_key"]
 
-        url = "/user/" + email_key
+        url = self._base_url() + "/user/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
-        response = self.client.post(url, data=post_data)
+        response = requests.post(url, data=post_data)
         self.assertEqual(201, response.status_code)
 
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         original_password_hash = user_in_db["password_hash"]
 
-        url = "/user/" + email_key
+        url = self._base_url() +  "/user/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
-        response = self.client.post(url, data=post_data)
-        response_data = json.loads(response.data)
+        response = requests.post(url, data=post_data)
+        response_data = json.loads(response.content)
 
         self.assertEqual(403, response.status_code)
         self.assertEqual({"human_readable": "Already verified"}, response_data)
@@ -168,14 +166,12 @@ class ServerTests(unittest.TestCase):
 
     def test_addition_of_public_mark_fails_without_password(self):
         post_data = json.dumps({"~": 0, "@": "e@example.com", "#": "Hello!"})
-        response = self.client.post("/mark", data=post_data)
+        response = requests.post("/mark", data=post_data)
         self.assertEqual(response.status_code, 400)
 
         expected_data = {"human_readable": "You must include authentication headers"}
-        self.assertEqual(json.loads(response.data), expected_data)
+        self.assertEqual(json.loads(response.content), expected_data)
 
-
-## END BAD TESTS
 
     def test_create_public_mark(self):
         user = convenience.create_test_user()
