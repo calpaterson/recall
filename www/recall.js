@@ -178,11 +178,20 @@ core.add(
         var hadAuthLastTime = false;
 
         var search = function(event){
+	    var button = sandbox.find("#v-search-button")[0];
+	    button.classList.add("disabled");
+	    button.textContent = "Searching...";
             var displayMarks = function(marks){
                 sandbox.deleteContentsOf("#list-of-marks");
-                for (var i = 0; i < marks.length; i++){
-                    sandbox.append("#list-of-marks", markToElement(marks[i]));
-                }
+		if(marks.length > 1){
+                    for (var i = 0; i < marks.length; i++){
+			sandbox.append("#list-of-marks", markToElement(marks[i]));
+                    }
+		} else {
+		    sandbox.append("#list-of-marks", "No results");
+		}
+		button.classList.remove("disabled");
+		button.textContent = "Seach Again?";
             };
             sandbox.publish("get-marks?",
                             { "q": sandbox.find("#v-search-field")[0].value,
