@@ -36,21 +36,20 @@ core.add(
     }());
 
 core.add(
-    "verify-email-form",
+    "verify-email",
     function(){
         var sandbox;
 
-        var verify = function(){
+	var token;
+
+	var verify = function(){
             var button = sandbox.find("#v-e-submit")[0];
             button.classList.add("disabled");
             button.textContent = "Verifying...";
 
-            var matches = document.documentURI.match(/email_key=[0-9\-a-f]{36}/);
-            var email_key = matches[0].slice(10);
-
             sandbox.publish(
             "verify-email", {
-                "email_key": email_key,
+                "email_key": token,
                 "email": sandbox.find("#v-e-email")[0].value,
                 "password": sandbox.find("#v-e-password")[0].value,
                 "success": function(){
@@ -61,8 +60,9 @@ core.add(
             return false;
         };
 
-        var show = function(){
+        var show = function(data){
             sandbox.find()[0].hidden = false;
+	    token = data.split("/")[2];
             return false;
         };
 
@@ -80,7 +80,7 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.bind("#v-e-submit", "click", verify);
-            sandbox.subscribe("show-verify-email-form", show);
+            sandbox.subscribe("show-verify-email", show);
             sandbox.subscribe("hide-all", hide);
         };
     }());
@@ -354,7 +354,7 @@ core.add(
         var moveTo = function(show){
             sandbox.set("last-show", show);
             sandbox.publish("hide-all");
-            sandbox.publish("show-" + show);
+            sandbox.publish("show-" + show, window.location.pathname);
             if (typeof history !== "undefined"){
                 history.pushState({}, "Recall", "/" + show + "/");
             }
@@ -390,10 +390,8 @@ core.add(
         return function(sandbox_){
             sandbox = sandbox_;
             var show = sandbox.get("last-show");
-            if (document.documentURI.match("email_key")){
-                moveTo("verify-email-form");
-            } else if (window.location.pathname !== "/"){
-                moveTo(window.location.pathname.slice(1, -1));
+            if (window.location.pathname !== "/"){
+                moveTo(window.location.pathname.split("/")[1]);
             } else if (show === null){
                 moveTo("about");
             } else {
