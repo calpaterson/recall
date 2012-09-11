@@ -23,13 +23,11 @@ import sys
 import time
 import traceback
 import uuid
+from wsgiref.simple_server import make_server
 
 from flask import Flask, request, make_response, Response, g
 from pymongo import Connection, DESCENDING, ASCENDING
 from redis import Redis
-from tornado.httpserver import HTTPServer
-from tornado.ioloop import IOLoop
-from tornado.wsgi import WSGIContainer
 import bcrypt
 import requests
 
@@ -391,7 +389,5 @@ def linked(who, when):
 
 if __name__ == "__main__":
     convenience.load_settings()
-
-    http_server = HTTPServer(WSGIContainer(oldapp))
-    http_server.listen(int(settings["RECALL_API_PORT"]))
-    IOLoop.instance().start()
+    http_server = make_server("", int(settings["RECALL_API_PORT"]), oldapp)
+    http_server.serve_forever()
