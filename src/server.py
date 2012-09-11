@@ -35,7 +35,7 @@ import requests
 
 import convenience
 
-app = Flask(__name__)
+oldapp = Flask(__name__)
 
 settings = convenience.settings
 
@@ -62,7 +62,7 @@ def handle_exception(exception):
     else:
         return json_error("Unknown exception: " + exception.message), 500
 
-app.handle_exception = handle_exception
+oldapp.handle_exception = handle_exception
 
 def has_no_problematic_keys(mark):
     mark_queue = []
@@ -98,12 +98,12 @@ def json_error(message):
     return json.dumps({"error": message})
 
 def unixtime():
-    if app.testing:
+    if oldapp.testing:
         return 0
     else:
         return int(time.time())
 
-@app.before_request
+@oldapp.before_request
 def authentication():
     try:
         email = request.headers["X-Email"]
@@ -128,7 +128,7 @@ def make_mark_url(mark):
     return settings["RECALL_API_BASE_URL"] + "/mark/" \
         + mark[u"@"] + "/" + str(int(mark["~"]))
 
-@app.route("/mark", methods=["POST"])
+@oldapp.route("/mark", methods=["POST"])
 @require_authentication
 def add_marks():
     def insert_mark(body):
@@ -155,7 +155,7 @@ def add_marks():
         insert_mark(mark)
     return "null", 202
 
-@app.route("/mark", methods=["GET"])
+@oldapp.route("/mark", methods=["GET"])
 def get_all_marks():
     def split_tags(tag_string):
         tags = tag_string.split(" ")
@@ -179,7 +179,7 @@ def get_all_marks():
     else:
         return marks()
 
-@app.route("/mark/<email>", methods=["GET"])
+@oldapp.route("/mark/<email>", methods=["GET"])
 def get_all_marks_by_email(email):
     spec_additions = {"@": email}
     return marks(spec_additions)
@@ -295,7 +295,7 @@ def _respect_privacy(spec):
     else:
         spec.update({"%private": {"$exists": False}})
 
-@app.route("/mark/<email>/<time>", methods=["GET"])
+@oldapp.route("/mark/<email>/<time>", methods=["GET"])
 def get_mark(email, time):
     spec = {"%private": {"$exists": False},
             "@": email,
@@ -317,7 +317,7 @@ def get_mark(email, time):
         return json_error("No such mark found"), 404
     return json.dumps(mark), 200
 
-@app.route("/user/<email>", methods=["GET"])
+@oldapp.route("/user/<email>", methods=["GET"])
 def user(email):
     users = convenience.db().users
     user = users.find_one({"email": email})
@@ -333,7 +333,7 @@ def user(email):
         return_value["self"] = True
     return json.dumps(return_value), 200
 
-@app.route("/user", methods=["POST"])
+@oldapp.route("/user", methods=["POST"])
 def request_invite():
     body = whitelist(json.loads(request.data), [
             "pseudonym",
@@ -349,7 +349,7 @@ def request_invite():
     convenience.db().users.insert(body, safe=True)
     return "null", 202
 
-@app.route("/user/<email_key>", methods=["POST"])
+@oldapp.route("/user/<email_key>", methods=["POST"])
 def verify_email(email_key):
     if "RECALL_TEST_MODE" in settings or "RECALL_DEBUG_MODE" in settings:
         salt = bcrypt.gensalt(1)
@@ -371,7 +371,7 @@ def verify_email(email_key):
     return json.dumps(blacklist(
             user, ["_id", "email_key", "password_hash"])), 201
 
-@app.route("/linked/<who>/<when>", methods=["GET"])
+@oldapp.route("/linked/<who>/<when>", methods=["GET"])
 def linked(who, when):
     spec = {"$or": [
             {"%private": {"$exists": False},
@@ -392,6 +392,6 @@ def linked(who, when):
 if __name__ == "__main__":
     convenience.load_settings()
 
-    http_server = HTTPServer(WSGIContainer(app))
+    http_server = HTTPServer(WSGIContainer(oldapp))
     http_server.listen(int(settings["RECALL_API_PORT"]))
     IOLoop.instance().start()

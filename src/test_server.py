@@ -32,7 +32,7 @@ settings = convenience.settings
 
 class ServerTests(unittest.TestCase):
     def setUp(self):
-        self.client = server.app.test_client()
+        self.client = server.oldapp.test_client()
         convenience.load_settings()
 
     def tearDown(self):
@@ -165,8 +165,9 @@ class ServerTests(unittest.TestCase):
 
 
     def test_addition_of_public_mark_fails_without_password(self):
+        url = self._base_url() + "/mark"
         post_data = json.dumps({"~": 0, "@": "e@example.com", "#": "Hello!"})
-        response = requests.post("/mark", data=post_data)
+        response = requests.post(url, data=post_data)
         self.assertEqual(response.status_code, 400)
 
         expected_data = {"human_readable": "You must include authentication headers"}
