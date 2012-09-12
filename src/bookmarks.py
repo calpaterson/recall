@@ -1,25 +1,31 @@
-from application import app, nyi
+import bottle
 
-@app.get("/<who>/bookmarks/<search_term>/")
-def search_marks_as_email(who, search_term):
-    nyi()
+app = bottle.Bottle()
+
+@app.get("/")
+def bookmarks():
+    bottle.abort(501)
+
+@app.get("/url/<url>/")
+def url(url):
+    bottle.abort(501)
+
+@app.get("/<who>/")
+def private(who, search_term):
+    bottle.abort(501)
+
+@app.route("/<who>/", method="PATCH")
+def import_(who):
+    bottle.abort(501)
 
 @app.get("/<who>/recent/")
 def recent(who):
-    nyi()
+    bottle.abort(501)
 
-@app.get("/bookmarks/search/")
-def search():
-    nyi()
-
-@app.get("/bookmarks/<url>/")
-def url(url):
-    nyi()
-
-@app.post("/bookmarks/<who>/<when>/")
+@app.post("/<who>/<when>/")
 def add(url):
-    nyi()
+    bottle.abort(501)
 
-@app.post("/bookmarks/<who>/<when>/edits/<who_edited>/<time_editted/")
+@app.post("/<who>/<when>/edits/<who_edited>/<time_editted/")
 def update(who, when, who_edited, time_editted):
-    nyi()
+    bottle.abort(501)

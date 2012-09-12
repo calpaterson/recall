@@ -26,20 +26,21 @@ from werkzeug.datastructures import Headers
 import requests
 
 import convenience
-import server
+import old_server
 
 settings = convenience.settings
 
 class ServerTests(unittest.TestCase):
     def setUp(self):
-        self.client = server.oldapp.test_client()
+        self.client = old_server.app.test_client()
         convenience.load_settings()
 
     def tearDown(self):
         convenience.wipe_mongodb()
 
     def _base_url(self):
-        return convenience.api_url()
+        url = convenience.api_url()
+        return url
 
     def _create_test_user(self):
         test_user = convenience.create_test_user()
@@ -477,5 +478,5 @@ class ServerTests(unittest.TestCase):
         try:
             raise Exception
         except Exception as e:
-            data, status = server.handle_exception(e)
+            data, status = old_server.handle_exception(e)
             self.assertIn("human_readable", json.loads(data))

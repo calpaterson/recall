@@ -96,7 +96,7 @@ def load_settings():
 
 def api_url():
     return "http://" + settings["RECALL_API_HOST"] + ":" +\
-        settings["RECALL_API_PORT"]
+        settings["RECALL_API_PORT"] + "/v1"
 
 def get_es_base_url():
     return "http://" + settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
