@@ -130,7 +130,7 @@ core.add(
                     }
                 },
                 "post",
-                recall_config["api-base-url"] + "/user",
+                recall_config["api-base-url"] + "/v1/user",
                 JSON.stringify(data),
                 "application/json"
                 );

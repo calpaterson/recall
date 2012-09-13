@@ -35,7 +35,7 @@ core.add(
             sandbox.asynchronous(
                 cb,
                 "get",
-                recall_config["api-base-url"] + "/user/" + message.email,
+                recall_config["api-base-url"] + "/v1/user/" + message.email,
                 {},
                 "application/json",
                 {"X-Email": message.email,
@@ -76,7 +76,7 @@ core.add(
                     }
                 },
                 "post",
-                recall_config["api-base-url"] + "/user/" + message.email_key,
+                recall_config["api-base-url"] + "/v1/user/" + message.email_key,
                 JSON.stringify({"email_key": message.email_key,
                                 "email" : message.email,
                                 "password": message.password}),
@@ -116,7 +116,7 @@ core.add(
                     }
                 },
                 "post",
-                recall_config["api-base-url"] + "/mark",
+                recall_config["api-base-url"] + "/v1/mark",
                 serialisedMark,
                 "application/json",
                 {"X-Email": email,
@@ -135,7 +135,7 @@ core.add(
 
         var marks = function(message){
             authenticate();
-            var url = recall_config["api-base-url"] + "/mark";
+            var url = recall_config["api-base-url"] + "/v1/mark";
             if (message.hasOwnProperty("q")){
                 url += "?q=";
                 url += encodeURIComponent(message.q);
