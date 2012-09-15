@@ -1,6 +1,9 @@
 import bottle
 
+import plugins
+
 app = bottle.Bottle()
+app.install(plugins.ppjson)
 
 @app.get("/")
 def bookmarks():
@@ -11,7 +14,7 @@ def url(url):
     bottle.abort(501)
 
 @app.get("/<who>/")
-def private(who, search_term):
+def private_bookmarks(who):
     bottle.abort(501)
 
 @app.route("/<who>/", method="PATCH")
