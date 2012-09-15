@@ -22,7 +22,6 @@ import json
 import time
 
 from pymongo import Connection
-from werkzeug.datastructures import Headers
 import requests
 
 import convenience
@@ -198,7 +197,7 @@ class ServerTests(unittest.TestCase):
 
     def test_add_and_get_private_mark(self):
         _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
+        headers = {"X-Email": email, "X-Password": password}
         mark = {"~": 0, "@": email, "%private": True, "#": "Hello"}
         expected_mark = {
             u"~": 0,
@@ -238,7 +237,7 @@ class ServerTests(unittest.TestCase):
 
     def test_cannot_create_public_mark_without_who_and_when(self):
         _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
+        headers = {"X-Email": email, "X-Password": password}
         mark1 = {"~": 0, "#": "Hello"}
         mark2 = {"@": email, "#": "Hello"}
 
@@ -261,7 +260,7 @@ class ServerTests(unittest.TestCase):
 
     def test_get_public_marks_of_others_while_authed(self):
         _, user1, password1 = self._create_test_user()
-        user1_headers = Headers({"X-Email": user1, "X-Password": password1})
+        user1_headers = {"X-Email": user1, "X-Password": password1}
 
         post_data = json.dumps({"~": 0, "@": user1, "#": "Hello!"})
         response = requests.post(
@@ -269,7 +268,7 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(response.status_code, 202)
 
         _, user2, password2 = self._create_test_user()
-        user2_headers = Headers({"X-Email": user2, "X-Password": password2})
+        user2_headers = {"X-Email": user2, "X-Password": password2}
 
         expected_mark = {u"#": "Hello!", u"@": user1,
                          u"%url": settings["RECALL_API_BASE_URL"] + u"/mark/" + user1 + "/0",
@@ -329,7 +328,7 @@ class ServerTests(unittest.TestCase):
             self.assertEqual(expected_response_data, response_data)
 
         _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
+        headers = {"X-Email": email, "X-Password": password}
 
         problematic_marks = [
             {"~": 0, "@": email, "$problem": True},
@@ -349,7 +348,7 @@ class ServerTests(unittest.TestCase):
 
     def test_get_marks_since(self):
         _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
+        headers = {"X-Email": email, "X-Password": password}
         marks = []
         for time in xrange(0, 5):
             marks.append({"@": email, "~": time})
@@ -374,7 +373,7 @@ class ServerTests(unittest.TestCase):
 
     def test_get_marks_before(self):
         _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
+        headers = {"X-Email": email, "X-Password": password}
         marks = []
         for time in xrange(0, 5):
             marks.append({"@": email, "~": time})
