@@ -32,7 +32,6 @@ settings = convenience.settings
 
 class ServerTests(unittest.TestCase):
     def setUp(self):
-        self.client = old_server.app.test_client()
         convenience.load_settings()
 
     def tearDown(self):
@@ -346,64 +345,6 @@ class ServerTests(unittest.TestCase):
         assertError(expected_response_dollar, problematic_marks[0])
         assertError(expected_response_dollar, problematic_marks[1])
         assertError(expected_response_pound, problematic_marks[2])
-
-
-## BAD TESTS (2)
-
-
-    def test_trying_to_get_many_marks_at_once_is_refused(self):
-        expected_mark_limit = settings["RECALL_MARK_LIMIT"] = 2
-        _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
-        marks = []
-        for time in xrange(0, expected_mark_limit + 1):
-            marks.append({"@": email, "~": time})
-        url = "/mark"
-        post_data = json.dumps(marks)
-        self.client.post(url, data=post_data, headers=headers)
-
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
-        expected_response_data = {
-            u"human_readable": u"May not request more than %s marks at once" %
-            expected_mark_limit,
-            "machine_readable": expected_mark_limit}
-        self.assertEqual(413, response.status_code)
-        self.assertEqual(expected_response_data, response_data)
-
-        url = "/mark/%s" % email
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
-        self.assertEqual(413, response.status_code)
-        self.assertEqual(expected_response_data, response_data)
-
-
-    def test_get_limited_number_of_marks(self):
-        _, email, password = self._create_test_user()
-        headers = Headers({"X-Email": email, "X-Password": password})
-        marks = []
-        for time in xrange(0, 5):
-            marks.append({"@": email, "~": time})
-        url = "/mark"
-        post_data = json.dumps(marks)
-        self.client.post(url, data=post_data, headers=headers)
-
-        url = "/mark?maximum=2"
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
-        self.assertEqual(200, response.status_code)
-        mark_times = map(lambda mark: mark["~"], response_data)
-        self.assertEqual([4, 3], mark_times)
-
-        url = "/mark/%s?maximum=2" % email
-        response = self.client.get(url, headers=headers)
-        response_data = json.loads(response.data)
-        self.assertEqual(200, response.status_code)
-        mark_times = map(lambda mark: mark["~"], response_data)
-        self.assertEqual([4, 3], mark_times)
-
-
-## END BAD TESTS
 
 
     def test_get_marks_since(self):
