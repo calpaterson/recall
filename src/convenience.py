@@ -98,6 +98,10 @@ def api_url():
     return "http://" + settings["RECALL_API_HOST"] + ":" +\
         settings["RECALL_API_PORT"] + "/v1"
 
+def new_url():
+    return "http://" + settings["RECALL_API_HOST"] + ":" +\
+        settings["RECALL_API_PORT"] + "/"
+
 def get_es_base_url():
     return "http://" + settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
         settings["RECALL_ELASTICSEARCH_PORT"]
@@ -185,15 +189,14 @@ def create_test_user(fixture_user=False):
             return {"x-email": self.email, "x-password": self.password}
 
     post_data = json.dumps({"pseudonym": pseudonym, "email": email})
-    url = api_url() + "/user"
+    url = new_url() + "people/" + email + "/"
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
-
 
     email_key = db().users.find_one({"email": email})["email_key"]
 
     post_data = json.dumps({"password": password, "email": email})
-    url = api_url() + "/user/" + email_key
+    url = new_url() + "people/" + email + "/" + email_key
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
     return User(pseudonym, email, password)
@@ -213,6 +216,12 @@ def with_patience(test, seconds=7, gap=0.1):
                 raise e
         except Exception:
             raise
+
+def unixtime():
+    if "RECALL_TEST_MODE" in settings:
+        return 0
+    else:
+        return int(time.time())
 
 def on_json(f):
     def decorated(*args, **kwargs):

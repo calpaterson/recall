@@ -78,20 +78,6 @@ def has_no_problematic_keys(mark):
         else:
             current = mark_queue.pop()
 
-def whitelist(dict_, whitelist):
-    d = {}
-    for k, v in dict_.items():
-        if k in whitelist:
-            d[k] = v
-    return d
-
-def blacklist(dict_, blacklist):
-    d = {}
-    for k, v in dict_.items():
-        if k not in blacklist:
-            d[k] = v
-    return d
-
 def json_error(message):
     return json.dumps({"error": message})
 
@@ -315,59 +301,6 @@ def get_mark(email, time):
         return json_error("No such mark found"), 404
     return json.dumps(mark), 200
 
-@app.route("/user/<email>", methods=["GET"])
-def user(email):
-    users = convenience.db().users
-    user = users.find_one({"email": email})
-    if user is None:
-        return "null", 404
-
-    return_value = whitelist(user, [
-            "pseudonym",
-            "firstName",
-            "surname",
-            "email"])
-    if g.user == user:
-        return_value["self"] = True
-    return json.dumps(return_value), 200
-
-@app.route("/user", methods=["POST"])
-def request_invite():
-    body = whitelist(json.loads(request.data), [
-            "pseudonym",
-            "firstName",
-            "surname",
-            "email",
-            ])
-    if "email" not in body:
-        return "You must provide an email field", 400
-    body["email_key"] = str(uuid.uuid4())
-    body["registered"] = unixtime()
-    convenience.db().users.ensure_index("email", unique=True)
-    convenience.db().users.insert(body, safe=True)
-    return "null", 202
-
-@app.route("/user/<email_key>", methods=["POST"])
-def verify_email(email_key):
-    if "RECALL_TEST_MODE" in settings or "RECALL_DEBUG_MODE" in settings:
-        salt = bcrypt.gensalt(1)
-    else:
-        salt = bcrypt.gensalt()
-    password_hash = bcrypt.hashpw(json.loads(request.data)["password"], salt)
-
-    spec = {"email_key": email_key, "email": json.loads(request.data)["email"],
-            "verified": {"$exists": False}}
-    update = {"$set": {"password_hash": password_hash,
-                       "verified": unixtime()}}
-    success = convenience.db().users.update(spec, update, safe=True)["updatedExisting"]
-    if not success:
-        if convenience.db().users.find_one({"email_key": email_key, "email": json.loads(request.data)["email"]}):
-            raise HTTPException("Already verified", 403)
-        else:
-            raise HTTPException("No such email_key or wrong email", 404)
-    user = convenience.db().users.find_one({"email_key": email_key})
-    return json.dumps(blacklist(
-            user, ["_id", "email_key", "password_hash"])), 201
 
 @app.route("/linked/<who>/<when>", methods=["GET"])
 def linked(who, when):

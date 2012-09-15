@@ -305,4 +305,5 @@ class WorkerTests(unittest.TestCase):
         convenience.with_patience(inner_assert)
 
 if __name__ == "__main__":
+    convenience.load_settings()
     unittest.main()

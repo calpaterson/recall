@@ -1,6 +1,7 @@
 import json
+from UserDict import DictMixin
 
-from bottle import request, response
+from bottle import request, response, abort
 from pygments import highlight
 from pygments.lexers.web import JSONLexer
 from pygments.formatters import HtmlFormatter
@@ -18,26 +19,24 @@ def html_pretty_print(json_string):
 
 class PPJSONPlugin(object):
     api = 2
-    name = "PPJSONPlugin"
 
     def apply(self, callback, context):
         def wrapper(*args, **kwargs):
             if request.json is None and request.body.len != 0:
                 abort(400)
             return_value = callback(*args, **kwargs)
-            as_string = json.dumps(return_value, indent=4)
+            return_value = json.dumps(return_value, indent=4)
             if "text/html" in mimetypes(request.headers.get("Accept")):
-                return html_pretty_print(as_string),
+                return_value = html_pretty_print(as_string)
             else:
-                response.content_type = "application/json"
-                return as_string
+                response.set_header("Content-Type", "application/json")
+            return return_value
         return wrapper
 
 ppjson = PPJSONPlugin()
 
-class Headers(object):
+class HeadersPlugin(object):
     api = 2
-    name = "Headers"
 
     def apply(self, callback, content):
         def wrapper(*args, **kwargs):
@@ -46,4 +45,21 @@ class Headers(object):
             return return_value
         return wrapper
 
-headers = Headers()
+headers = HeadersPlugin()
+
+class PretendHandlerDict(object, DictMixin):
+    def __handler__(self, error):
+        return json.dumps({"human_readable": error.output})
+
+    def keys(self):
+        return xrange(400, 600)
+
+    def __getitem__(self, key):
+        return self.__handler__
+
+    def __setitem__(self, key, value):
+        raise NotImplementedError("PretendHandlerDict is not a real dictionary")
+
+    def __delitem__(self, key):
+        __setitem__(self, None, None)
+
