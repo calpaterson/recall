@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-CONFIG_FILE=/usr/share/recall/config.js
+CONFIG_FILE=/etc/recall/config.js
 
 if [ -f $CONFIG_FILE ]
 then
