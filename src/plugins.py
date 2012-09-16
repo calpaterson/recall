@@ -32,7 +32,7 @@ class PPJSONPlugin(object):
             return_value = callback(*args, **kwargs)
             return_value = json.dumps(return_value, indent=4)
             if "text/html" in mimetypes(request.headers.get("Accept")):
-                return_value = html_pretty_print(as_string)
+                return_value = html_pretty_print(return_value)
             else:
                 response.set_header("Content-Type", "application/json")
             return return_value

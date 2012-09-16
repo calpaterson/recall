@@ -3,7 +3,6 @@
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
-
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
@@ -23,7 +22,7 @@ core.add(
         var login = function(message){
             var cb = function(status, content){
                 var user = JSON.parse(content);
-                if (status === 200 && user.hasOwnProperty("self")){
+                if (status === 200){
                     sandbox.set("email", message.email);
                     sandbox.set("password", message.password);
                     message.success(user);
@@ -35,7 +34,7 @@ core.add(
             sandbox.asynchronous(
                 cb,
                 "get",
-                recall_config["api-base-url"] + "/v1/user/" + message.email,
+                recall_config["api-base-url"] + "/people/" + message.email + "/self",
                 {},
                 "application/json",
                 {"X-Email": message.email,
@@ -76,12 +75,12 @@ core.add(
                     }
                 },
                 "post",
-                recall_config["api-base-url"] + "/v1/user/" + message.email_key,
+                recall_config["api-base-url"] + "/people/" + message.email + "/" + message.email_key,
                 JSON.stringify({"email_key": message.email_key,
                                 "email" : message.email,
                                 "password": message.password}),
-                 "application/json",
-                {});
+                 null,
+                {"Content-Type": "application/json"});
         };
 
         return function(sandbox_){
@@ -104,7 +103,13 @@ core.add(
 
         var send = function(message){
             authenticate();
-            var serialisedMark = JSON.stringify(message.marks);
+	    url = recall_config["api-base-url"] + "/bookmarks/";
+	    if (message.mark["%private"]){
+		url += email + "/private/" + message.mark["~"] + "/";
+	    } else {
+		url += email + "/public/" + message.mark["~"] + "/";
+	    }
+            var asString = JSON.stringify(message.mark);
             sandbox.asynchronous(
                 function(status, content){
                     if (status === 201){
@@ -116,11 +121,12 @@ core.add(
                     }
                 },
                 "post",
-                recall_config["api-base-url"] + "/v1/mark",
-                serialisedMark,
-                "application/json",
+		url,
+                asString,
+		null,
                 {"X-Email": email,
-                 "X-Password": password}
+                 "X-Password": password,
+		 "Content-Type": "application/json"}
             );
         };
 
@@ -135,7 +141,12 @@ core.add(
 
         var marks = function(message){
             authenticate();
-            var url = recall_config["api-base-url"] + "/v1/mark";
+            var url = recall_config["api-base-url"] + "/bookmarks/";
+	    if (email === undefined){
+		url += "public";
+	    } else {
+		url += email + "/all/";
+	    }
             if (message.hasOwnProperty("q")){
                 url += "?q=";
                 url += encodeURIComponent(message.q);
@@ -148,15 +159,15 @@ core.add(
                 "get",
                 url,
                 {"maximum": 50}, // FIXME
-                "application/json",
+		null,
                 {"X-Email": email,
-                 "X-Password": password});
+                 "X-Password": password,
+		 "Content-Type": "application/json"});
         };
 
         return function(sandbox_){
             sandbox = sandbox_;
             sandbox.subscribe("get-marks?", marks);
             sandbox.subscribe("new-mark", send);
-            sandbox.subscribe("new-marks", send);
         };
     }());

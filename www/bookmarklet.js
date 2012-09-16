@@ -74,25 +74,24 @@ core.add(
                 }
                 
                 mark["@"] = email;
-                marks.push(mark);
                 
-                var factsEntered = sandbox.find("#about-facts")[0].value.split(/ ?, */);
-                if (factsEntered.length === 1 && factsEntered[0] === ""){
-                    factsEntered = [];
-                }
-                var facts = {};
-                var factTime = markTime;
-                for (var i=0; i<factsEntered.length; i++){
-                    factTime += 1;
-                    var fact = { "@": email,
-                                 "~": factTime,
-                                 "about": factsEntered[i],
-                                 ":": {"@": email, "~": markTime}};
-                    if (private_){
-                        fact["%private"] = true;
-                    }
-                    marks.push(fact);
-                }
+                // var factsEntered = sandbox.find("#about-facts")[0].value.split(/ ?, */);
+                // if (factsEntered.length === 1 && factsEntered[0] === ""){
+                //     factsEntered = [];
+                // }
+                // var facts = {};
+                // var factTime = markTime;
+                // for (var i=0; i<factsEntered.length; i++){
+                //     factTime += 1;
+                //     var fact = { "@": email,
+                //                  "~": factTime,
+                //                  "about": factsEntered[i],
+                //                  ":": {"@": email, "~": markTime}};
+                //     if (private_){
+                //         fact["%private"] = true;
+                //     }
+                //     marks.push(fact);
+                // }
 
                 var message = {
                     "success": function(){
@@ -103,9 +102,9 @@ core.add(
                         button.textContent = "Failure!";
                         button.classList.remove("disabled");
                     },
-                    "marks": marks
+                    "mark": mark
                 };
-                sandbox.publish("new-marks", message);
+                sandbox.publish("new-mark", message);
             };
 
             var failure = function(){

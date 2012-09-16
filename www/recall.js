@@ -130,9 +130,10 @@ core.add(
                     }
                 },
                 "post",
-                recall_config["api-base-url"] + "/v1/user",
+                recall_config["api-base-url"] + "/people/" + data.email + "/",
                 JSON.stringify(data),
-                "application/json"
+		null,
+		{"Content-Type": "application/json"}
                 );
             return false;
         };
@@ -187,11 +188,13 @@ core.add(
                     for (var i = 0; i < marks.length; i++){
                         sandbox.append("#list-of-marks", markToElement(marks[i]));
                     }
+                    button.classList.remove("disabled");
+                    button.textContent = "Seach Again?";
                 } else {
-                    sandbox.append("#list-of-marks", "No results");
+		    button.classList.remove("disabled");
+		    button.textContent = "No results!";
                 }
-                button.classList.remove("disabled");
-                button.textContent = "Seach Again?";
+
             };
             sandbox.publish("get-marks?",
                             { "q": sandbox.find("#v-search-field")[0].value,

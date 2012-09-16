@@ -90,6 +90,9 @@ def search(queryBuilder):
     response = requests.get(conv.get_es_mark_url() +  "/_search?",
                             data=json.dumps(queryBuilder.build()))
     marks = []
-    for mark in response.json["hits"]["hits"]:
-        marks.append(mark["_source"])
+    try:
+        for mark in response.json["hits"]["hits"]:
+            marks.append(mark["_source"])
+    except KeyError:
+        pass
     return marks
