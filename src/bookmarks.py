@@ -4,6 +4,7 @@ import plugins
 
 app = bottle.Bottle()
 app.install(plugins.ppjson)
+app.install(plugins.auth)
 
 @app.get("/")
 def bookmarks():

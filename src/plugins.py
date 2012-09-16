@@ -1,10 +1,14 @@
 import json
 from UserDict import DictMixin
+import inspect
 
 from bottle import request, response, abort
 from pygments import highlight
 from pygments.lexers.web import JSONLexer
 from pygments.formatters import HtmlFormatter
+import bcrypt
+
+import convenience as conv
 
 def mimetypes(header_contents):
     """Returns a list of allowed mimetypes based on the Accept header"""
@@ -63,3 +67,46 @@ class PretendHandlerDict(object, DictMixin):
     def __delitem__(self, key):
         __setitem__(self, None, None)
 
+class AuthenticationPlugin(object):
+    api = 2
+    kwarg = "user"
+
+    def __init__(self):
+        self.logger = conv.logger("AuthenticationPlugin")
+
+    def user(self):
+        headers = request.headers
+        try:
+            email = headers["X-Email"]
+            password = headers["X-Password"]
+            user = conv.db().users.find_one(
+                {"email": email, "password_hash": {"$exists": True}})
+        except KeyError:
+            return None
+        self.check(user, password)
+        return user
+
+    def check(self, user, password):
+        expected_hash = user["password_hash"]
+        actual_hash = bcrypt.hashpw(password, user["password_hash"])
+        if expected_hash != actual_hash:
+            self.logger.warn("{email} tried wrong password".format(
+                    email=user["email"]))
+            abort(403, "Email or password or both do not match")
+        else:
+            self.logger.debug("{email} authenticated".format(
+                    email=user["email"]))
+
+    def apply(self, callback, context):
+        expected_args = inspect.getargspec(context.callback)[0]
+        if self.kwarg not in expected_args:
+            return callback
+        else:
+            def wrapper(*args, **kwargs):
+                user = self.user()
+                if user is not None:
+                    kwargs[self.kwarg] = user
+                return callback(*args, **kwargs)
+            return wrapper
+
+auth = AuthenticationPlugin()

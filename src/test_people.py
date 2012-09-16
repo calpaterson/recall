@@ -166,10 +166,12 @@ class UserApiTests(unittest.TestCase):
         self.assertEquals(200, response.status_code)
         self.assertEquals(response.json.keys(), ["email"])
 
-    @unittest.expectedFailure
     def test_can_check_authentication(self):
         user = convenience.create_test_user()
-        response = requests.get(self.url + user.email + "/self")
+        user_headers = {"X-Email": user.email, "X-Password": user.password}
+        user_headers.update(self.headers)
+        response = requests.get(
+            self.url + user.email + "/self", headers=user_headers)
         self.assertEquals(200, response.status_code)
 
     def test_non_existent_user_gives_404(self):

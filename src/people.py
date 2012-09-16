@@ -11,6 +11,7 @@ import plugins
 
 app = Bottle()
 app.install(plugins.ppjson)
+app.install(plugins.auth)
 app.error_handler = plugins.PretendHandlerDict()
 
 logger = convenience.logger("people")
@@ -20,7 +21,7 @@ def users():
     abort(503, "Not yet implemented")
 
 @app.get("/<who>/")
-def user(who):
+def user_(who):
     try:
         return whitelist(db().users.find_one({"email": who}), [
                 "email",
@@ -31,8 +32,9 @@ def user(who):
         abort(404, "User not found")
 
 @app.get("/<who>/self")
-def self_(who):
-    abort(503, "Not yet implemented")
+def self_(who, user):
+    if who != user["email"]:
+        response.status = 400
 
 @app.post("/<who>/")
 def request_invite(who):
