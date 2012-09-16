@@ -143,7 +143,7 @@ core.add(
             authenticate();
             var url = recall_config["api-base-url"] + "/bookmarks/";
 	    if (email === undefined){
-		url += "public";
+		url += "public/";
 	    } else {
 		url += email + "/all/";
 	    }
