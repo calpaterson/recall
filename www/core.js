@@ -77,10 +77,10 @@ core = (
                 core.dom.queryWithin(moduleName, selector)[0].appendChild(element);
             },
             deleteContentsOf: function(moduleName, selector){
-		var parent = this.queryWithin(moduleName, selector)[0];
-		while(parent.hasChildNodes()){
-		    parent.removeChild(parent.lastChild);
-		}
+                var parent = this.queryWithin(moduleName, selector)[0];
+                while(parent.hasChildNodes()){
+                    parent.removeChild(parent.lastChild);
+                }
             },
             hiddenWrapHack : function(moduleName, selector){
                 var elements = this.queryWithin(moduleName, selector);

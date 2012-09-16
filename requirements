@@ -1,13 +1,15 @@
 Flask==0.8
 Jinja2==2.6
+Pygments==1.5
 Werkzeug==0.8.3
 argparse==1.2.1
 beautifulsoup4==4.0.2
-distribute==0.6.24
+bottle==0.10.11
+bpython==0.11
+distribute==0.6.28
 py-bcrypt==0.2
 pymongo==2.3
 redis==2.6.2
 requests==0.14.0
 robotexclusionrulesparser==1.6.1
 wsgiref==0.1.2
-bottle==0.10.11

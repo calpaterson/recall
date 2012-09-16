@@ -40,9 +40,9 @@ core.add(
     function(){
         var sandbox;
 
-	var token;
+        var token;
 
-	var verify = function(){
+        var verify = function(){
             var button = sandbox.find("#v-e-submit")[0];
             button.classList.add("disabled");
             button.textContent = "Verifying...";
@@ -62,7 +62,7 @@ core.add(
 
         var show = function(data){
             sandbox.find()[0].hidden = false;
-	    token = data.split("/")[2];
+            token = data.split("/")[2];
             return false;
         };
 
@@ -178,20 +178,20 @@ core.add(
         var hadAuthLastTime = false;
 
         var search = function(event){
-	    var button = sandbox.find("#v-search-button")[0];
-	    button.classList.add("disabled");
-	    button.textContent = "Searching...";
+            var button = sandbox.find("#v-search-button")[0];
+            button.classList.add("disabled");
+            button.textContent = "Searching...";
             var displayMarks = function(marks){
                 sandbox.deleteContentsOf("#list-of-marks");
-		if(marks.length > 1){
+                if(marks.length > 1){
                     for (var i = 0; i < marks.length; i++){
-			sandbox.append("#list-of-marks", markToElement(marks[i]));
+                        sandbox.append("#list-of-marks", markToElement(marks[i]));
                     }
-		} else {
-		    sandbox.append("#list-of-marks", "No results");
-		}
-		button.classList.remove("disabled");
-		button.textContent = "Seach Again?";
+                } else {
+                    sandbox.append("#list-of-marks", "No results");
+                }
+                button.classList.remove("disabled");
+                button.textContent = "Seach Again?";
             };
             sandbox.publish("get-marks?",
                             { "q": sandbox.find("#v-search-field")[0].value,
