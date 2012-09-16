@@ -27,7 +27,8 @@ class PPJSONPlugin(object):
     def apply(self, callback, context):
         def wrapper(*args, **kwargs):
             if request.json is None and request.body.len != 0:
-                abort(400)
+                abort(400, "You must include the Content-Type header" +
+                      " (use application/json)")
             return_value = callback(*args, **kwargs)
             return_value = json.dumps(return_value, indent=4)
             if "text/html" in mimetypes(request.headers.get("Accept")):
@@ -103,9 +104,11 @@ class AuthenticationPlugin(object):
             return callback
         else:
             def wrapper(*args, **kwargs):
+                # import pdb; pdb.set_trace()
                 user = self.user()
-                if user is not None:
-                    kwargs[self.kwarg] = user
+                if user is None:
+                    abort(400, "You must include authenticate")
+                kwargs[self.kwarg] = user
                 return callback(*args, **kwargs)
             return wrapper
 

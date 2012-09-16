@@ -38,6 +38,7 @@ def self_(who, user):
 
 @app.post("/<who>/")
 def request_invite(who):
+    # FIXME: Don't allow the pseudonym "public"
     body = whitelist(request.json, [
             "pseudonym",
             "firstName",

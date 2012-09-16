@@ -120,7 +120,7 @@ def append_stale_marks_to_queue():
 def next_record():
     connection = convenience.redis_connection()
     try:
-        return json.loads(connection.blpop("marks", timeout=1)[1])
+        return json.loads(connection.blpop("bookmarks", timeout=1)[1])
     except TypeError:
         pass
 

@@ -25,11 +25,10 @@ from pymongo import Connection
 import requests
 
 import convenience
-import old_server
 
 settings = convenience.settings
 
-class UserApiTests(unittest.TestCase):
+class PeopleApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         convenience.load_settings()
