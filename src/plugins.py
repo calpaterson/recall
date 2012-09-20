@@ -88,6 +88,8 @@ class AuthenticationPlugin(object):
         return user
 
     def check(self, user, password):
+        if user is None:
+            abort(400, "No such user")
         expected_hash = user["password_hash"]
         actual_hash = bcrypt.hashpw(password, user["password_hash"])
         if expected_hash != actual_hash:
