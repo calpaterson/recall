@@ -364,7 +364,6 @@ core.add(
         var sandbox;
 
         var moveTo = function(show){
-            sandbox.set("last-show", show);
             sandbox.publish("hide-all");
             sandbox.publish("show-" + show, window.location.pathname);
             if (typeof history !== "undefined"){
@@ -401,13 +400,10 @@ core.add(
 
         return function(sandbox_){
             sandbox = sandbox_;
-            var show = sandbox.get("last-show");
             if (window.location.pathname !== "/"){
                 moveTo(window.location.pathname.split("/")[1]);
-            } else if (show === null){
-                moveTo("about");
             } else {
-                moveTo(show);
+                moveTo("about");
             }
 
             sandbox.bind(".recall-show", "click", function(event){
