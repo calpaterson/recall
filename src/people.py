@@ -12,6 +12,7 @@ import plugins
 app = Bottle()
 app.install(plugins.ppjson)
 app.install(plugins.auth)
+app.install(plugins.cors)
 app.error_handler = plugins.PretendHandlerDict()
 
 logger = convenience.logger("people")

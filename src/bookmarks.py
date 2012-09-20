@@ -29,6 +29,7 @@ import search
 app = Bottle()
 app.install(plugins.ppjson)
 app.install(plugins.auth)
+app.install(plugins.cors)
 app.error_handler = plugins.PretendHandlerDict()
 
 def has_problematic_keys(mark):

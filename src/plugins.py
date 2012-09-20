@@ -40,17 +40,17 @@ class PPJSONPlugin(object):
 
 ppjson = PPJSONPlugin()
 
-class HeadersPlugin(object):
+class CORSPlugin(object):
     api = 2
 
     def apply(self, callback, content):
         def wrapper(*args, **kwargs):
             return_value = callback(*args, **kwargs)
-            response.set_header("Server", "Recall")
+            response.set_header("Access-Control-Allow-Origin", "*")
             return return_value
         return wrapper
 
-headers = HeadersPlugin()
+cors = CORSPlugin()
 
 class PretendHandlerDict(object, DictMixin):
     def __handler__(self, error):
