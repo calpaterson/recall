@@ -74,7 +74,10 @@ def load_settings():
                 "RECALL_REDIS_DB": "7",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
-                "RECALL_DEBUG_MODE": "true"
+                "RECALL_DEBUG_MODE": "true",
+                "RECALL_SMTPD_HOST": "localhost",
+                "RECALL_SMTPD_PORT": "7778",
+                "RECALL_MAILFILE": "/tmp/recall_debug_mail"
                 })
         print "Using debug mode settings"
     elif "RECALL_TEST_MODE" in os.environ:
@@ -92,7 +95,10 @@ def load_settings():
                 "RECALL_REDIS_DB": "6",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
-                "RECALL_TEST_MODE": "true"
+                "RECALL_TEST_MODE": "true",
+                "RECALL_SMTPD_HOST": "localhost",
+                "RECALL_SMTPD_PORT": "6667",
+                "RECALL_MAILFILE": "/tmp/recall_test_mail"
                 })
         print "Using test mode settings"
     else:

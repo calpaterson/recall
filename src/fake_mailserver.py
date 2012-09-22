@@ -14,12 +14,11 @@ class FakeMailServer(smtpd.SMTPServer):
         smtpd.SMTPServer.__init__(self, localaddr, remoteaddr)
 
     def process_message(self, peer, mailfrom, rcpttos, data):
-        self.logger.info("Message recieved, from: {from_}, to: {to}".format(
-                from_=mailfrom, to=rcpttos))
         mail_file_path = settings["RECALL_MAILFILE"]
         with open(mail_file_path, "w") as mailfile:
             mailfile.write(data)
-        self.logger.info("Wrote to " + mail_file_path)
+        self.logger.info("Wrote to {path}, from: {from_}, to: {to}".format(
+                from_=mailfrom, to=rcpttos, path=mail_file_path))
 
 def main():
     conv.load_settings()

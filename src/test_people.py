@@ -20,6 +20,7 @@
 import unittest
 import json
 import time
+import re
 
 from pymongo import Connection
 import requests
@@ -64,7 +65,8 @@ class PeopleApiTests(unittest.TestCase):
 
         # FIXME: Use a fake smtpd
         db = convenience.db()
-        # import pdb; pdb.set_trace()
+        with open(settings["RECALL_MAILFILE"], "r") as mailfile:
+            print filter(lambda line: "https://" in line, mailfile)
         email_key = db.users.find_one()["email_key"]
 
         key_url = self.url + "j@bloggs.com/" + email_key
@@ -82,8 +84,10 @@ class PeopleApiTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         requests.post(self.url + "j@bloggs.com/", data=post_data, headers=self.headers)
 
-        db = convenience.db()
-        email_key = db.users.find_one()["email_key"]
+        with open(settings["RECALL_MAILFILE"], "r") as mail_file:
+            contents = mail_file.read()
+            email_key = re.search("([0-9\-a-z]){36}", contents).group()
+        # email_key = db.users.find_one()["email_key"]
 
         key_url = self.url + "j@bloggs.com/" + email_key
         post_data = json.dumps({"email" : "wrong email", "password": "password"})
@@ -93,6 +97,7 @@ class PeopleApiTests(unittest.TestCase):
         self.assertEqual(response_data, {
                 "human_readable": "No such email_key or wrong email"})
 
+        db = convenience.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertNotIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)

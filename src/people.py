@@ -8,6 +8,7 @@ from data import whitelist, blacklist
 from convenience import unixtime, db, settings
 import convenience
 import plugins
+import send_email
 
 app = Bottle()
 app.install(plugins.ppjson)
@@ -40,20 +41,21 @@ def self_(who, user):
 @app.post("/<who>/")
 def request_invite(who):
     # FIXME: Don't allow the pseudonym "public"
-    body = whitelist(request.json, [
+    user = whitelist(request.json, [
             "pseudonym",
             "firstName",
             "surname",
             "email",
             ])
-    if "email" not in body:
+    if "email" not in user:
         return "You must provide an email field", 400
-    body["email_key"] = str(uuid.uuid4())
-    body["registered"] = unixtime()
+    user["email_key"] = str(uuid.uuid4())
+    user["registered"] = unixtime()
     db().users.ensure_index("email", unique=True)
-    db().users.insert(body, safe=True)
+    db().users.insert(user, safe=True)
     response.status = 202
     logger.info("{email} requested an invite".format(email=who))
+    send_email.invite(user["email"], user)
 
 @app.post("/<who>/<email_key>")
 def verify_email(who, email_key):
