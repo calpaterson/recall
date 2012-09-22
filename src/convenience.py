@@ -40,9 +40,15 @@ def db():
 
 
 def logger(name):
+    fmt = "%(levelname)s:%(asctime)s:%(name)s:%(process)d:%(message)s"
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(logging.Formatter(fmt))
     logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(logging.StreamHandler(sys.stdout))
+    if "RECALL_DEBUG_MODE" in settings or "RECALL_TEST_MODE" in settings:
+        logger.setLevel(logging.DEBUG)
+    else:
+        logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
     return logger
 
 
