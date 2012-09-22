@@ -31,7 +31,7 @@ import messages
 import convenience as conv
 
 def enqueue(job, priority=5):
-    sub_queue = "work5"
+    sub_queue = "work" + str(priority)
     return conv.redis_connection().rpush(sub_queue, cPickle.dumps(job, protocol=2))
 
 def dequeue():
