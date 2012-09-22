@@ -38,7 +38,6 @@ def db():
         settings["RECALL_MONGODB_HOST"],
         int(settings["RECALL_MONGODB_PORT"]))[db_name]
 
-
 def logger(name):
     fmt = "%(levelname)s:%(asctime)s:%(name)s:%(process)d:%(message)s"
     handler = logging.StreamHandler(sys.stdout)
@@ -50,7 +49,6 @@ def logger(name):
         logger.setLevel(logging.INFO)
     logger.addHandler(handler)
     return logger
-
 
 def redis_connection():
     return Redis(

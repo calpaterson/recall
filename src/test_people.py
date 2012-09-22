@@ -63,17 +63,17 @@ class PeopleApiTests(unittest.TestCase):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
         requests.post(self.url + "j@bloggs.com/", data=post_data, headers=self.headers)
 
-        # FIXME: Use a fake smtpd
-        db = convenience.db()
-        with open(settings["RECALL_MAILFILE"], "r") as mailfile:
-            print filter(lambda line: "https://" in line, mailfile)
-        email_key = db.users.find_one()["email_key"]
+        time.sleep(0.5)
+        with open(settings["RECALL_MAILFILE"], "r") as mail_file:
+            contents = mail_file.read()
+            email_key =  re.search(r"[a-z0-9\-]{36}", contents).group()
 
         key_url = self.url + "j@bloggs.com/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
         response = requests.post(key_url, data=post_data, headers=self.headers)
         self.assertEqual(201, response.status_code)
 
+        db = convenience.db()
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertIn("password_hash", user_in_db)
         self.assertNotIn("password", user_in_db)

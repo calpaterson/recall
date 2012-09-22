@@ -17,7 +17,7 @@ def text(to, body):
     return message
 
 
-def send(to, from_, body, subject):
+def email(to, from_, body, subject):
     msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = from_
@@ -28,21 +28,3 @@ def send(to, from_, body, subject):
         int(settings["RECALL_SMTPD_PORT"]))
     smtp_server.sendmail(from_, [to], msg.as_string())
     smtp_server.quit()
-
-def invite(to, user):
-    text = """Hello $name,
-
-Follow this link to get your invite to Recall:
-
-    https://recall.calpaterson.com/verify-email/$email_key
-
-Reply to this email if you have any trouble!
-Cal"""
-    template = Template(text)
-    try:
-        name = user["firstName"]
-    except KeyError:
-        name = user["pseudonym"]
-    body = template.substitute(name=name,
-                               email_key=user["email_key"])
-    send(to, "cal@calpaterson.com", body, "Recall Invite")

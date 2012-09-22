@@ -5,10 +5,10 @@ from bottle import Bottle, request, response, abort
 import bcrypt
 
 from data import whitelist, blacklist
-from convenience import unixtime, db, settings
+from convenience import unixtime, db, settings, redis_connection
 import convenience
 import plugins
-import send_email
+import jobs
 
 app = Bottle()
 app.install(plugins.ppjson)
@@ -55,7 +55,7 @@ def request_invite(who):
     db().users.insert(user, safe=True)
     response.status = 202
     logger.info("{email} requested an invite".format(email=who))
-    send_email.invite(user["email"], user)
+    jobs.enqueue(jobs.SendInvite(user), priority=2)
 
 @app.post("/<who>/<email_key>")
 def verify_email(who, email_key):

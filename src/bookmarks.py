@@ -25,6 +25,7 @@ import requests
 import plugins
 import convenience as conv
 import search
+import jobs
 
 app = Bottle()
 app.install(plugins.ppjson)
@@ -55,7 +56,7 @@ def add_public(who, when, user):
     request.json[u"£created"] = conv.unixtime()
     conv.db().bookmarks.insert(request.json)
     del request.json["_id"]
-    conv.redis_connection().lpush("bookmarks", json.dumps(request.json))
+    jobs.enqueue(jobs.IndexRecord(request.json), priority=1)
     response.status = 202
 
 @app.post("/<who>/private/<when>/")

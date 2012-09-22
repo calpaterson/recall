@@ -26,119 +26,21 @@ import requests
 from bs4 import BeautifulSoup
 
 import convenience
+import jobs
 
 settings = convenience.settings
 
-logger = None
-
-user_agent = "Recall (like Googlebot/2.1) - email cal@calpaterson.com for support"
-
-def may_fetch(hyperlink):
-    url_obj = urlparse(hyperlink)
-    robots_url = url_obj.scheme + "://" + url_obj.netloc + "/robots.txt"
-    robots_parser = rerp.RobotExclusionRulesParser()
-    robots_parser.user_agent = user_agent
-    robots_parser.fetch(robots_url)
-    allowed = robots_parser.is_allowed(user_agent, hyperlink)
-    if not allowed:
-        logger.warn("Not allowed to fetch " + hyperlink)
-    return allowed
-
-
-def get_fulltext(mark):
-    headers = {"User-Agent": user_agent}
-    if "hyperlink" in mark and may_fetch(mark["hyperlink"]):
-        response = requests.get(mark["hyperlink"], headers=headers)
-        if response.status_code in xrange(200, 300):
-            mark[u"£fulltext"] = BeautifulSoup(response.content).get_text()
-        logger.info("Requested {hyperlink}, got {status_code}".format(
-                hyperlink=mark["hyperlink"],
-                status_code=response.status_code))
-
-
-def update_last_indexed_time(mark):
-    mark[u"£last_indexed"] = int(time.time() * 1000)
-    db = convenience.db()
-    db.marks.update(
-        {"@": mark["@"], "~": mark["~"]},
-        {"$set": {"£last_indexed": mark[u"£last_indexed"]},
-         "$unset": "£q"})
-
-
-def mark_for_record(record):
-    if ":" not in record:
-        mark = record
-    else:
-        db = convenience.db()
-        mark = db.marks.find_one(
-            {"@": record[":"]["@"], "~": record[":"]["~"]})
-        del mark["_id"]
-    return mark
-
-
-def index(record):
-    mark = mark_for_record(record)
-    update_last_indexed_time(mark)
-
-    db = convenience.db()
-    facts = db.marks.find({":": {"@": mark["@"], "~": mark["~"]}})
-    for fact in facts:
-        mark.setdefault("about", []).append(fact["about"])
-
-    get_fulltext(mark)
-
-    url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
-        hostname = settings["RECALL_ELASTICSEARCH_HOST"],
-        port = int(settings["RECALL_ELASTICSEARCH_PORT"]),
-        index = settings["RECALL_ELASTICSEARCH_INDEX"],
-        type = "mark",
-        id = mark["@"] + str(mark["~"]))
-    requests.post(url, data=json.dumps(mark))
-    logger.info("Indexed: {who}/{when}".format(who=mark["@"], when=mark["~"]))
-
-
-def append_stale_marks_to_queue():
-    one_week_ago = 60 * 60 * 24 * 7 * 1000
-    db = convenience.db()
-
-    stale_roots = list(db.marks.find({
-                "$or": [
-                    {"£last_indexed": {"$exists": False}},
-                    {"£last_indexed": {"$lt": one_week_ago}}],
-                "£q": {"$exists": False},
-                "£created": {"$lt": one_week_ago}}))
-    if stale_roots is not None and stale_roots != []:
-        logger.info("Got {n} stale root records".format(n=len(stale_roots)))
-        connection = convenience.redis_connection()
-        for root_record in stale_roots:
-            db.marks.update({"_id": root_record["_id"]},
-                            {"$set": {"£q": True}})
-            del root_record["_id"]
-            connection.lpush("marks", json.dumps(root_record))
-
-
-def next_record():
-    connection = convenience.redis_connection()
-    try:
-        return json.loads(connection.blpop("bookmarks", timeout=1)[1])
-    except TypeError:
-        pass
-
+logger = convenience.logger("worker")
 
 def main():
     convenience.load_settings()
-    global logger
-    logger = convenience.logger("worker")
     logger.info("Starting with settings: {settings}".format(
             settings=settings))
     while(True):
         try:
-            append_stale_marks_to_queue()
-            record = next_record()
-            if record is not None:
-                index(record)
-        except Exception:
-            logger.exception("Exception while indexing")
+            jobs.dequeue().do(logger)
+        except Exception as e:
+            logger.exception(e)
 
 if __name__ == "__main__":
     main()
