@@ -88,6 +88,22 @@ class BookmarkApiTests(unittest.TestCase):
             self.assertEqual(public_response.status_code, 404)
         conv.with_patience(inner)
 
+    @unittest.skip("Skipping recent bookmarks test")
+    def test_recent_bookmarks(self):
+        user = conv.create_test_user()
+        requests.post(
+            self.url + user.email + "/private/0",
+            data=json.dumps({"~": 0, "@": user.email, "#": "Hello!"}))
+        requests.post(
+            self.url + user.email + "/private/1",
+            data=json.dumps({"~": 1, "@": user.email, "#": "World!"}))
+        def inner():
+            response = requests.get(self.url + user.email + "/private/recent")
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(1, response.json[0]["~"])
+            self.assertEqual(0, response.json[1]["~"])
+        conv.with_patience(inner)
+
     # Can't create bookmark without @ and ~
 
     # Can get own private bookmarks
