@@ -1,6 +1,7 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-. /var/recall/environment/bin/activate
+set -e
+set -x
+
+source /var/recall/environment/bin/activate
 python /usr/share/recall/src/server.py
-
-trap 'deactivate' SIGINT SIGTERM EXIT

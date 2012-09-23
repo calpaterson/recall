@@ -10,11 +10,6 @@ import convenience
 
 settings = convenience.settings
 
-logger = None
-
-def term_handler(unused_signum, unused_frame):
-    logger.info("Shutting down")
-
 if __name__ == "__main__":
     global logger
     convenience.load_settings()
