@@ -113,8 +113,8 @@ core = (
                     request.setRequestHeader(key, headers[key]);
                 }
             }
-	    // This is required for firefox, which sets it's own Accept otherwise
-	    request.setRequestHeader("Accept", "application/json")
+            // This is required for firefox, which sets it's own Accept otherwise
+            request.setRequestHeader("Accept", "application/json");
             request.send(data);
         };
         return core;

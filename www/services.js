@@ -103,12 +103,12 @@ core.add(
 
         var send = function(message){
             authenticate();
-	    url = recall_config["api-base-url"] + "/bookmarks/";
-	    if (message.mark["%private"]){
-		url += email + "/private/" + message.mark["~"] + "/";
-	    } else {
-		url += email + "/public/" + message.mark["~"] + "/";
-	    }
+            url = recall_config["api-base-url"] + "/bookmarks/";
+            if (message.mark["%private"]){
+                url += email + "/private/" + message.mark["~"] + "/";
+            } else {
+                url += email + "/public/" + message.mark["~"] + "/";
+            }
             var asString = JSON.stringify(message.mark);
             sandbox.asynchronous(
                 function(status, content){
@@ -121,12 +121,12 @@ core.add(
                     }
                 },
                 "post",
-		url,
+                url,
                 asString,
-		null,
+                null,
                 {"X-Email": email,
                  "X-Password": password,
-		 "Content-Type": "application/json"}
+                 "Content-Type": "application/json"}
             );
         };
 
@@ -142,11 +142,11 @@ core.add(
         var marks = function(message){
             authenticate();
             var url = recall_config["api-base-url"] + "/bookmarks/";
-	    if (email === undefined){
-		url += "public/";
-	    } else {
-		url += email + "/all/";
-	    }
+            if (email === undefined){
+                url += "public/";
+            } else {
+                url += email + "/all/";
+            }
             if (message.hasOwnProperty("q")){
                 url += "?q=";
                 url += encodeURIComponent(message.q);
@@ -159,10 +159,10 @@ core.add(
                 "get",
                 url,
                 {"maximum": 50}, // FIXME
-		null,
+                null,
                 {"X-Email": email,
                  "X-Password": password,
-		 "Content-Type": "application/json"});
+                 "Content-Type": "application/json"});
         };
 
         return function(sandbox_){
