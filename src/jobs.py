@@ -65,8 +65,8 @@ Cal"""
         if "RECALL_TEST_MODE" not in conv.settings and\
                 "RECALL_DEBUG_MODE" not in conv.settings:
             for number in conv.settings["RECALL_ALERT_PHONE_NUMBERS"].split(", *"):
-                text(number, "{fullname} (email) just signed up for Recall"
-                     .format(fullname=fullname, email=self.user["email"]))
+                text(number, "{fullname} (email) just signed up for Recall".format(
+                        fullname=fullname, email=self.user["email"]))
         logger.info("Sent invite email to " + self.user["email"])
 
 class IndexRecord(object):
