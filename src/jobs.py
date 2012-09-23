@@ -64,7 +64,7 @@ Cal"""
                         "Recall Invite")
         if "RECALL_TEST_MODE" not in conv.settings and\
                 "RECALL_DEBUG_MODE" not in conv.settings:
-            for number in conv.settings["RECALL_ALERT_PHONE_NUMBERS"].split(", *"):
+            for number in conv.settings["RECALL_ALERT_PHONE_NUMBERS"].split(", "):
                 messages.text(
                     number, "{fullname} {email} just signed up for Recall".format(
                         fullname=fullname, email=self.user["email"]))

@@ -37,8 +37,7 @@ def main():
         logger = convenience.logger("worker")
         signal.signal(signal.SIGINT, stop)
         signal.signal(signal.SIGTERM, stop)
-        logger.info("Starting with settings: {settings}".format(
-                settings=settings))
+        logger.info("Starting")
         while(True):
             try:
                 jobs.dequeue().do()

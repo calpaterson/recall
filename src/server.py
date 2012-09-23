@@ -23,8 +23,7 @@ def main():
         logger = convenience.logger("server")
         signal.signal(signal.SIGINT, stop)
         signal.signal(signal.SIGTERM, stop)
-        logger.info("Starting with settings: {settings}".format(
-                settings=settings))
+        logger.info("Starting")
         app = bottle.Bottle()
         app.mount("/people", people.app)
         app.mount("/bookmarks", bookmarks.app)
