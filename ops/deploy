@@ -10,5 +10,5 @@ scp -Bv $PROJECT_ROOT/ops/artefacts/recall_${VERSION}_all.deb ubuntu@middle.calp
 # SSH install and restart the service
 ssh ubuntu@middle.calpaterson.com "sudo dpkg -i recall_${VERSION}_all.deb"
 ssh ubuntu@middle.calpaterson.com "sudo supervisorctl restart recall-server"
-ssh ubuntu@middle.calpaterson.com "supervisorctl restart recall-worker"
+ssh ubuntu@middle.calpaterson.com "sudo supervisorctl restart recall-worker"
 
