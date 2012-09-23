@@ -1,13 +1,6 @@
 #!/bin/sh
 set -e
 
-CONFIG_FILE=/etc/recall/config.js
-
-if [ -f $CONFIG_FILE ]
-then
-    echo "Configuration file found - not removing"
-fi
-
 echo "Removing environment..."
 rm -rf /var/recall/environment/*
 echo "...done"
