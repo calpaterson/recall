@@ -44,7 +44,7 @@ class SendInvite(object):
 
     def do(self):
         logger = conv.logger("SendInvite")
-        text = """Hello $name,
+        template_string = """Hello $name,
 
 Follow this link to get your invite to Recall:
 
@@ -52,7 +52,7 @@ Follow this link to get your invite to Recall:
 
 Reply to this email if you have any trouble!
 Cal"""
-        template = Template(text)
+        template = Template(template_string)
         try:
             name = self.user["firstName"]
             fullname = name + " " + self.user["surname"]
@@ -65,7 +65,7 @@ Cal"""
         if "RECALL_TEST_MODE" not in conv.settings and\
                 "RECALL_DEBUG_MODE" not in conv.settings:
             for number in conv.settings["RECALL_ALERT_PHONE_NUMBERS"].split(", *"):
-                text(number, "{fullname} (email) just signed up for Recall".format(
+                text(number, "{fullname} {email} just signed up for Recall".format(
                         fullname=fullname, email=self.user["email"]))
         logger.info("Sent invite email to " + self.user["email"])
 
