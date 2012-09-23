@@ -13,9 +13,6 @@ def text(to, body):
     client = TwilioRestClient(sid, auth_token)
     message = client.sms.messages.create(
         to=to, from_=number, body=body)
-    print message
-    return message
-
 
 def email_(to, from_, body, subject):
     msg = MIMEText(body)
