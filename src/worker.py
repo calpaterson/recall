@@ -22,12 +22,18 @@ import jobs
 
 settings = convenience.settings
 
-logger = convenience.logger("worker")
+logger = None
+
+def term_handler(unused_signum, unused_frame):
+    logger.info("Shutting down")
 
 def main():
+    global logger
     convenience.load_settings()
+    logger = convenience.logger("worker")
     logger.info("Starting with settings: {settings}".format(
             settings=settings))
+    signal.signal(signal.SIGTERM, term_handler)
     while(True):
         try:
             jobs.dequeue().do()
