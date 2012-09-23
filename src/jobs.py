@@ -42,7 +42,8 @@ class SendInvite(object):
     def __init__(self, user):
         self.user = user
 
-    def do(self, logger):
+    def do(self):
+        logger = conv.logger("SendInvite")
         text = """Hello $name,
 
 Follow this link to get your invite to Recall:
@@ -54,12 +55,19 @@ Cal"""
         template = Template(text)
         try:
             name = self.user["firstName"]
+            fullname = name + " " + self.user["surname"]
         except KeyError:
             name = self.user["pseudonym"]
         body = template.substitute(
             name=name, email_key=self.user["email_key"])
-        messages.email(self.user["email"], "cal@calpaterson.com", body,
-                       "Recall Invite")
+        messages.email_(self.user["email"], "cal@calpaterson.com", body,
+                        "Recall Invite")
+        if "RECALL_TEST_MODE" not in conv.settings and\
+                "RECALL_DEBUG_MODE" not in conv.settings:
+            for number in conv.settings["RECALL_ALERT_PHONE_NUMBERS"].split(", *"):
+                text(number, "{fullname} (email) just signed up for Recall"
+                     .format(fullname=fullname, email=self.user["email"]))
+        logger.info("Sent invite email to " + self.user["email"])
 
 class IndexRecord(object):
     user_agent = "Recall (like Googlebot/2.1) - email cal@calpaterson.com for support"
@@ -75,7 +83,7 @@ class IndexRecord(object):
         robots_parser.fetch(robots_url)
         allowed = robots_parser.is_allowed(self.user_agent, hyperlink)
         if not allowed:
-            logger.warn("Not allowed to fetch " + hyperlink)
+            self.logger.warn("Not allowed to fetch " + hyperlink)
         return allowed
 
     def get_fulltext(self, mark):
@@ -84,9 +92,10 @@ class IndexRecord(object):
             response = requests.get(mark["hyperlink"], headers=headers)
             if response.status_code in xrange(200, 300):
                 mark[u"£fulltext"] = BeautifulSoup(response.content).get_text()
-            logger.info("Requested {hyperlink}, got {status_code}".format(
-                    hyperlink=mark["hyperlink"],
-                    status_code=response.status_code))
+            else:
+                self.logger.warn("Requested {hyperlink}, but got {status_code}".format(
+                        hyperlink=mark["hyperlink"],
+                        status_code=response.status_code))
 
 
     def update_last_indexed_time(self, mark):
@@ -107,7 +116,8 @@ class IndexRecord(object):
             del mark["_id"]
         return mark
 
-    def do(self, logger):
+    def do(self):
+        self.logger = conv.logger("IndexRecord")
         mark = self.mark_for_record(self.record)
         self.update_last_indexed_time(mark)
 
@@ -120,4 +130,5 @@ class IndexRecord(object):
             type = "mark",
             id = mark["@"] + str(mark["~"]))
         requests.post(url, data=json.dumps(mark))
-        logger.info("Indexed: {who}/{when}".format(who=mark["@"], when=mark["~"]))
+        self.logger.info("Indexed {who}/{when}".format(
+                who=mark["@"], when=mark["~"]))

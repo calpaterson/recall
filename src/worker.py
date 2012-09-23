@@ -17,14 +17,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
-from urlparse import urlparse
-import robotexclusionrulesparser as rerp
-import time
-
-import requests
-from bs4 import BeautifulSoup
-
 import convenience
 import jobs
 
@@ -38,7 +30,7 @@ def main():
             settings=settings))
     while(True):
         try:
-            jobs.dequeue().do(logger)
+            jobs.dequeue().do()
         except Exception as e:
             logger.exception(e)
 

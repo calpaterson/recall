@@ -17,7 +17,7 @@ def text(to, body):
     return message
 
 
-def email(to, from_, body, subject):
+def email_(to, from_, body, subject):
     msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = from_

@@ -1,12 +1,10 @@
 import uuid
-import json
 
 from bottle import Bottle, request, response, abort
 import bcrypt
 
 from data import whitelist, blacklist
-from convenience import unixtime, db, settings, redis_connection
-import convenience
+import convenience as c
 import plugins
 import jobs
 
@@ -16,7 +14,7 @@ app.install(plugins.auth)
 app.install(plugins.cors)
 app.error_handler = plugins.PretendHandlerDict()
 
-logger = convenience.logger("people")
+logger = c.logger("people")
 
 @app.get("/")
 def users():
@@ -25,7 +23,7 @@ def users():
 @app.get("/<who>/")
 def user_(who):
     try:
-        return whitelist(db().users.find_one({"email": who}), [
+        return whitelist(c.db().users.find_one({"email": who}), [
                 "email",
                 "firstName",
                 ])
@@ -50,9 +48,9 @@ def request_invite(who):
     if "email" not in user:
         return "You must provide an email field", 400
     user["email_key"] = str(uuid.uuid4())
-    user["registered"] = unixtime()
-    db().users.ensure_index("email", unique=True)
-    db().users.insert(user, safe=True)
+    user["registered"] = c.unixtime()
+    c.db().users.ensure_index("email", unique=True)
+    c.db().users.insert(user, safe=True)
     response.status = 202
     logger.info("{email} requested an invite".format(email=who))
     jobs.enqueue(jobs.SendInvite(user), priority=2)
@@ -63,7 +61,7 @@ def verify_email(who, email_key):
     # Information leaks between wrong email and email already existing
     # if who != request.json["email"]:
     #     abort(400, "You can only verify your own email")
-    if "RECALL_TEST_MODE" in settings or "RECALL_DEBUG_MODE" in settings:
+    if "RECALL_TEST_MODE" in c.settings or "RECALL_DEBUG_MODE" in c.settings:
         salt = bcrypt.gensalt(1)
     else:
         salt = bcrypt.gensalt()
@@ -72,14 +70,14 @@ def verify_email(who, email_key):
     spec = {"email_key": email_key, "email": request.json["email"],
             "verified": {"$exists": False}}
     update = {"$set": {"password_hash": password_hash,
-                       "verified": unixtime()}}
-    success = db().users.update(spec, update, safe=True)["updatedExisting"]
+                       "verified": c.unixtime()}}
+    success = c.db().users.update(spec, update, safe=True)["updatedExisting"]
     if not success:
-        if db().users.find_one({"email_key": email_key, "email": request.json["email"]}):
+        if c.db().users.find_one({"email_key": email_key, "email": request.json["email"]}):
             logger.warn("{email} tried to verify a second time".format(email=who))
             abort(403, "Already verified")
         else:
-            user = db().users.find_one({"email": who})
+            user = c.db().users.find_one({"email": who})
             if user is not None:
                 right_key = user["email_key"]
                 logger.warn("{email} tried to verify with {wrong_key} but should use {right_key}".format(
@@ -90,6 +88,6 @@ def verify_email(who, email_key):
                             "never requested an invite.".format(
                         email=who, email_key=email_key))
                 abort(404, "No such email_key or wrong email")
-    user = db().users.find_one({"email_key": email_key})
+    user = c.db().users.find_one({"email_key": email_key})
     response.status = 201
     return blacklist(user, ["_id", "email_key", "password_hash"])

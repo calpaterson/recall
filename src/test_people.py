@@ -31,12 +31,12 @@ settings = convenience.settings
 
 class PeopleApiTests(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         convenience.load_settings()
-        self.url = "http://{host}:{port}/people/".format(
+        cls.url = "http://{host}:{port}/people/".format(
             host=settings["RECALL_API_HOST"],
             port=settings["RECALL_API_PORT"])
-        self.headers = {"content-type": "application/json"}
+        cls.headers = {"content-type": "application/json"}
 
     def tearDown(self):
         convenience.wipe_mongodb()

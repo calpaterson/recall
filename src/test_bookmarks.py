@@ -30,9 +30,9 @@ settings = conv.settings
 
 class BookmarkApiTests(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
+    def setUpClass(cls):
         conv.load_settings()
-        self.url = "http://{host}:{port}/bookmarks/".format(
+        cls.url = "http://{host}:{port}/bookmarks/".format(
             host=settings["RECALL_API_HOST"],
             port=settings["RECALL_API_PORT"])
 

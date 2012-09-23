@@ -24,7 +24,7 @@ def html_pretty_print(json_string):
 class PPJSONPlugin(object):
     api = 2
 
-    def apply(self, callback, context):
+    def apply(self, callback, unused_context):
         def wrapper(*args, **kwargs):
             if request.json is None and request.body.len != 0:
                 abort(400, "You must include the Content-Type header" +
@@ -43,7 +43,7 @@ ppjson = PPJSONPlugin()
 class CORSPlugin(object):
     api = 2
 
-    def apply(self, callback, content):
+    def apply(self, callback, unused_content):
         def wrapper(*args, **kwargs):
             return_value = callback(*args, **kwargs)
             response.set_header("Access-Control-Allow-Origin", "*")
@@ -53,20 +53,23 @@ class CORSPlugin(object):
 cors = CORSPlugin()
 
 class PretendHandlerDict(object, DictMixin):
-    def __handler__(self, error):
+    class FakeDictException(Exception):
+        pass
+
+    def _handler(self, error):
         return json.dumps({"human_readable": error.output})
 
     def keys(self):
         return xrange(400, 600)
 
-    def __getitem__(self, key):
-        return self.__handler__
+    def __getitem__(self, unused_key):
+        return self._handler
 
-    def __setitem__(self, key, value):
-        raise NotImplementedError("PretendHandlerDict is not a real dictionary")
+    def __setitem__(self, unused_key, unused_value):
+        raise self.FakeDictException("PretendHandlerDict is not a real dictionary")
 
-    def __delitem__(self, key):
-        __setitem__(self, None, None)
+    def __delitem__(self, unused_key):
+        self.__setitem__(None, None)
 
 class AuthenticationPlugin(object):
     api = 2

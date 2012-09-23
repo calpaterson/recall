@@ -22,9 +22,10 @@ import requests
 
 import convenience as conv
 
+class IncoherentSearchQueryException(Exception):
+    pass
+
 class SearchQueryBuilder(object):
-    class IncoherentSearchQueryException(Exception):
-        pass
 
     def __init__(self):
         self.of_size(100)

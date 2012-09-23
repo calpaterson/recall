@@ -17,10 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
-
 from bottle import abort, request, Bottle, response
-import requests
 
 import plugins
 import convenience as conv
@@ -51,6 +48,10 @@ def has_problematic_keys(mark):
 def add_public(who, when, user):
     if "~" not in request.json or "@" not in request.json:
         abort(400, "You must include @ and ~ with all bookmarks")
+    if request.json["@"] != who or who != user["email"]:
+        abort(400, "You may only add bookmarks as yourself")
+    if request.json["~"] != int(when):
+        abort(400, "You must use the same time in the bookmark as you post to")
     if has_problematic_keys(request.json):
         abort(400, "Bookmarks must not have keys prefixed with $ or £")
     request.json[u"£created"] = conv.unixtime()
@@ -77,6 +78,8 @@ def public_bookmarks():
 
 @app.get("/<who>/all/")
 def user_all_bookmarks(who, user):
+    if who != user["email"]:
+        abort(400, "You may only look at your own bookmarks")
     query = search.SearchQueryBuilder()
     if "q" in request.params:
         query.with_keywords(request.params["q"])
@@ -89,21 +92,21 @@ def user_all_bookmarks(who, user):
 #### NOT IMPLEMENTED:
 
 @app.get("/<who>/public/")
-def user_public_bookmarks(who):
+def user_public_bookmarks(unused_who):
     abort(501)
 
 @app.get("/<who>/all/recent/")
-def recent(who, user):
+def recent(unused_who, unused_user):
     abort(501)
 
 @app.get("/public/url/<url>/")
-def url(url):
+def url(unused_url):
     abort(501)
 
 @app.route("/<who>/", method="PATCH")
-def import_(who):
+def import_(unused_who):
     abort(501)
 
 @app.post("/<who>/<when>/edits/<who_edited>/<time_editted/")
-def update(who, when, who_edited, time_editted):
+def update(unused_who, unused_when, unused_who_edited, unused_time_editted):
     abort(501)

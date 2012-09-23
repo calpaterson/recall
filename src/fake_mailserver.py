@@ -13,7 +13,7 @@ class FakeMailServer(smtpd.SMTPServer):
         self.logger.info("Starting on port " + str(localaddr[1]))
         smtpd.SMTPServer.__init__(self, localaddr, remoteaddr)
 
-    def process_message(self, peer, mailfrom, rcpttos, data):
+    def process_message(self, unused_peer, mailfrom, rcpttos, data):
         mail_file_path = settings["RECALL_MAILFILE"]
         with open(mail_file_path, "w") as mailfile:
             mailfile.write(data)
@@ -22,8 +22,7 @@ class FakeMailServer(smtpd.SMTPServer):
 
 def main():
     conv.load_settings()
-    smtpserver = FakeMailServer(
-        ("localhost", int(settings["RECALL_SMTPD_PORT"])), None)
+    FakeMailServer(("localhost", int(settings["RECALL_SMTPD_PORT"])), None)
     asyncore.loop()
 
 if __name__ == "__main__":
