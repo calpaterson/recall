@@ -10,10 +10,16 @@ import convenience
 
 settings = convenience.settings
 
-if __name__ == "__main__":
+def shutdown():
+    logger.info("Shutting down")
+    exit(0)
+
+def main()
     try:
+        global logger
         convenience.load_settings()
         logger = convenience.logger("server")
+        signal.signal(signal.SIGINT(shutdown))
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         app = bottle.Bottle()
@@ -22,4 +28,7 @@ if __name__ == "__main__":
         http_server = make_server("", int(settings["RECALL_API_PORT"]), app)
         http_server.serve_forever()
     except KeyboardInterrupt:
-        logger.info("Shutting down")
+        shutdown()
+
+if __name__ == "__main__":
+    main()

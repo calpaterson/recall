@@ -17,15 +17,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import signal
+
 import convenience
 import jobs
 
 settings = convenience.settings
 
+def shutdown():
+    logger.info("Shutting down")
+    exit(0)
+
 def main():
     try:
         convenience.load_settings()
         logger = convenience.logger("worker")
+        signal.signal(signal.SIGINT(shutdown))
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         while(True):
@@ -34,7 +41,7 @@ def main():
             except Exception as e:
                 logger.exception(e)
     except KeyboardInterrupt:
-        logger.info("Shutting down")
+        shutdown()
 
 if __name__ == "__main__":
     main()
