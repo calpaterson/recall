@@ -24,7 +24,7 @@ import jobs
 
 settings = convenience.settings
 
-def shutdown():
+def shutdown(unused_signal, unused_frame):
     logger.info("Shutting down")
     exit(0)
 
