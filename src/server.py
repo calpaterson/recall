@@ -14,12 +14,12 @@ def shutdown():
     logger.info("Shutting down")
     exit(0)
 
-def main()
+def main():
     try:
         global logger
         convenience.load_settings()
         logger = convenience.logger("server")
-        signal.signal(signal.SIGINT(shutdown))
+        signal.signal(signal.SIGINT, shutdown)
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         app = bottle.Bottle()

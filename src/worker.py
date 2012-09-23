@@ -32,7 +32,7 @@ def main():
     try:
         convenience.load_settings()
         logger = convenience.logger("worker")
-        signal.signal(signal.SIGINT(shutdown))
+        signal.signal(signal.SIGINT, shutdown)
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         while(True):
