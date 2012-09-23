@@ -7,16 +7,22 @@ import bottle
 import people
 import bookmarks
 import convenience
-import supervision
 
 settings = convenience.settings
+
+logger = None
+
+def stop(unused_signal, unused_frame):
+    logger.info("Stopping")
+    exit(0)
 
 def main():
     try:
         global logger
         convenience.load_settings()
         logger = convenience.logger("server")
-        supervision.as_subprocess(logger)
+        signal.signal(signal.SIGINT, stop)
+        signal.signal(signal.SIGTERM, stop)
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         app = bottle.Bottle()
@@ -25,7 +31,7 @@ def main():
         http_server = make_server("", int(settings["RECALL_API_PORT"]), app)
         http_server.serve_forever()
     except KeyboardInterrupt:
-        shutdown()
+        stop(None, None)
 
 if __name__ == "__main__":
     main()
