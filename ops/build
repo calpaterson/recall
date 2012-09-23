@@ -63,10 +63,7 @@ insert_python_bundle () {
     fi
 }
 
-move_config_file () {
-    mv $BUILD_DIR/usr/share/recall/www/config.js $BUILD_DIR/etc/recall/config.js
-}
-    
+   
 clean_out_temporary_files () {
     find $OPS_DIR/debian/ -name '*~' -exec rm '{}' ';'
 }
@@ -106,7 +103,6 @@ set_version
 insert_web_resources
 insert_python_resources
 insert_python_bundle
-move_config_file
 insert_documentation
 clean_out_temporary_files
 remove_gitignores
