@@ -30,6 +30,7 @@ def shutdown(unused_signal, unused_frame):
 
 def main():
     try:
+        global logger
         convenience.load_settings()
         logger = convenience.logger("worker")
         signal.signal(signal.SIGINT, shutdown)
