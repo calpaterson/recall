@@ -6,4 +6,4 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 JSHINTRC=`realpath $PROJECT_ROOT/ops/jshintrc`
 
 jshint $PROJECT_ROOT/www/*js $PROJECT_ROOT/www/bookmarklet-trampoline --config $JSHINTRC
-pychecker -Q --only --no-classattr $PROJECT_ROOT/src/*py
+pychecker --limit=100 -Q --only --no-classattr $PROJECT_ROOT/src/*py
