@@ -17,23 +17,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import signal
-
 import convenience
 import jobs
+import supervision
 
 settings = convenience.settings
-
-def shutdown(unused_signal, unused_frame):
-    logger.info("Shutting down")
-    exit(0)
 
 def main():
     try:
         global logger
         convenience.load_settings()
         logger = convenience.logger("worker")
-        signal.signal(signal.SIGINT, shutdown)
+        supervision.as_subprocess(logger)
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         while(True):

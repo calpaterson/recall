@@ -7,19 +7,16 @@ import bottle
 import people
 import bookmarks
 import convenience
+import supervision
 
 settings = convenience.settings
-
-def shutdown(unused_signal, unused_frame):
-    logger.info("Shutting down")
-    exit(0)
 
 def main():
     try:
         global logger
         convenience.load_settings()
         logger = convenience.logger("server")
-        signal.signal(signal.SIGINT, shutdown)
+        supervision.as_subprocess(logger)
         logger.info("Starting with settings: {settings}".format(
                 settings=settings))
         app = bottle.Bottle()
