@@ -39,7 +39,7 @@ def db():
         int(settings["RECALL_MONGODB_PORT"]))[db_name]
 
 def logger(name):
-    fmt = "%(levelname)s:%(asctime)s:%(name)s:%(process)d:%(message)s"
+    fmt = "%(levelname)s:%(name)s:%(asctime)s:%(process)d:%(message)s"
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter(fmt))
     logger = logging.getLogger(name)
