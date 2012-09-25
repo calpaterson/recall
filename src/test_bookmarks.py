@@ -20,6 +20,7 @@
 import unittest
 import json
 import time
+import os.path
 
 from pymongo import Connection
 import requests
@@ -87,6 +88,42 @@ class BookmarkApiTests(unittest.TestCase):
             public_response = requests.get(self.url + "public/?q=hello")
             self.assertEqual(public_response.status_code, 404)
         conv.with_patience(inner)
+
+    def _test_import_from_filepath(self, path):
+        def inner():
+            all_response = requests.get(
+                self.url + user.email + "/all/?q=hoopla",
+                headers=user.headers())
+            self.assertEqual(all_response.status_code, 200)
+        with open(path, "r") as bookmark_file:
+            contents = bookmark_file.read()
+            user = conv.create_test_user()
+            headers = user.headers()
+            headers.update({"content-type": "text/html"})
+            import_response = requests.patch(
+                self.url + user.email + "/",
+                data=contents,
+                headers=headers)
+        self.assertEqual(import_response.status_code, 202)
+        conv.with_patience(inner)
+
+    def test_import_from_firefox(self):
+        bookmark_file_path = os.path.abspath(
+            os.path.dirname(__file__) +
+            "/../ops/data/firefox-bookmarks.html")
+        self._test_import_from_filepath(bookmark_file_path)
+
+    def test_import_from_chrome(self):
+        bookmark_file_path = os.path.abspath(
+            os.path.dirname(__file__) +
+            "/../ops/data/chrome-bookmarks.html")
+        self._test_import_from_filepath(bookmark_file_path)
+
+    def test_import_from_pinboard(self):
+        bookmark_file_path = os.path.abspath(
+            os.path.dirname(__file__) +
+            "/../ops/data/pinboard-bookmarks.html")
+        self._test_import_from_filepath(bookmark_file_path)
 
     @unittest.skip("Skipping recent bookmarks test")
     def test_recent_bookmarks(self):

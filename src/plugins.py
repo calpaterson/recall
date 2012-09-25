@@ -26,7 +26,7 @@ class PPJSONPlugin(object):
 
     def apply(self, callback, unused_context):
         def wrapper(*args, **kwargs):
-            if request.json is None and request.body.len != 0:
+            if "Content-Type" not in request.headers:
                 abort(400, "You must include the Content-Type header" +
                       " (use application/json)")
             return_value = callback(*args, **kwargs)

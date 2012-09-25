@@ -24,6 +24,10 @@ import convenience as conv
 import search
 import jobs
 
+from bs4 import BeautifulSoup
+
+logger = conv.logger("bookmarks")
+
 app = Bottle()
 app.install(plugins.ppjson)
 app.install(plugins.auth)
@@ -89,6 +93,37 @@ def user_all_bookmarks(who, user):
         response.status = 404
     return results
 
+@app.route("/<who>/", method="PATCH")
+def import_(who, user):
+    soup = BeautifulSoup(request.body)
+    if soup.contents[0] != "NETSCAPE-Bookmark-file-1":
+        abort(400, "You must send a bookmark file with the doctype " +
+              " 'NETSCAPE-Bookmarks-file-1'")
+    anchors = soup.find_all("a")
+    bookmarks = []
+    add_dates = set()
+    for anchor in anchors:
+        bookmark = {
+            "~": int(anchor.attrs.get("add_date", conv.unixtime()))
+            }
+        while bookmark["~"] in add_dates:
+            bookmark["~"] += 1
+        add_dates.add(bookmark["~"])
+        bookmark["hyperlink"] = anchor.attrs["href"]
+        if bookmark["hyperlink"].startswith("place"):
+            continue
+        bookmark["title"] = anchor.string
+        bookmark["@"] = user["email"]
+        bookmark["%private"] = True
+        bookmark[u"£created"] = conv.unixtime()
+        bookmarks.append(bookmark)
+    for each in bookmarks:
+        conv.db().eachs.insert(each)
+        del each["_id"]
+        jobs.enqueue(jobs.IndexRecord(each), priority=1)
+    response.status = 202
+
+
 #### NOT IMPLEMENTED:
 
 @app.get("/<who>/public/")
@@ -101,10 +136,6 @@ def recent(unused_who, unused_user):
 
 @app.get("/public/url/<url>/")
 def url(unused_url):
-    abort(501)
-
-@app.route("/<who>/", method="PATCH")
-def import_(unused_who):
     abort(501)
 
 @app.post("/<who>/<when>/edits/<who_edited>/<time_editted/")
