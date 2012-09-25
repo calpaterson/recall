@@ -38,17 +38,25 @@ def db():
         settings["RECALL_MONGODB_HOST"],
         int(settings["RECALL_MONGODB_PORT"]))[db_name]
 
+_loggers = {}
+
 def logger(name):
-    fmt = "%(levelname)s:%(name)s:%(asctime)s:%(process)d:%(message)s"
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(fmt))
-    logger = logging.getLogger(name)
-    if "RECALL_DEBUG_MODE" in settings or "RECALL_TEST_MODE" in settings:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
-    logger.addHandler(handler)
-    return logger
+    """Return the logger by that name"""
+    # If there is is not already a logger by that name, it is created.
+    # Multiple loggers existing under the same name cause messages to be
+    # printed multiple times
+    if name not in _loggers:
+        fmt = "%(levelname)s:%(name)s:%(asctime)s:%(process)d:%(message)s"
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter(fmt))
+        logger = logging.getLogger(name)
+        if "RECALL_DEBUG_MODE" in settings or "RECALL_TEST_MODE" in settings:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+        logger.addHandler(handler)
+        _loggers[name] = logger
+    return _loggers[name]
 
 def redis_connection():
     return Redis(
