@@ -120,26 +120,11 @@ def new_url():
     return "http://" + settings["RECALL_API_HOST"] + ":" +\
         settings["RECALL_API_PORT"] + "/"
 
-def get_es_base_url():
-    return "http://" + settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
-        settings["RECALL_ELASTICSEARCH_PORT"]
-
-def get_es_mark_url():
-    return "{es_base_url}/{index}/mark".format(
-        es_base_url=get_es_base_url(),
-        index=settings["RECALL_ELASTICSEARCH_INDEX"])
-
 def wipe_mongodb():
     for collection_name in db().collection_names():
         if collection_name == u"system.indexes":
             continue
         db().drop_collection(collection_name)
-
-def wipe_elastic_search():
-    url = "{search_url}/{index}".format(
-        search_url = get_es_base_url(),
-        index = settings["RECALL_ELASTICSEARCH_INDEX"])
-    requests.delete(url)
 
 def wipe_redis():
     pass

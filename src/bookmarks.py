@@ -123,15 +123,16 @@ def import_(who, user):
         jobs.enqueue(jobs.IndexRecord(each), priority=1)
     response.status = 202
 
+@app.get("/<who>/all/recent/")
+def recent(who, user):
+    if who != user["email"]:
+        abort(400, "You may only look at your own bookmarks")
+    return search.search(search.SearchQueryBuilder().sort_by_when().as_user(user))
 
 #### NOT IMPLEMENTED:
 
 @app.get("/<who>/public/")
 def user_public_bookmarks(unused_who):
-    abort(501)
-
-@app.get("/<who>/all/recent/")
-def recent(unused_who, unused_user):
     abort(501)
 
 @app.get("/public/url/<url>/")

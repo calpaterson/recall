@@ -16,7 +16,6 @@ def main():
                 number=number,
                 who=record["@"],
                 when=record["~"]))
-        logger.debug(type(record["~"]))
         jobs.enqueue(jobs.IndexRecord(record))
         count += 1
     logger.info("Done")

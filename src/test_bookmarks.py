@@ -26,6 +26,7 @@ from pymongo import Connection
 import requests
 
 import convenience as conv
+import search
 
 settings = conv.settings
 
@@ -37,9 +38,12 @@ class BookmarkApiTests(unittest.TestCase):
             host=settings["RECALL_API_HOST"],
             port=settings["RECALL_API_PORT"])
 
+    # def setUp(self):
+    #     search.set_mapping()
+
     def tearDown(self):
         conv.wipe_mongodb()
-        conv.wipe_elastic_search()
+        search.clear()
 
     def _create_test_user(self):
         test_user = conv.create_test_user()
@@ -92,7 +96,7 @@ class BookmarkApiTests(unittest.TestCase):
     def _test_import_from_filepath(self, path):
         def inner():
             all_response = requests.get(
-                self.url + user.email + "/all/?q=hoopla",
+                self.url + user.email + "/all/",
                 headers=user.headers())
             self.assertEqual(all_response.status_code, 200)
         with open(path, "r") as bookmark_file:
@@ -125,18 +129,24 @@ class BookmarkApiTests(unittest.TestCase):
             "/../ops/data/pinboard-bookmarks.html")
         self._test_import_from_filepath(bookmark_file_path)
 
-    @unittest.skip("Skipping recent bookmarks test")
     def test_recent_bookmarks(self):
         user = conv.create_test_user()
+        headers = user.headers()
+        headers.update({"content-type": "application/json"})
         requests.post(
-            self.url + user.email + "/private/0",
-            data=json.dumps({"~": 0, "@": user.email, "#": "Hello!"}))
+            self.url + user.email + "/private/0/",
+            data=json.dumps({"~": 0, "@": user.email, "#": "Hello!"}),
+            headers=headers)
         requests.post(
-            self.url + user.email + "/private/1",
-            data=json.dumps({"~": 1, "@": user.email, "#": "World!"}))
+            self.url + user.email + "/private/1/",
+            data=json.dumps({"~": 1, "@": user.email, "#": "World!"}),
+            headers=headers)
         def inner():
-            response = requests.get(self.url + user.email + "/private/recent")
+            response = requests.get(
+                self.url + user.email + "/all/recent/",
+                headers=headers)
             self.assertEqual(200, response.status_code)
+            self.assertTrue(len(response.json) == 2)
             self.assertEqual(1, response.json[0]["~"])
             self.assertEqual(0, response.json[1]["~"])
         conv.with_patience(inner)

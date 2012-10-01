@@ -30,6 +30,8 @@ class PPJSONPlugin(object):
                 abort(400, "You must include the Content-Type header" +
                       " (use application/json)")
             return_value = callback(*args, **kwargs)
+            if return_value == []:
+                response.status = 404
             return_value = json.dumps(return_value, indent=4)
             if "text/html" in mimetypes(request.headers.get("Accept")):
                 return_value = html_pretty_print(return_value)

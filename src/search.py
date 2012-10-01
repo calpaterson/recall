@@ -17,10 +17,40 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+from pprint import pformat
 
 import requests
 
 import convenience as conv
+
+def get_es_base_url():
+    return "http://" + conv.settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
+        conv.settings["RECALL_ELASTICSEARCH_PORT"]
+
+def get_es_mark_url():
+    return "{es_base_url}/{index}/mark".format(
+        es_base_url=get_es_base_url(),
+        index=conv.settings["RECALL_ELASTICSEARCH_INDEX"])
+
+def set_mapping():
+    response = requests.put(get_es_mark_url() + "/_mapping",
+                            data=json.dumps(mapping))
+
+mapping = {
+    "mark": {
+        "properties": {
+            "~": {
+                "type": "long",
+                "store": "yes",
+                "index": "yes"},
+            "@": {
+                "index": "not_analyzed"}}}}
+
+def clear():
+    url = "{search_url}/{index}".format(
+        search_url = get_es_base_url(),
+        index = conv.settings["RECALL_ELASTICSEARCH_INDEX"])
+    requests.delete(url)
 
 class IncoherentSearchQueryException(Exception):
     pass
@@ -28,20 +58,15 @@ class IncoherentSearchQueryException(Exception):
 class SearchQueryBuilder(object):
 
     def __init__(self):
-        self.of_size(100)
+        self.of_size(10)
         self.as_user_set = False
         self.filters = []
-        self.query_string = {"text": {"_all": ""}}
+        self.query_string = None
+        self.sort = None
 
     def with_keywords(self, string):
         self.query_string = {"text": {"_all": string}}
         return self
-
-    # def respecting_privacy(self):
-    #     self.filters = [
-    #             {"not": {"term": {"%private": True}}}
-    #             ]
-    #     return self
 
     def of_size(self, size):
         self.size = size
@@ -76,24 +101,40 @@ class SearchQueryBuilder(object):
         self.filters.append({"not": {"term": {"%private": True}}})
         return self
 
+    def sort_by_when(self):
+        self.sort = [{"~": {"order": "desc"}}]
+        return self
+
     def build(self):
-        return {
+        query_and_filters = {
+            "filter": {"and": self.filters,}
+            }
+        if self.query_string is None:
+            query_and_filters.update({"query": {"match_all": {}}})
+        else:
+            query_and_filters.update({"query": self.query_string})
+        query = {
             "size": self.size,
             "query":{
-                "filtered":{
-                    "query": self.query_string,
-                    "filter": {"and": self.filters,}
-                    }
+                "filtered": query_and_filters
                 }
             }
+        if self.sort is not None:
+            query["sort"] = self.sort
+        return query
+
+    def __str__(self):
+        return pformat(self.build())
 
 def search(queryBuilder):
-    response = requests.get(conv.get_es_mark_url() +  "/_search?",
+    response = requests.get(get_es_mark_url() +  "/_search?",
                             data=json.dumps(queryBuilder.build()))
     marks = []
     try:
         for mark in response.json["hits"]["hits"]:
             marks.append(mark["_source"])
     except KeyError:
-        pass
+        conv.logger("search").exception("Elasticsearch error: " + str(response.json))
     return marks
+
+
