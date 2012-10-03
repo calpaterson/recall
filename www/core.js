@@ -67,12 +67,14 @@ core = (
                 }
             },
             bind: function(moduleName, selector, eventName, handler){
-                // FIXME Should take moduleName
                 var elements = this.queryWithin(moduleName, selector);
                 for (var index = 0; index < elements.length; index++){
                     elements[index]["on" + eventName] = handler;
                 }
             },
+	    create: function(tagName){
+		return document.createElement(tagName);
+	    },
             append: function(moduleName, selector, element){
                 core.dom.queryWithin(moduleName, selector)[0].appendChild(element);
             },
@@ -98,7 +100,10 @@ core = (
         core.offdom = {
             find: function(element, selector){
                 return element.querySelectorAll(selector);
-            }
+            },
+	    append: function(element, newChild){
+		element.appendChild(newChild);
+	    }
         };
         core.asynchronous = function(handler, verb, url, data, mime, headers){
             var request = new XMLHttpRequest();

@@ -25,6 +25,9 @@ makeSandbox = function(core, moduleName) {
     interface_.bind = function (element, event, handler){
         core.dom.bind(moduleName, element, event, handler);
     };
+    interface_.create = function(tagName){
+	return core.dom.create(tagName);
+    };
     interface_.append = function(selector, element){
         core.dom.append(moduleName, selector, element);
     };
@@ -42,7 +45,10 @@ makeSandbox = function(core, moduleName) {
     interface_.offdom = {
         find: function(element, selector){
             return core.offdom.find(element, selector);
-        }
+        },
+	append: function(element, newChild){
+	    return core.offdom.append(element, newChild);
+	}
     };
 
     // Events

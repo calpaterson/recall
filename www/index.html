@@ -43,6 +43,7 @@
 				  margin-left: 30px">
           <a id="show-about" class="recall-show" href="#">About</a>
           <a id="show-getting-started" class="recall-show" href="#">Getting Started</a>
+	  <a id="show-recent" class="recall-show" href="#">Recent</a>
 	  <a id="show-search" class="recall-show" href="#">Search</a>
 	  <a id="show-login" class="recall-show" href="#">Sign In</a>
 	  <a id="logout" class="recall-show" href="#">Sign Out</a>
@@ -208,50 +209,57 @@
               <button id="v-search-button"
 		      class="btn btn-primary">Search</button>
             </form>
-            <div id="list-of-marks" class="container">
-            </div>
+            <ol id="list-of-marks">
+            </ol>
           </div>
         </div>
-        
-        <div id="templates" hidden="true">
-	  <div id="v-filter-template" >
-	    <div class="btn-group" style="float: right">
-              <button class="btn btn-inverse disabled">Some tag</button>
-              <button class="btn btn-success">Require</button>
-              <button class="btn btn-danger">Exclude</button>
-	    </div>
-	    <br/>
-	    <br/>
-	  </div>
+      </div>
 
-          <div id="comment-template" class="row show-grid">
-            <div class="mark comment span12">
-              <span class="who">An unknown stranger</span>
-              said
-              <strong>
-                <em>"<span class="what">something</span>"</em> 
-              </strong>
-              <span class="when">some time ago</span>
-            </div>
-          </div>
-        
-          <div id="hyperlink-template" class="row show-grid">
-            <div class="mark hyperlink span12">
-              <span class="who">An unknown stranger</span>
-              bookmarked
-              <strong>
-                <a class="hyperlink-url">
-                  <span class="hyperlink-title">some hyperlink</span>
-                </a>
-              </strong> 
-              <span class="when">some time ago</span>
+      <div id="recent" hidden="true">
+        <div class="row">
+          <div class="span12">
+            <div class="container">
+	      <ol id="list-of-recent-bookmarks" reversed="true">
+	      </ol>
             </div>
           </div>
         </div>
+      </div>
+
+      <div id="templates" hidden="true">
+	<div id="v-filter-template">
+	  <div class="btn-group" style="float: right">
+            <button class="btn btn-inverse disabled">Some tag</button>
+            <button class="btn btn-success">Require</button>
+            <button class="btn btn-danger">Exclude</button>
+	  </div>
+	  <br/>
+	  <br/>
+	</div>
+
+        <div id="comment-template" class="row show-grid">
+          <div class="mark comment span12">
+            <span class="who">An unknown stranger</span>
+            said
+            <strong>
+              <em>"<span class="what">something</span>"</em> 
+            </strong>
+            <span class="when">some time ago</span>
+          </div>
+        </div>
+        
+        <li id="hyperlink-template" class="mark hyperlink">
+          <span class="who">An unknown stranger</span>
+          bookmarked
+          <strong>
+            <a class="hyperlink-url">
+              <span class="hyperlink-title">some hyperlink</span>
+            </a>
+          </strong> 
+          <span class="when">some time ago</span>
+	</li>
       
       </div>
-      
-    </div>
 
     <!-- Javascript -->
     <script src="/config.js"></script>

@@ -170,6 +170,32 @@ core.add(
         };
     }());
 
+var bookmarkToElement = function(mark, sandbox){
+    if (mark.hasOwnProperty("hyperlink")){
+	var template = document.querySelector("#hyperlink-template");
+	var hyperlink = template.cloneNode(true);
+	hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
+	sandbox.offdom.find(hyperlink, ".who")[0].textContent = mark["@"];
+	sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
+	sandbox.offdom.find(hyperlink, ".hyperlink-title")[0].textContent = mark.title;
+	sandbox.offdom.find(hyperlink, ".when")[0].textContent = humanTime(mark["~"]);
+	return hyperlink;
+    } else if (mark.hasOwnProperty("#")) {
+	var comment = document.querySelector("#comment-template").cloneNode(true);
+	comment.id = "mark-" + mark["@"] + "-" + mark["~"];
+	sandbox.offdom.find(comment, ".who")[0].textContent = mark["@"];
+	sandbox.offdom.find(comment, ".what")[0].textContent = mark["#"];
+	sandbox.offdom.find(comment, ".when")[0].textContent = humanTime(mark["~"]);
+	return comment;
+    }
+};
+
+var humanTime = function(then){
+    var then_ = new Date(then * 1000);
+    return then_.toLocaleTimeString() +
+	" - " + then_.toLocaleDateString();
+};
+
 core.add(
     "search",
     function()
@@ -186,8 +212,11 @@ core.add(
                 sandbox.deleteContentsOf("#list-of-marks");
                 if(marks.length > 1){
                     for (var i = 0; i < marks.length; i++){
-                        sandbox.append("#list-of-marks", markToElement(marks[i]));
+                        sandbox.append(
+			    "#list-of-marks",
+			    bookmarkToElement(marks[i], sandbox));
                     }
+
                     button.classList.remove("disabled");
                     button.textContent = "Seach Again?";
                 } else {
@@ -200,44 +229,6 @@ core.add(
                             { "q": sandbox.find("#v-search-field")[0].value,
                               "callback": displayMarks });
             return false;
-        };
-        
-        var humanTime = function(then){
-            var then_ = new Date(then * 1000);
-            // var minute = new Date(60 * 1000);
-            // var hour = new Date(minute * 60);
-            // var day = new Date(hour * 24);
-            // var since = new Date() - then_;
-            // if (since > day){
-            return then_.toLocaleTimeString() +
-                " - " + then_.toLocaleDateString();
-            // } else if (since > hour) {
-            //     return "some hours ago";
-            // } else if (since > minute) {
-            //     return "some minutes ago";
-            // } else {
-            //     return "seconds ago";
-            // }
-        };
-
-        var markToElement = function(mark){
-            if (mark.hasOwnProperty("hyperlink")){
-                var template = sandbox.find("#hyperlink-template")[0];
-                var hyperlink = template.cloneNode(true);
-                hyperlink.id = "mark-" + mark["@"] + "-" + mark["~"];
-                sandbox.offdom.find(hyperlink, ".who")[0].textContent = mark["@"];
-                sandbox.offdom.find(hyperlink, ".hyperlink-url")[0].href = mark.hyperlink;
-                sandbox.offdom.find(hyperlink, ".hyperlink-title")[0].textContent = mark.title;
-                sandbox.offdom.find(hyperlink, ".when")[0].textContent = humanTime(mark["~"]);
-                return hyperlink;
-            } else if (mark.hasOwnProperty("#")) {
-                var comment = sandbox.find("#comment-template")[0].cloneNode(true);
-                comment.id = "mark-" + mark["@"] + "-" + mark["~"];
-                sandbox.offdom.find(comment, ".who")[0].textContent = mark["@"];
-                sandbox.offdom.find(comment, ".what")[0].textContent = mark["#"];
-                sandbox.offdom.find(comment, ".when")[0].textContent = humanTime(mark["~"]);
-                return comment;
-            }
         };
 
         var show = function(){
@@ -255,6 +246,62 @@ core.add(
             sandbox.subscribe("show-search", show);
             sandbox.subscribe("hide-all", hide);
             sandbox.bind("#v-search-button", "click", search);
+        };
+    }());
+
+core.add(
+    "recent",
+    function(){
+        var sandbox;
+
+	var getRecentBookmarks = function(){
+	    var email = null;
+	    var password = null;
+	    sandbox.publish("logged-in?", {"success":
+					   function(email_, password_){
+					       email = email_;
+					       password = password_;
+					   }});
+	    var url = recall_config["api-base-url"]
+		+ "/bookmarks/" + email + "/all/recent/";
+            sandbox.asynchronous(
+                function(status, content){
+                    var bookmarks = JSON.parse(content);
+		    sandbox.deleteContentsOf("#list-of-recent-bookmarks");
+		    for (var i = 0; i < bookmarks.length; i++){
+			// listElement = sandbox.create("li");
+			// sandbox.offdom.append(
+			//     listElement,
+			//     bookmarkToElement(bookmarks[i], sandbox));
+                        sandbox.append(
+			    "#list-of-recent-bookmarks",
+			    bookmarkToElement(bookmarks[i], sandbox));
+                    }
+                },
+                "get",
+                url,
+		{},
+                null,
+                {"X-Email": email,
+                 "X-Password": password,
+                 "Content-Type": "application/json"});
+	}
+
+        var show = function(){
+	    getRecentBookmarks()
+            sandbox.find()[0].hidden = false;
+            return false;
+        };
+
+        var hide = function(){
+            sandbox.find()[0].hidden = true;
+            return false;
+        };
+
+        return function(sandbox_){
+            sandbox = sandbox_;
+            sandbox.subscribe("show-recent", show);
+            sandbox.subscribe("hide-all", hide);
         };
     }());
 
@@ -373,7 +420,7 @@ core.add(
 
         var vistorModeDisplay = {
             showing: ["#show-login", "#show-about"],
-            hiding: ["#show-getting-started", "#logout"]
+            hiding: ["#show-getting-started", "#show-recent", "#logout"]
         };
 
         var userModeDisplay = {
