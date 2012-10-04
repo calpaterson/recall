@@ -108,9 +108,22 @@ core = (
         core.asynchronous = function(handler, verb, url, data, mime, headers){
             var request = new XMLHttpRequest();
             request.onload = function(xhrProgressEvent){
+		var headers = {};
+		var splitByLine = xhrProgressEvent.currentTarget.
+		    getAllResponseHeaders().split("\n");
+		for(var i = 0; i < splitByLine.length - 1; i++){
+		    var locationOfColon = splitByLine[i].indexOf(": ");
+		    var key = splitByLine[i].split(": ", 1);
+		    if (key === ""){
+			continue;
+		    }
+		    var value = splitByLine[i].slice(locationOfColon + 2);
+		    headers[key] = value;
+		}
                 handler(
                     xhrProgressEvent.currentTarget.status,
-                    xhrProgressEvent.currentTarget.responseText);
+                    xhrProgressEvent.currentTarget.responseText,
+		    headers);
             };
             request.open(verb, url);
             for (var key in headers){

@@ -265,17 +265,16 @@ core.add(
 	    var url = recall_config["api-base-url"]
 		+ "/bookmarks/" + email + "/all/recent/";
             sandbox.asynchronous(
-                function(status, content){
+                function(status, content, headers){
                     var bookmarks = JSON.parse(content);
+		    var totalBookmarks = parseInt(headers["X-Recall-Total"], 10);
+		    var current = totalBookmarks;
 		    sandbox.deleteContentsOf("#list-of-recent-bookmarks");
 		    for (var i = 0; i < bookmarks.length; i++){
-			// listElement = sandbox.create("li");
-			// sandbox.offdom.append(
-			//     listElement,
-			//     bookmarkToElement(bookmarks[i], sandbox));
-                        sandbox.append(
-			    "#list-of-recent-bookmarks",
-			    bookmarkToElement(bookmarks[i], sandbox));
+			var li = bookmarkToElement(bookmarks[i], sandbox);
+			li.setAttribute("value", current);
+			current -= 1;
+                        sandbox.append("#list-of-recent-bookmarks", li);
                     }
                 },
                 "get",
