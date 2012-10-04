@@ -135,6 +135,6 @@ def search(queryBuilder):
             marks.append(mark["_source"])
     except KeyError:
         conv.logger("search").exception("Elasticsearch error: " + str(response.json))
-    return marks
+    return response.json["hits"]["total"], marks
 
 

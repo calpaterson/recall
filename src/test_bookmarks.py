@@ -149,6 +149,7 @@ class BookmarkApiTests(unittest.TestCase):
             self.assertTrue(len(response.json) == 2)
             self.assertEqual(1, response.json[0]["~"])
             self.assertEqual(0, response.json[1]["~"])
+            self.assertEqual("2", response.headers["X-Recall-Total"])
         conv.with_patience(inner)
 
     # Can't create bookmark without @ and ~

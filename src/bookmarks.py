@@ -75,7 +75,8 @@ def public_bookmarks():
     if "q" in request.params:
         query.with_keywords(request.params["q"])
     query.anonymously()
-    results = search.search(query)
+    total, results = search.search(query)
+    response.set_header("X-Recall-Total", total)
     if results == []:
         response.status = 404
     return results
@@ -88,7 +89,7 @@ def user_all_bookmarks(who, user):
     if "q" in request.params:
         query.with_keywords(request.params["q"])
     query.as_user(user)
-    results = search.search(query)
+    total, results = search.search(query)
     if results == []:
         response.status = 404
     return results
@@ -127,7 +128,9 @@ def import_(who, user):
 def recent(who, user):
     if who != user["email"]:
         abort(400, "You may only look at your own bookmarks")
-    return search.search(search.SearchQueryBuilder().sort_by_when().as_user(user))
+    total, hits = search.search(search.SearchQueryBuilder().sort_by_when().as_user(user))
+    response.set_header("X-Recall-Total", total)
+    return hits
 
 #### NOT IMPLEMENTED:
 
