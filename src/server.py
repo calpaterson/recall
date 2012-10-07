@@ -1,12 +1,29 @@
-#! /usr/bin/env python
+#! /usr/bin/env python2
+# Recall is a program for storing bookmarks of different things
+# Copyright (C) 2012  Cal Paterson
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import absolute_import
 from wsgiref.simple_server import make_server
 import signal
 
 import bottle
 
-import people
-import bookmarks
-import convenience
+from recall import people
+from recall import bookmarks
+from recall import convenience
 
 settings = convenience.settings
 

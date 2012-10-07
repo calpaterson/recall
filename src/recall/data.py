@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 #
@@ -15,25 +14,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from recall import convenience as c
-from recall import jobs
+def whitelist(dict_, whitelist):
+    d = {}
+    for k, v in dict_.items():
+        if k in whitelist:
+            d[k] = v
+    return d
 
-def main():
-    c.load_settings()
-    logger = c.logger("reindex_all_bookmarks")
-    db = c.db()
-    records = db.marks.find({":": {"$exists": False}})
-    number = records.count()
-    count = 1
-    for record in records:
-        logger.info("{count} of {number} {who}/{when}".format(
-                count=count,
-                number=number,
-                who=record["@"],
-                when=record["~"]))
-        jobs.enqueue(jobs.IndexRecord(record))
-        count += 1
-    logger.info("Done")
-
-if __name__ == "__main__":
-    main()
+def blacklist(dict_, blacklist):
+    d = {}
+    for k, v in dict_.items():
+        if k not in blacklist:
+            d[k] = v
+    return d

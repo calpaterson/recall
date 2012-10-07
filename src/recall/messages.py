@@ -1,6 +1,3 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 #
@@ -18,34 +15,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import absolute_import
-import signal
 
-from recall import convenience
-from recall import jobs
+import smtplib
+from email.mime.text import MIMEText
+from string import Template
 
-settings = convenience.settings
+from twilio.rest import TwilioRestClient
 
-logger = None
+from recall. convenience import settings
 
-def stop(unused_signal, unused_frame):
-    logger.info("Stopping")
-    exit(0)
+def text(to, body):
+    sid = settings["RECALL_TWILIO_SID"]
+    auth_token = settings["RECALL_TWILIO_AUTH_TOKEN"]
+    number = settings["RECALL_TWILIO_PHONE_NUMBER"]
+    client = TwilioRestClient(sid, auth_token)
+    message = client.sms.messages.create(
+        to=to, from_=number, body=body)
 
-def main():
-    try:
-        global logger
-        convenience.load_settings()
-        logger = convenience.logger("worker")
-        signal.signal(signal.SIGINT, stop)
-        signal.signal(signal.SIGTERM, stop)
-        logger.info("Starting")
-        while(True):
-            try:
-                jobs.dequeue().do()
-            except Exception as e:
-                logger.exception(e)
-    except KeyboardInterrupt:
-        stop(None, None)
+def email_(to, from_, body, subject):
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = from_
+    msg["To"] = to
 
-if __name__ == "__main__":
-    main()
+    smtp_server = smtplib.SMTP(
+        settings["RECALL_SMTPD_HOST"],
+        int(settings["RECALL_SMTPD_PORT"]))
+    smtp_server.sendmail(from_, [to], msg.as_string())
+    smtp_server.quit()

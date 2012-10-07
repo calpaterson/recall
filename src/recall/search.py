@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 #
@@ -16,12 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import json
 from pprint import pformat
 
 import requests
 
-import convenience as conv
+from recall import convenience as conv
 
 def get_es_base_url():
     return "http://" + conv.settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\

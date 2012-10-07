@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import unittest
 import json
 import time
@@ -25,8 +27,8 @@ import os.path
 from pymongo import Connection
 import requests
 
-import convenience as conv
-import search
+from recall import convenience as conv
+from recall import search
 
 settings = conv.settings
 

@@ -17,12 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 from bottle import abort, request, Bottle, response
 
-import plugins
-import convenience as conv
-import search
-import jobs
+from recall import plugins
+from recall import convenience as conv
+from recall import search
+from recall import jobs
 
 from bs4 import BeautifulSoup
 

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 from urlparse import urlparse
 import cPickle
 import json
@@ -27,8 +29,8 @@ from string import Template
 import requests
 from bs4 import BeautifulSoup
 
-import messages
-import convenience as conv
+from recall import messages
+from recall import convenience as conv
 
 def enqueue(job, priority=5):
     sub_queue = "work" + str(priority)
