@@ -19,6 +19,7 @@
 
 from __future__ import absolute_import
 
+from urllib import quote
 import unittest
 import json
 import time
@@ -153,6 +154,24 @@ class BookmarkApiTests(unittest.TestCase):
             self.assertEqual(0, response.json[1]["~"])
             self.assertEqual("2", response.headers["X-Recall-Total"])
         conv.with_patience(inner)
+
+    @unittest.expectedFailure
+    def test_get_bookmark_by_url(self):
+        user = conv.create_test_user()
+        headers = user.headers()
+        headers.update({"content-type": "application/json"})
+        hyperlink = "http://www.example.com/?q=1"
+        requests.post(
+            self.url + user.email + "/private/0/",
+            data=json.dumps({"~": 0, "@": user.email,
+                             "hyperlink": hyperlink}))
+        url = self.url + "public/url/" + quote(hyperlink, safe="")
+        def inner():
+            response = requests.get(url)
+            self.assertEqual(200, response.status_code)
+
+        conv.with_patience(inner)
+
 
     # Can't create bookmark without @ and ~
 

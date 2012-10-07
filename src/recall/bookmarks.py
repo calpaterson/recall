@@ -136,14 +136,14 @@ def recent(who, user):
 
 #### NOT IMPLEMENTED:
 
-@app.get("/<who>/public/")
+@app.get("/<unused_who>/public/")
 def user_public_bookmarks(unused_who):
     abort(501)
 
-@app.get("/public/url/<url>/")
+@app.get("/public/url/<unused_url:re:.*>")
 def url(unused_url):
     abort(501)
 
-@app.post("/<who>/<when>/edits/<who_edited>/<time_editted/")
-def update(unused_who, unused_when, unused_who_edited, unused_time_editted):
-    abort(501)
+# @app.post("/<who>/<when>/edits/<who_edited>/<time_editted/")
+# def update(unused_who, unused_when, unused_who_edited, unused_time_editted):
+#     abort(501)
