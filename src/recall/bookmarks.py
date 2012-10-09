@@ -130,7 +130,11 @@ def import_(who, user):
 def recent(who, user):
     if who != user["email"]:
         abort(400, "You may only look at your own bookmarks")
-    total, hits = search.search(search.SearchQueryBuilder().sort_by_when().of_size(75).as_user(user))
+    total, hits = search.search(search.SearchQueryBuilder()
+                                .sort_by_when()
+                                .of_size(75)
+                                .as_user(user)
+                                .only_user(user))
     response.set_header("X-Recall-Total", total)
     return hits
 

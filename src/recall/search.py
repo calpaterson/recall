@@ -94,6 +94,12 @@ class SearchQueryBuilder(object):
                     {"not": {"term": {"%private": True}}}]})
         return self
 
+    def only_user(self, user):
+        at_sign_workaround = user["email"].split("@")[0]
+        self.filters.append(
+            {"term": {"@": at_sign_workaround}})
+        return self
+
     def anonymously(self):
         if self.as_user_set:
             raise IncoherentSearchQueryException(

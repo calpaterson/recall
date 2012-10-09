@@ -133,6 +133,15 @@ class BookmarkApiTests(unittest.TestCase):
         self._test_import_from_filepath(bookmark_file_path)
 
     def test_recent_bookmarks(self):
+        # Given
+        user2 = conv.create_test_user()
+        headers = user2.headers()
+        headers.update({"content-type": "application/json"})
+        requests.post(
+            self.url + user2.email + "/public/0/",
+            data=json.dumps({"~": 0, "@": user2.email, "#": "World!"}),
+            headers=headers)
+
         user = conv.create_test_user()
         headers = user.headers()
         headers.update({"content-type": "application/json"})
@@ -145,9 +154,12 @@ class BookmarkApiTests(unittest.TestCase):
             data=json.dumps({"~": 1, "@": user.email, "#": "World!"}),
             headers=headers)
         def inner():
+            # When
             response = requests.get(
                 self.url + user.email + "/all/recent/",
                 headers=headers)
+
+            # Then
             self.assertEqual(200, response.status_code)
             self.assertTrue(len(response.json) == 2)
             self.assertEqual(1, response.json[0]["~"])
