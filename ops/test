@@ -6,7 +6,7 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 export RECALL_TEST_MODE=true
 
 cd $PROJECT_ROOT/ops/data/
-python -m SimpleHTTPServer 8777 &
+python -m http.server 8777 &
 cd -
 WEBSERVER_PID=$!
 python ${PROJECT_ROOT}/src/fake_mailserver.py &

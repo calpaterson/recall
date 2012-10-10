@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+
 
 from bottle import abort, request, Bottle, response
 
@@ -34,14 +34,14 @@ app = Bottle()
 app.install(plugins.ppjson)
 app.install(plugins.auth)
 app.install(plugins.cors)
-app.error_handler = plugins.PretendHandlerDict()
+app.error_handler = plugins.handler_dict
 
 def has_problematic_keys(mark):
     mark_queue = []
     current = mark
     while True:
         for key in current:
-            if key.startswith("$") or key.startswith(u"£"):
+            if key.startswith("$") or key.startswith("£"):
                 return True
             if isinstance(current[key], dict):
                 mark_queue.insert(0, current[key])
@@ -60,7 +60,7 @@ def add_public(who, when, user):
         abort(400, "You must use the same time in the bookmark as you post to")
     if has_problematic_keys(request.json):
         abort(400, "Bookmarks must not have keys prefixed with $ or £")
-    request.json[u"£created"] = conv.unixtime()
+    request.json["£created"] = conv.unixtime()
     conv.db().bookmarks.insert(request.json)
     del request.json["_id"]
     jobs.enqueue(jobs.IndexRecord(request.json), priority=1)
@@ -118,7 +118,7 @@ def import_(who, user):
         bookmark["title"] = anchor.string
         bookmark["@"] = user["email"]
         bookmark["%private"] = True
-        bookmark[u"£created"] = conv.unixtime()
+        bookmark["£created"] = conv.unixtime()
         bookmarks.append(bookmark)
     for each in bookmarks:
         conv.db().eachs.insert(each)

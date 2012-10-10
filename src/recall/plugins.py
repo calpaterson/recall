@@ -14,10 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
-
 import json
-from UserDict import DictMixin
 import inspect
 
 from bottle import request, response, abort
@@ -72,24 +69,9 @@ class CORSPlugin(object):
 
 cors = CORSPlugin()
 
-class PretendHandlerDict(object, DictMixin):
-    class FakeDictException(Exception):
-        pass
-
-    def _handler(self, error):
-        return json.dumps({"human_readable": error.output})
-
-    def keys(self):
-        return xrange(400, 600)
-
-    def __getitem__(self, unused_key):
-        return self._handler
-
-    def __setitem__(self, unused_key, unused_value):
-        raise self.FakeDictException("PretendHandlerDict is not a real dictionary")
-
-    def __delitem__(self, unused_key):
-        self.__setitem__(None, None)
+handler_dict = {}
+for code in range(400, 600):
+    handler_dict[code] = lambda error: json.dumps({"human_readable": error.output})
 
 class AuthenticationPlugin(object):
     api = 2

@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+
 
 import unittest
 import json
@@ -94,9 +94,8 @@ class PeopleApiTests(unittest.TestCase):
         key_url = self.url + "j@bloggs.com/" + email_key
         post_data = json.dumps({"email" : "wrong email", "password": "password"})
         response = requests.post(key_url, data=post_data, headers=self.headers)
-        response_data = json.loads(response.content)
         self.assertEqual(404, response.status_code)
-        self.assertEqual(response_data, {
+        self.assertEqual(response.json, {
                 "human_readable": "No such email_key or wrong email"})
 
         db = convenience.db()
@@ -113,9 +112,8 @@ class PeopleApiTests(unittest.TestCase):
         key_url = self.url + "j@bloggs.com/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
         response = requests.post(key_url, data=post_data, headers=self.headers)
-        response_data = json.loads(response.content)
         self.assertEqual(404, response.status_code)
-        self.assertEqual(response_data, {
+        self.assertEqual(response.json, {
                 "human_readable": "No such email_key or wrong email"})
 
         db = convenience.db()
@@ -132,9 +130,8 @@ class PeopleApiTests(unittest.TestCase):
         key_url = self.url + "j@bloggs.com/" + email_key
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
         response = requests.post(key_url, data=post_data, headers=self.headers)
-        response_data = json.loads(response.content)
         self.assertEqual(404, response.status_code)
-        self.assertEqual(response_data, {
+        self.assertEqual(response.json, {
                 "human_readable": "No such email_key or wrong email"})
 
         db = convenience.db()
@@ -159,10 +156,9 @@ class PeopleApiTests(unittest.TestCase):
 
         post_data = json.dumps({"email" : "j@bloggs.com", "password": "password"})
         response = requests.post(key_url, data=post_data, headers=self.headers)
-        response_data = json.loads(response.content)
 
         self.assertEqual(403, response.status_code)
-        self.assertEqual({"human_readable": "Already verified"}, response_data)
+        self.assertEqual({"human_readable": "Already verified"}, response.json)
         user_in_db = db.users.find_one({"email": "j@bloggs.com"})
         self.assertEqual(original_password_hash, user_in_db["password_hash"])
 
@@ -170,7 +166,7 @@ class PeopleApiTests(unittest.TestCase):
         user = convenience.create_test_user()
         response = requests.get(self.url + user.email + "/")
         self.assertEquals(200, response.status_code)
-        self.assertEquals(response.json.keys(), ["email"])
+        self.assertEquals(list(response.json.keys()), ["email"])
 
     def test_can_check_authentication(self):
         user = convenience.create_test_user()

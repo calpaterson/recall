@@ -17,10 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
 
-from urlparse import urlparse
-import cPickle
+
+from urllib.parse import urlparse
+import pickle
 import json
 import robotexclusionrulesparser as rerp
 import time
@@ -34,11 +34,11 @@ from recall import convenience as conv
 
 def enqueue(job, priority=5):
     sub_queue = "work" + str(priority)
-    return conv.redis_connection().rpush(sub_queue, cPickle.dumps(job, protocol=2))
+    return conv.redis_connection().rpush(sub_queue, pickle.dumps(job, protocol=2))
 
 def dequeue():
     sub_queues = ["work1", "work2", "work3", "work4", "work5"]
-    return cPickle.loads(conv.redis_connection().blpop(sub_queues)[1])
+    return pickle.loads(conv.redis_connection().blpop(sub_queues)[1])
 
 class SendInvite(object):
     def __init__(self, user):
@@ -93,8 +93,8 @@ class IndexRecord(object):
         headers = {"User-Agent": self.user_agent}
         if "hyperlink" in mark and self.may_fetch(mark["hyperlink"]):
             response = requests.get(mark["hyperlink"], headers=headers)
-            if response.status_code in xrange(200, 300):
-                mark[u"£fulltext"] = BeautifulSoup(response.content).get_text()
+            if response.status_code in range(200, 300):
+                mark["£fulltext"] = BeautifulSoup(response.content).get_text()
             else:
                 self.logger.warn("Requested {hyperlink}, but got {status_code}".format(
                         hyperlink=mark["hyperlink"],
@@ -102,11 +102,11 @@ class IndexRecord(object):
 
 
     def update_last_indexed_time(self, mark):
-        mark[u"£last_indexed"] = int(time.time() * 1000)
+        mark["£last_indexed"] = int(time.time() * 1000)
         db = conv.db()
         db.marks.update(
             {"@": mark["@"], "~": mark["~"]},
-            {"$set": {"£last_indexed": mark[u"£last_indexed"]},
+            {"$set": {"£last_indexed": mark["£last_indexed"]},
              "$unset": "£q"})
 
     def mark_for_record(self, record):

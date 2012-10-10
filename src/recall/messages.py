@@ -14,23 +14,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+
 
 import smtplib
 from email.mime.text import MIMEText
 from string import Template
 
-from twilio.rest import TwilioRestClient
+# from twilio.rest import TwilioRestClient
 
 from recall. convenience import settings
 
 def text(to, body):
-    sid = settings["RECALL_TWILIO_SID"]
-    auth_token = settings["RECALL_TWILIO_AUTH_TOKEN"]
-    number = settings["RECALL_TWILIO_PHONE_NUMBER"]
-    client = TwilioRestClient(sid, auth_token)
-    message = client.sms.messages.create(
-        to=to, from_=number, body=body)
+    pass
+    # sid = settings["RECALL_TWILIO_SID"]
+    # auth_token = settings["RECALL_TWILIO_AUTH_TOKEN"]
+    # number = settings["RECALL_TWILIO_PHONE_NUMBER"]
+    # client = TwilioRestClient(sid, auth_token)
+    # message = client.sms.messages.create(
+    #     to=to, from_=number, body=body)
 
 def email_(to, from_, body, subject):
     msg = MIMEText(body)

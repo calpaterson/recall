@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+
 
 import os
 import json
@@ -87,7 +87,7 @@ def load_settings():
                 "RECALL_SMTPD_PORT": "7778",
                 "RECALL_MAILFILE": "/tmp/recall_debug_mail"
                 })
-        print "Using debug mode settings"
+        print("Using debug mode settings")
     elif "RECALL_TEST_MODE" in os.environ:
         settings.update({
                 "RECALL_API_BASE_URL": "https://localhost:6666",
@@ -108,7 +108,7 @@ def load_settings():
                 "RECALL_SMTPD_PORT": "6667",
                 "RECALL_MAILFILE": "/tmp/recall_test_mail"
                 })
-        print "Using test mode settings"
+        print("Using test mode settings")
     else:
         for name in os.environ:
             if name.startswith("RECALL_"):
@@ -124,7 +124,7 @@ def new_url():
 
 def wipe_mongodb():
     for collection_name in db().collection_names():
-        if collection_name == u"system.indexes":
+        if collection_name == "system.indexes":
             continue
         db().drop_collection(collection_name)
 
@@ -152,7 +152,7 @@ def assert_marks_equal(marklist1, marklist2):
         key_function = lambda x: x["~"]
         sorted_marklist1 = sorted(marklist1, key=key_function)
         sorted_marklist2 = sorted(marklist2, key=key_function)
-        for index in xrange(0, len(sorted_marklist1)):
+        for index in range(0, len(sorted_marklist1)):
             _assert_individual_marks_equal(
                 sorted_marklist1[index], sorted_marklist2[index])
     except AssertionError:
@@ -163,11 +163,11 @@ def assert_marks_equal(marklist1, marklist2):
 
 def _assert_individual_marks_equal(mark1_, mark2_):
     field = None
-    fields = mark1_.keys()
-    fields += mark2_.keys()
+    fields = list(mark1_.keys())
+    fields += list(mark2_.keys())
     for field in set(fields):
-        if type(field) == str or type(field) == unicode:
-            if field.startswith(u"%") or field.startswith(u"£"):
+        if type(field) == str or type(field) == str:
+            if field.startswith("%") or field.startswith("£"):
                 continue
         assert field in mark1_
         assert field in mark2_

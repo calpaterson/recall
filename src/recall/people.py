@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import
+
 
 import uuid
 
@@ -30,7 +30,7 @@ app = Bottle()
 app.install(plugins.ppjson)
 app.install(plugins.auth)
 app.install(plugins.cors)
-app.error_handler = plugins.PretendHandlerDict()
+app.error_handler = plugins.handler_dict
 
 logger = c.logger("people")
 
