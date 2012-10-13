@@ -27,3 +27,27 @@ def blacklist(dict_, blacklist):
         if k not in blacklist:
             d[k] = v
     return d
+
+def has_problematic_keys(mark):
+    mark_queue = []
+    current = mark
+    while True:
+        for key in current:
+            if key.startswith("$") or key.startswith("£"):
+                return True
+            if isinstance(current[key], dict):
+                mark_queue.insert(0, current[key])
+        if mark_queue == []:
+            return False
+        else:
+            current = mark_queue.pop()
+
+def strip_generated_keys(bookmarks):
+    """Delete all keys that start with £ or $ from a bookmark"""
+    if bookmarks is None:
+        return
+    for bookmark in bookmarks:
+        keys = list(bookmark.keys())
+        for key in keys:
+            if key.startswith("£") or key.startswith("%"):
+                del bookmark[key]

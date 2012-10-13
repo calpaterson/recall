@@ -17,14 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
 from bottle import abort, request, Bottle, response
 
-from recall import plugins
 from recall import convenience as conv
-from recall import search
-from recall import jobs
+from recall import (
+    plugins,
+    search,
+    data,
+    jobs,
+    )
 
 from bs4 import BeautifulSoup
 
@@ -36,20 +37,6 @@ app.install(plugins.auth)
 app.install(plugins.cors)
 app.error_handler = plugins.handler_dict
 
-def has_problematic_keys(mark):
-    mark_queue = []
-    current = mark
-    while True:
-        for key in current:
-            if key.startswith("$") or key.startswith("£"):
-                return True
-            if isinstance(current[key], dict):
-                mark_queue.insert(0, current[key])
-        if mark_queue == []:
-            return False
-        else:
-            current = mark_queue.pop()
-
 @app.post("/<who>/public/<when>/")
 def add_public(who, when, user):
     if "~" not in request.json or "@" not in request.json:
@@ -58,7 +45,7 @@ def add_public(who, when, user):
         abort(400, "You may only add bookmarks as yourself")
     if request.json["~"] != int(when):
         abort(400, "You must use the same time in the bookmark as you post to")
-    if has_problematic_keys(request.json):
+    if data.has_problematic_keys(request.json):
         abort(400, "Bookmarks must not have keys prefixed with $ or £")
     request.json["£created"] = conv.unixtime()
     conv.db().bookmarks.insert(request.json)
@@ -81,6 +68,7 @@ def public_bookmarks():
     response.set_header("X-Recall-Total", total)
     if results == []:
         response.status = 404
+    data.strip_generated_keys(results)
     return results
 
 @app.get("/<who>/all/")
@@ -94,6 +82,7 @@ def user_all_bookmarks(who, user):
     total, results = search.search(query)
     if results == []:
         response.status = 404
+    data.strip_generated_keys(results)
     return results
 
 @app.route("/<who>/", method="PATCH")
@@ -136,6 +125,7 @@ def recent(who, user):
                                 .as_user(user)
                                 .only_user(user))
     response.set_header("X-Recall-Total", total)
+    data.strip_generated_keys(hits)
     return hits
 
 #### NOT IMPLEMENTED:

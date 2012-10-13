@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # Recall is a program for storing bookmarks of different things
 # Copyright (C) 2012  Cal Paterson
 #
@@ -16,8 +14,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
 
 import os
 import json

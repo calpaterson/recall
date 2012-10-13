@@ -111,7 +111,6 @@ class AuthenticationPlugin(object):
             return callback
         else:
             def wrapper(*args, **kwargs):
-                # import pdb; pdb.set_trace()
                 user = self.user()
                 if user is None:
                     abort(400, "You must include authenticate")
