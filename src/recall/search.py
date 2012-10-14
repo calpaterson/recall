@@ -60,11 +60,11 @@ class SearchQueryBuilder(object):
         self.of_size(10)
         self.as_user_set = False
         self.filters = []
-        self.query_string = None
+        self.queries = []
         self.sort = None
 
     def with_keywords(self, string):
-        self.query_string = {"text": {"_all": string}}
+        self.queries.append({"match": {"_all": string}})
         return self
 
     def of_size(self, size):
@@ -98,6 +98,10 @@ class SearchQueryBuilder(object):
             {"term": {"@": at_sign_workaround}})
         return self
 
+    def the_url(self, url):
+        self.queries.append({"match": { "hyperlink": url}})
+        return self
+
     def anonymously(self):
         if self.as_user_set:
             raise IncoherentSearchQueryException(
@@ -114,10 +118,13 @@ class SearchQueryBuilder(object):
         query_and_filters = {
             "filter": {"and": self.filters,}
             }
-        if self.query_string is None:
+        if self.queries == []:
             query_and_filters.update({"query": {"match_all": {}}})
         else:
-            query_and_filters.update({"query": self.query_string})
+            query_and_filters.update(
+                {"query": {"bool": {
+                            "must": self.queries
+                            }}})
         query = {
             "size": self.size,
             "query":{
@@ -141,5 +148,3 @@ def search(queryBuilder):
     except KeyError:
         conv.logger("search").exception("Elasticsearch error: " + str(response.json))
     return response.json["hits"]["total"], marks
-
-

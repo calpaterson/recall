@@ -166,19 +166,20 @@ class BookmarkApiTests(unittest.TestCase):
             self.assertEqual("2", response.headers["X-Recall-Total"])
         conv.with_patience(inner)
 
-    @unittest.skip
+    # @unittest.skip
     def test_get_bookmark_by_url(self):
         user = conv.create_test_user()
         headers = user.headers()
         headers.update({"content-type": "application/json"})
-        hyperlink = "http://www.example.com/?q=1"
-        requests.post(
+        hyperlink = "http://localhost:8777/?q=1"
+        response = requests.post(
             self.url + user.email + "/private/0/",
             data=json.dumps({"~": 0, "@": user.email,
-                             "hyperlink": hyperlink}))
-        url = self.url + "public/url/" + quote(hyperlink, safe="")
+                             "hyperlink": hyperlink}),
+            headers=headers)
+        url = self.url + user.email + "/url/" + quote(hyperlink, safe="")
         def inner():
-            response = requests.get(url)
+            response = requests.get(url, headers=headers)
             self.assertEqual(200, response.status_code)
 
         conv.with_patience(inner)

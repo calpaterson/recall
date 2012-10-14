@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import unquote
+
 from bottle import abort, request, Bottle, response
 
 from recall import convenience as conv
@@ -128,14 +130,23 @@ def recent(who, user):
     data.strip_generated_keys(hits)
     return hits
 
+@app.get("/<who>/url/<url_encoded:re:.*>")
+def url(who, url_encoded, user):
+    if who != user["email"]:
+        abort(400, "You may only look at your own bookmarks")
+    url_decoded = unquote(url_encoded)
+    query = search.SearchQueryBuilder().of_size(1).as_user(user)
+    query.the_url(url_decoded)
+    total, hits = search.search(query)
+    if total > 0:
+        return hits
+    else:
+        response.status(404)
+
 #### NOT IMPLEMENTED:
 
 @app.get("/<unused_who>/public/")
 def user_public_bookmarks(unused_who):
-    abort(501)
-
-@app.get("/public/url/<unused_url:re:.*>")
-def url(unused_url):
     abort(501)
 
 # @app.post("/<who>/<when>/edits/<who_edited>/<time_editted/")
