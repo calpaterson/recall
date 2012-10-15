@@ -7,22 +7,19 @@ BUILD_DIR=$OPS_DIR/build.d
 PROJECT_ROOT=$OPS_DIR/..
 ALTAR_ROOT=$PROJECT_ROOT/../altar
 
+set_version () {
+    # LAST_VERSION=`git tag --list | grep -v jenkins | sort -rV | head -n 1`
+    LAST_VERSION=149
+    export VERSION=`expr $LAST_VERSION + 1`
+    sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/build.d/DEBIAN/control
+}
+
 create_build_directory () {
     if [[ -d $BUILD_DIR ]]
     then
 	rm -rf $BUILD_DIR
     fi
     cp -Rv $OPS_DIR/debian/ $BUILD_DIR
-}
-
-set_version () {
-    if [ $BUILD_NUMBER ]
-    then
-	VERSION=$BUILD_NUMBER
-    else
-	VERSION=0-DEV
-    fi
-    sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/build.d/DEBIAN/control
 }
 
 build_bootstrap_if_needed () {
@@ -92,10 +89,8 @@ build_artefact () {
 }
 
 push_tags_if_on_ci () {
-    if [[ $BUILD_NUMBER ]]
-    then
-	git push --tags
-    fi
+    # git push --tags
+    echo 'Not pushing ci tags'
 }
 
 create_build_directory

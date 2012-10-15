@@ -2,7 +2,7 @@
 set -e
 
 echo "Building environement..."
-virtualenv --python=python2 /var/recall/environment/
+virtualenv --python=python3 /var/recall/environment/
 . /var/recall/environment/bin/activate
 pip install /usr/share/recall/bundle.zip
 deactivate
