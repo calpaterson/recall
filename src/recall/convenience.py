@@ -24,7 +24,6 @@ from pprint import pformat
 from functools import wraps
 import logging
 
-from redis import Redis
 import requests
 import pymongo
 
@@ -55,12 +54,6 @@ def logger(name):
         logger.addHandler(handler)
         _loggers[name] = logger
     return _loggers[name]
-
-def redis_connection():
-    return Redis(
-        host=settings["RECALL_REDIS_HOST"],
-        port=int(settings["RECALL_REDIS_PORT"]),
-        db=int(settings["RECALL_REDIS_DB"]))
 
 def load_settings():
     if "RECALL_DEBUG_MODE" in os.environ:
@@ -123,9 +116,6 @@ def wipe_mongodb():
         if collection_name == "system.indexes":
             continue
         db().drop_collection(collection_name)
-
-def wipe_redis():
-    pass
 
 def post_mark(user, mark):
     url = api_url() + "/mark"

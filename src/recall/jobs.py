@@ -26,21 +26,29 @@ from string import Template
 
 import requests
 from bs4 import BeautifulSoup
+from redis import StrictRedis
 
 from recall import messages
 from recall import convenience as conv
 
+def redis_connection():
+    settings = conv.settings
+    return StrictRedis(
+        host=settings["RECALL_REDIS_HOST"],
+        port=int(settings["RECALL_REDIS_PORT"]),
+        db=int(settings["RECALL_REDIS_DB"]))
+
 def enqueue(job, priority=5):
     sub_queue = "work" + str(priority)
-    return conv.redis_connection().rpush(sub_queue, pickle.dumps(job, protocol=2))
+    return redis_connection().rpush(sub_queue, pickle.dumps(job, protocol=2))
 
 def dequeue():
     sub_queues = ["work1", "work2", "work3", "work4", "work5"]
-    return pickle.loads(conv.redis_connection().blpop(sub_queues)[1])
+    return pickle.loads(redis_connection().blpop(sub_queues)[1])
 
 def status():
     try:
-        conv.redis_connection().info()
+        redis_connection().info()
         return "ok"
     except Exception:
         return "ERROR"
