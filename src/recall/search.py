@@ -138,6 +138,15 @@ class SearchQueryBuilder(object):
     def __str__(self):
         return pformat(self.build())
 
+def status():
+    try:
+        if requests.get(get_es_base_url()).json["ok"]:
+            return "ok"
+        else:
+            return "ERROR"
+    except Exception as e:
+        return "ERROR"
+
 def search(queryBuilder):
     response = requests.get(get_es_mark_url() +  "/_search?",
                             data=json.dumps(queryBuilder.build()))

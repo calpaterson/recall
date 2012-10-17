@@ -21,9 +21,12 @@ import signal
 
 import bottle
 
-from recall import people
-from recall import bookmarks
-from recall import convenience
+from recall import (
+    people,
+    bookmarks,
+    convenience,
+    status,
+    )
 
 settings = convenience.settings
 
@@ -44,6 +47,7 @@ def main():
         app = bottle.Bottle()
         app.mount("/people", people.app)
         app.mount("/bookmarks", bookmarks.app)
+        app.mount("/status", status.app)
         http_server = make_server("", int(settings["RECALL_API_PORT"]), app)
         http_server.serve_forever()
     except KeyboardInterrupt:

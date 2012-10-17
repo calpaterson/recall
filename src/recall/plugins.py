@@ -45,14 +45,15 @@ class PPJSONPlugin(object):
                 abort(400, "You must include the Content-Type header" +
                       " (use application/json)")
             return_value = callback(*args, **kwargs)
-            if return_value == []:
-                response.status = 404
+            if return_value is None:
+                return_value = []
             return_value = json.dumps(return_value, indent=4)
             if "text/html" in mimetypes(request.headers.get("Accept")):
-                return_value = html_pretty_print(return_value)
+                response.set_header("Content-Type", "text/html")
+                return html_pretty_print(return_value)
             else:
                 response.set_header("Content-Type", "application/json")
-            return return_value
+                return return_value
         return wrapper
 
 ppjson = PPJSONPlugin()
@@ -71,7 +72,8 @@ cors = CORSPlugin()
 
 handler_dict = {}
 for code in range(400, 600):
-    handler_dict[code] = lambda error: json.dumps({"human_readable": error.output})
+    handler_dict[code] = lambda error: json.dumps(
+        {"human_readable": error.output})
 
 class AuthenticationPlugin(object):
     api = 2

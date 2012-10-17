@@ -38,6 +38,13 @@ def dequeue():
     sub_queues = ["work1", "work2", "work3", "work4", "work5"]
     return pickle.loads(conv.redis_connection().blpop(sub_queues)[1])
 
+def status():
+    try:
+        conv.redis_connection().info()
+        return "ok"
+    except Exception:
+        return "ERROR"
+
 class SendInvite(object):
     def __init__(self, user):
         self.user = user
