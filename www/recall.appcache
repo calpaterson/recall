@@ -1,0 +1,12 @@
+CACHE MANIFEST
+/third-party/bootstrap/css/bootstrap.css
+/third-party/bootstrap/css/bootstrap-responsive.css
+/style.css
+/config.js
+/core.js
+/sandbox.js
+/services.js
+/common_ui.js
+/recall.js
+/third-party/htmlparser.js
+/bookmarklet-trampoline
