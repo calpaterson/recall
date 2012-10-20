@@ -1,4 +1,0 @@
-recall_config = {
-    "api-base-url": "http://localhost",
-    "www-base-url": "http://localhost"
-}
