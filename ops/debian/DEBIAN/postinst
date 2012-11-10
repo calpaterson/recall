@@ -7,4 +7,3 @@ virtualenv --python=python3 /var/recall/environment/
 pip install /usr/share/recall/bundle.zip
 deactivate
 echo "...done"
-

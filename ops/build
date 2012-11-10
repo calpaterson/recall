@@ -5,14 +5,6 @@ set -x
 OPS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 BUILD_DIR=$OPS_DIR/build.d
 PROJECT_ROOT=$OPS_DIR/..
-ALTAR_ROOT=$PROJECT_ROOT/../altar
-
-set_version () {
-    # LAST_VERSION=`git tag --list | grep -v jenkins | sort -rV | head -n 1`
-    LAST_VERSION=149
-    export VERSION=`expr $LAST_VERSION + 1`
-    sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/build.d/DEBIAN/control
-}
 
 create_build_directory () {
     if [[ -d $BUILD_DIR ]]
@@ -22,20 +14,11 @@ create_build_directory () {
     cp -Rv $OPS_DIR/debian/ $BUILD_DIR
 }
 
-build_bootstrap_if_needed () {
-    if [[ ! -f $PROJECT_ROOT/www/third-party/bootstrap/css/bootstrap.css ]]
-    then
-	BOOTSTRAP_DIR=$PROJECT_ROOT/www/third-party/bootstrap/
-	mkdir $BOOTSTRAP_DIR/css
-	lessc $BOOTSTRAP_DIR/less/bootstrap.less > $BOOTSTRAP_DIR/css/bootstrap.css
-	lessc $BOOTSTRAP_DIR/less/responsive.less > $BOOTSTRAP_DIR/css/bootstrap-responsive.css
-    fi
-}
-
-insert_web_resources () {
-    build_bootstrap_if_needed
-    cp -R $PROJECT_ROOT/www $BUILD_DIR/usr/share/recall/www/
-    echo $VERSION > $BUILD_DIR/usr/share/recall/www/version
+set_version () {
+    LAST_VERSION=`git tag --list | grep -v jenkins | sort -rV | head -n 1`
+    export VERSION=`expr $LAST_VERSION + 1`
+    git tag $VERSION
+    sed -i "s/0-UNKNOWN/${VERSION}/" $OPS_DIR/build.d/DEBIAN/control
 }
 
 insert_python_resources () {
@@ -59,16 +42,9 @@ insert_python_bundle () {
 	cp $OPS_DIR/artefacts/bundle.zip $BUILD_DIR/usr/share/recall/bundle.zip
     fi
 }
-
    
 clean_out_temporary_files () {
     find $OPS_DIR/debian/ -name '*~' -exec rm '{}' ';'
-}
-
-insert_documentation () {
-    cp $PROJECT_ROOT/LICENCE $BUILD_DIR/usr/share/doc/recall/copyright
-    # touch $BUILD_DIR/usr/share/doc/recall/changelog.Debian
-    # gzip --best $BUILD_DIR/usr/share/doc/recall/changelog.Debian
 }
 
 remove_gitignores () {
@@ -76,13 +52,9 @@ remove_gitignores () {
 }
 
 build_artefact () {
-    if [[ ! $BUILD_NUMBER ]]
+    if [[ -f $OPS_DIR/artefacts/recall.deb ]]
     then
-	PREVIOUS_DEV_BUILD=$OPS_DIR/artefacts/recall_0-DEV_all.deb
-	if [[ -f $PREVIOUS_DEV_BUILD ]]
-	then
-	    rm $PREVIOUS_DEV_BUILD
-	fi
+	rm $OPS_DIR/artefacts/recall.deb
     fi
     fakeroot dpkg-deb --build $BUILD_DIR $OPS_DIR/artefacts/recall.deb
     dpkg-name $OPS_DIR/artefacts/recall.deb
@@ -95,10 +67,8 @@ push_tags_if_on_ci () {
 
 create_build_directory
 set_version
-insert_web_resources
 insert_python_resources
 insert_python_bundle
-insert_documentation
 clean_out_temporary_files
 remove_gitignores
 build_artefact
