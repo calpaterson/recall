@@ -21,6 +21,7 @@ import unittest
 import json
 import time
 import re
+import warnings
 
 from pymongo import Connection
 import requests
@@ -32,6 +33,7 @@ settings = convenience.settings
 class PeopleApiTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        warnings.filterwarnings("ignore", category=ResourceWarning)
         convenience.load_settings()
         cls.url = "http://{host}:{port}/people/".format(
             host=settings["RECALL_API_HOST"],
@@ -41,26 +43,26 @@ class PeopleApiTests(unittest.TestCase):
     def tearDown(self):
         convenience.wipe_mongodb()
 
-    def _create_test_user(self):
-        test_user = convenience.create_test_user()
-        return test_user.pseudonym, test_user.email, test_user.password
+    def user_was_billed(self, email):
+        user = convenience.db().users.find_one({"email": email})
+        self.assertIn("paymill", user)
 
     def test_request_invite_with_real_name(self):
         post_data = json.dumps({"firstName": "Joe", "surname": "Bloggs",
-                                "email": "joe@bloggs.com"})
+                                "email": "joe@bloggs.com", "token": "t1"})
         response = requests.post(self.url + "joe@bloggs.com/", data=post_data,
                                  headers=self.headers)
-        self.assertEquals(202, response.status_code)
+        self.assertEqual(202, response.status_code)
 
     def test_request_invite_with_pseudonym(self):
         response = requests.post(
             self.url + "j@bloggs.com/",
-            data=json.dumps({"pseudonym": "jb", "email": "jb@bloggs.com"}),
+            data=json.dumps({"pseudonym": "jb", "email": "jb@bloggs.com", "token": "t1"}),
             headers=self.headers)
         self.assertEqual(202, response.status_code)
 
     def test_verify_email(self):
-        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
+        post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com", "token": "t1"})
         requests.post(self.url + "j@bloggs.com/", data=post_data, headers=self.headers)
 
         time.sleep(0.5)
@@ -79,6 +81,7 @@ class PeopleApiTests(unittest.TestCase):
         self.assertNotIn("password", user_in_db)
         self.assertIn("verified", user_in_db)
         self.assertNotIn("email_verified", user_in_db)
+        self.user_was_billed("j@bloggs.com")
 
     def test_verify_email_with_wrong_email(self):
         post_data = json.dumps({"pseudonym": "bloggs","email": "j@bloggs.com"})
@@ -163,8 +166,8 @@ class PeopleApiTests(unittest.TestCase):
     def test_can_check_existance_of_user(self):
         user = convenience.create_test_user()
         response = requests.get(self.url + user.email + "/")
-        self.assertEquals(200, response.status_code)
-        self.assertEquals(list(response.json.keys()), ["email"])
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(list(response.json.keys()), ["email"])
 
     def test_can_check_authentication(self):
         user = convenience.create_test_user()
@@ -172,11 +175,11 @@ class PeopleApiTests(unittest.TestCase):
         user_headers.update(self.headers)
         response = requests.get(
             self.url + user.email + "/self", headers=user_headers)
-        self.assertEquals(200, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_non_existent_user_gives_404(self):
         response = requests.get(self.url + "god/")
-        self.assertEquals(404, response.status_code)
+        self.assertEqual(404, response.status_code)
         self.assertEqual({"human_readable": "User not found"}, response.json)
 
 if __name__ == "__main__":

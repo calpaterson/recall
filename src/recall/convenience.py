@@ -23,6 +23,7 @@ from copy import deepcopy
 from pprint import pformat
 from functools import wraps
 import logging
+from os.path import expanduser
 
 import requests
 import pymongo
@@ -61,20 +62,23 @@ def load_settings():
                 "RECALL_API_BASE_URL": "https://localhost:7777",
                 "RECALL_API_HOST": "localhost",
                 "RECALL_API_PORT": "7777",
+                "RECALL_DEBUG_MODE": "true",
                 "RECALL_ELASTICSEARCH_HOST": "localhost",
-                "RECALL_ELASTICSEARCH_PORT": "9200",
                 "RECALL_ELASTICSEARCH_INDEX": "recalldebug",
+                "RECALL_ELASTICSEARCH_PORT": "9200",
+                "RECALL_MAILFILE": "/tmp/recall_debug_mail",
                 "RECALL_MARK_LIMIT": "100",
                 "RECALL_MONGODB_DB_NAME": "recalldebug",
                 "RECALL_MONGODB_HOST": "localhost",
                 "RECALL_MONGODB_PORT": "27017",
+                "RECALL_PAYMILL_OFFER": "pretend_offer",
+                "RECALL_PAYMILL_PRIVATE_KEY": "pretend_key",
+                "RECALL_PAYMILL_URL": "http://localhost:6565/",
                 "RECALL_REDIS_DB": "7",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
-                "RECALL_DEBUG_MODE": "true",
                 "RECALL_SMTPD_HOST": "localhost",
                 "RECALL_SMTPD_PORT": "7778",
-                "RECALL_MAILFILE": "/tmp/recall_debug_mail"
                 })
         print("Using debug mode settings")
     elif "RECALL_TEST_MODE" in os.environ:
@@ -83,19 +87,22 @@ def load_settings():
                 "RECALL_API_HOST": "localhost",
                 "RECALL_API_PORT": "6666",
                 "RECALL_ELASTICSEARCH_HOST": "localhost",
-                "RECALL_ELASTICSEARCH_PORT": "9200",
                 "RECALL_ELASTICSEARCH_INDEX": "recalltest",
+                "RECALL_ELASTICSEARCH_PORT": "9200",
+                "RECALL_MAILFILE": "/tmp/recall_test_mail",
                 "RECALL_MARK_LIMIT": "100",
                 "RECALL_MONGODB_DB_NAME": "test",
                 "RECALL_MONGODB_HOST": "localhost",
                 "RECALL_MONGODB_PORT": "27017",
+                "RECALL_PAYMILL_OFFER": "pretend_offer",
+                "RECALL_PAYMILL_PRIVATE_KEY": "pretend_key",
+                "RECALL_PAYMILL_URL": "http://localhost:6565/",
                 "RECALL_REDIS_DB": "6",
                 "RECALL_REDIS_HOST": "localhost",
                 "RECALL_REDIS_PORT": "6379",
-                "RECALL_TEST_MODE": "true",
                 "RECALL_SMTPD_HOST": "localhost",
                 "RECALL_SMTPD_PORT": "6667",
-                "RECALL_MAILFILE": "/tmp/recall_test_mail"
+                "RECALL_TEST_MODE": "true",
                 })
         print("Using test mode settings")
     else:

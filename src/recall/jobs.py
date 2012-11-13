@@ -23,6 +23,7 @@ import json
 import robotexclusionrulesparser as rerp
 import time
 from string import Template
+from abc import ABCMeta, abstractmethod
 
 import requests
 from bs4 import BeautifulSoup
@@ -52,6 +53,11 @@ def status():
         return "ok"
     except Exception:
         return "ERROR"
+
+class Job(metaclass=ABCMeta):
+    @abstractmethod
+    def do(self):
+        pass
 
 class SendInvite(object):
     def __init__(self, user):

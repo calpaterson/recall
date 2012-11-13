@@ -6,19 +6,22 @@ PROJECT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/..
 export RECALL_TEST_MODE=true
 
 cd $PROJECT_ROOT/ops/data/
-python -m http.server 8777 &
+python -m http.server 8777 > /dev/null 2>&1 &
 cd -
 WEBSERVER_PID=$!
-python ${PROJECT_ROOT}/src/fake_mailserver.py &
+python ${PROJECT_ROOT}/src/fake_mailserver.py > /dev/null 2>&1 &
 MAILSERVER_PID=$!
-python ${PROJECT_ROOT}/src/server.py &
+python ${PROJECT_ROOT}/src/fake_paymill.py > /dev/null 2>&1 &
+PAYMILL_PID=$!
+python ${PROJECT_ROOT}/src/server.py > /dev/null 2>&1 &
 SERVER_PID=$!
-python ${PROJECT_ROOT}/src/worker.py &
+python ${PROJECT_ROOT}/src/worker.py > /dev/null 2>&1 &
 WORKER_PID=$!
 
 # Hack to wait for servers to start
 sleep 2
 
-trap 'kill $WEBSERVER_PID; kill $MAILSERVER_PID; kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
+trap 'kill $WEBSERVER_PID; kill $MAILSERVER_PID; kill $PAYMILL_PID; kill $SERVER_PID; kill $WORKER_PID' SIGINT SIGTERM EXIT
 
 python -m unittest discover -s $PROJECT_ROOT/src/ -v
+# python $PROJECT_ROOT/src/test_people.py

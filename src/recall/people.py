@@ -23,6 +23,7 @@ from recall.data import whitelist, blacklist
 from recall import convenience as c
 from recall import plugins
 from recall import jobs
+from recall import paymill
 
 app = Bottle()
 app.install(plugins.ppjson)
@@ -60,6 +61,7 @@ def request_invite(who):
             "firstName",
             "surname",
             "email",
+            "token",
             ])
     if "email" not in user:
         return "You must provide an email field", 400
@@ -68,8 +70,8 @@ def request_invite(who):
     c.db().users.ensure_index("email", unique=True)
     c.db().users.insert(user, safe=True)
     response.status = 202
-    logger.info("{email} requested an invite".format(email=who))
-    jobs.enqueue(jobs.SendInvite(user), priority=2)
+    logger.info("{email} subscribed".format(email=who))
+    jobs.enqueue(paymill.StartBilling(user["email"], user["token"]))
 
 @app.post("/<who>/<email_key>")
 def verify_email(who, email_key):
