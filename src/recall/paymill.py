@@ -22,25 +22,30 @@ from recall.convenience import settings
 from recall import jobs
 from recall import convenience
 
+
 class UpstreamError(Exception):
     def __init__(self, response):
         Exception.__init__(self, repr(
-                {"message": response.text,
-                     "status_code": response.status_code,
-                     "form": response.request.data}))
+            {"message": response.text,
+             "status_code": response.status_code,
+             "form": response.request.data}))
+
 
 class OurError(Exception):
     def __init__(self, response):
         Exception.__init__(self, repr(
-                {"message": response.text,
-                     "status_code": response.status_code,
-                     "form": response.request.data}))
+            {"message": response.text,
+             "status_code": response.status_code,
+             "form": response.request.data}))
+
 
 def _url():
     return settings["RECALL_PAYMILL_URL"]
 
+
 def _auth():
     return settings["RECALL_PAYMILL_PRIVATE_KEY"], "no_password"
+
 
 def _handle_failure(response):
     if 400 <= response.status_code <= 499:
@@ -48,19 +53,22 @@ def _handle_failure(response):
     elif 500 <= response.status_code <= 599:
         raise UpstreamError(response)
 
+
 def _create_client(user):
-    form = { "email": user["email"] }
+    form = {"email": user["email"]}
     response = requests.post(
         _url() + "clients", verify=False, auth=_auth(), data=form)
     _handle_failure(response)
     return response.json["data"]["id"]
 
+
 def _create_credit_card(token, client_identifier):
-    form = { "client": client_identifier, "token": token }
+    form = {"client": client_identifier, "token": token}
     response = requests.post(
         _url() + "payments", verify=False, auth=_auth(), data=form)
     _handle_failure(response)
     return response.json["data"]["id"]
+
 
 def _create_subscription(client_identifier, credit_card_identifier):
     offer_identifier = settings["RECALL_PAYMILL_OFFER"]
@@ -68,11 +76,12 @@ def _create_subscription(client_identifier, credit_card_identifier):
         "client": client_identifier,
         "offer": offer_identifier,
         "payment": credit_card_identifier
-        }
+    }
     response = requests.post(
         _url() + "subscriptions", verify=False, auth=_auth(), data=form)
     _handle_failure(response)
     return response.json["data"]["id"]
+
 
 def _start_billing(user, token):
     """Begin billing a user in Paymill, returning Paymill's identifiers.
@@ -90,6 +99,7 @@ def _start_billing(user, token):
             "credit_card_identifier": credit_card_identifier,
             "subscription_identifier": subscription_identifier}
 
+
 def _has_been_recently_billed(user):
     """Return True if a recent billing can be found, False otherwise."""
     response = requests.get(
@@ -102,6 +112,7 @@ def _has_been_recently_billed(user):
         if transaction["client"]["id"] == client_identifier:
             return transaction["status"] == "closed"
     return False
+
 
 class StartBilling(jobs.Job):
     def __init__(self, email, token):
@@ -118,6 +129,7 @@ class StartBilling(jobs.Job):
         logger.info("Started billing " + user["email"])
         jobs.enqueue(CheckBilling(user), priority=3)
 
+
 class CheckBilling(jobs.Job):
     def __init__(self, user, last_noted=datetime.now()):
         assert type(user) == dict
@@ -128,10 +140,10 @@ class CheckBilling(jobs.Job):
         logger = convenience.logger("CheckBilling")
         if _has_been_recently_billed(self.user):
             logger.info("Billing for {email} went through".format(
-                    email=self.user["email"]))
+                email=self.user["email"]))
             jobs.enqueue(jobs.SendInvite(self.user))
         else:
-            if last_noted < (datetime.now() - timedelta(hours=1)):
+            if self.last_noted < (datetime.now() - timedelta(hours=1)):
                 email = self.user["email"]
                 # send some message it's all going wrong!
                 logger.warn(
@@ -142,4 +154,5 @@ class CheckBilling(jobs.Job):
                 logger.debug(
                     "Billing for {email} has not happened".format(
                         email=email))
-                jobs.enqueue(CheckBilling(self.user, last_noted=last_noted), priority=3)
+                jobs.enqueue(CheckBilling(
+                    self.user, self.last_noted=last_noted), priority=3)
