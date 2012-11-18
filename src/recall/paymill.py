@@ -121,11 +121,10 @@ class StartBilling(jobs.Job):
         self.token = token
 
     def do(self):
-        logger = convenience.logger("StartBilling")
         user = convenience.db().users.find_one({"email": self.email})
         user["paymill"] = _start_billing(user, self.token)
         convenience.db().users.save(user, safe=True)
-        logger.info("Started billing " + user["email"])
+        self.logger.info("Started billing " + user["email"])
         jobs.enqueue(CheckBilling(user), priority=3)
 
 
@@ -136,21 +135,20 @@ class CheckBilling(jobs.Job):
         self.last_noted = last_noted
 
     def do(self):
-        logger = convenience.logger("CheckBilling")
         if _has_been_recently_billed(self.user):
-            logger.info("Billing for {email} went through".format(
+            self.logger.info("Billing for {email} went through".format(
                 email=self.user["email"]))
             jobs.enqueue(jobs.SendInvite(self.user))
         else:
             if self.last_noted < (datetime.now() - timedelta(hours=1)):
                 email = self.user["email"]
                 # send some message it's all going wrong!
-                logger.warn(
+                self.logger.error(
                     "Billing for {email} has not happened in last hour".format(
                         email=email))
                 jobs.enqueue(CheckBilling(self.user), priority=3)
             else:
-                logger.debug(
+                self.logger.debug(
                     "Billing for {email} has not happened".format(
                         email=email))
                 jobs.enqueue(CheckBilling(

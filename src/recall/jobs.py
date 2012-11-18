@@ -59,6 +59,16 @@ class Job(metaclass=ABCMeta):
     def do(self):
         pass
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        if "logger" in state:
+            del state['logger']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self.logger = conv.logger(self.__class__.__name__)
+
 class SendInvite(object):
     def __init__(self, user):
         self.user = user
