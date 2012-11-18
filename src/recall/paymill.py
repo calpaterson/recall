@@ -108,7 +108,6 @@ def _has_been_recently_billed(user):
     client_identifier = user["paymill"]["client_identifier"]
     transactions = response.json["data"]
     for transaction in transactions:
-        print(transactions)
         if transaction["client"]["id"] == client_identifier:
             return transaction["status"] == "closed"
     return False
@@ -155,4 +154,4 @@ class CheckBilling(jobs.Job):
                     "Billing for {email} has not happened".format(
                         email=email))
                 jobs.enqueue(CheckBilling(
-                    self.user, self.last_noted=last_noted), priority=3)
+                    self.user, last_noted=self.last_noted), priority=3)

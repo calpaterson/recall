@@ -57,6 +57,7 @@ def logger(name):
     return _loggers[name]
 
 def load_settings():
+    logger_ = logger("load_settings")
     if "RECALL_DEBUG_MODE" in os.environ:
         settings.update({
                 "RECALL_API_BASE_URL": "https://localhost:7777",
@@ -80,7 +81,7 @@ def load_settings():
                 "RECALL_SMTPD_HOST": "localhost",
                 "RECALL_SMTPD_PORT": "7778",
                 })
-        print("Using debug mode settings")
+        logger_.warning("Using debug mode settings")
     elif "RECALL_TEST_MODE" in os.environ:
         settings.update({
                 "RECALL_API_BASE_URL": "https://localhost:6666",
@@ -104,7 +105,7 @@ def load_settings():
                 "RECALL_SMTPD_PORT": "6667",
                 "RECALL_TEST_MODE": "true",
                 })
-        print("Using test mode settings")
+        logger_.warning("Using test mode settings")
     else:
         for name in os.environ:
             if name.startswith("RECALL_"):
