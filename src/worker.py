@@ -26,9 +26,11 @@ settings = convenience.settings
 
 logger = None
 
+
 def stop(unused_signal, unused_frame):
     logger.info("Stopping")
     exit(0)
+
 
 def main():
     try:
