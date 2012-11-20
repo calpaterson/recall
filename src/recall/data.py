@@ -14,19 +14,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def whitelist(dict_, whitelist):
-    d = {}
-    for k, v in list(dict_.items()):
-        if k in whitelist:
-            d[k] = v
-    return d
+def whitelist(old_dict, allowed):
+    new_dict = {}
+    for key in old_dict:
+        if key in allowed:
+            new_dict[key] = old_dict[key]
+    return new_dict
 
-def blacklist(dict_, blacklist):
-    d = {}
-    for k, v in list(dict_.items()):
-        if k not in blacklist:
-            d[k] = v
-    return d
+def blacklist(old_dict, not_allowed):
+    new_dict = {}
+    for key in old_dict:
+        if key in not_allowed:
+            pass
+        else:
+            new_dict[key] = old_dict[key]
+    return new_dict
 
 def has_problematic_keys(mark):
     mark_queue = []

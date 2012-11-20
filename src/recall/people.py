@@ -52,6 +52,9 @@ def user_(who):
 def self_(who, user):
     if who != user["email"]:
         response.status = 400
+    else:
+        return whitelist(user, ["pseudonym", "firstName", "surname",
+                                "email"])
 
 @app.post("/<who>/")
 def request_invite(who):
@@ -108,4 +111,4 @@ def verify_email(who, email_key):
                 abort(404, "No such email_key or wrong email")
     user = c.db().users.find_one({"email_key": email_key})
     response.status = 201
-    return blacklist(user, ["_id", "email_key", "password_hash"])
+    return blacklist(user, ["_id",, "email_key",  "password_hash"])
