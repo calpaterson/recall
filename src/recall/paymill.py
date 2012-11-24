@@ -22,6 +22,7 @@ from recall.convenience import settings
 from recall import jobs
 from recall import convenience
 
+_VERIFY_SSL = False
 
 class UpstreamError(Exception):
     def __init__(self, response):
@@ -57,7 +58,7 @@ def _handle_failure(response):
 def _create_client(user):
     form = {"email": user["email"]}
     response = requests.post(
-        _url() + "clients", verify=False, auth=_auth(), data=form)
+        _url() + "clients", verify=_VERIFY_SSL, auth=_auth(), data=form)
     _handle_failure(response)
     return response.json["data"]["id"]
 
@@ -65,7 +66,7 @@ def _create_client(user):
 def _create_credit_card(token, client_identifier):
     form = {"client": client_identifier, "token": token}
     response = requests.post(
-        _url() + "payments", verify=False, auth=_auth(), data=form)
+        _url() + "payments", verify=_VERIFY_SSL, auth=_auth(), data=form)
     _handle_failure(response)
     return response.json["data"]["id"]
 
@@ -78,7 +79,7 @@ def _create_subscription(client_identifier, credit_card_identifier):
         "payment": credit_card_identifier
     }
     response = requests.post(
-        _url() + "subscriptions", verify=False, auth=_auth(), data=form)
+        _url() + "subscriptions", verify=_VERIFY_SSL, auth=_auth(), data=form)
     _handle_failure(response)
     return response.json["data"]["id"]
 
@@ -103,7 +104,7 @@ def _start_billing(user, token):
 def _has_been_recently_billed(user):
     """Return True if a recent billing can be found, False otherwise."""
     response = requests.get(
-        _url() + "transactions", verify=False, auth=_auth())
+        _url() + "transactions", verify=_VERIFY_SSL, auth=_auth())
     _handle_failure(response)
     client_identifier = user["paymill"]["client_identifier"]
     transactions = response.json["data"]
