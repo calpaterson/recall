@@ -111,4 +111,4 @@ def verify_email(who, email_key):
                 abort(404, "No such email_key or wrong email")
     user = c.db().users.find_one({"email_key": email_key})
     response.status = 201
-    return blacklist(user, ["_id",, "email_key",  "password_hash"])
+    return blacklist(user, ["_id", "email_key",  "password_hash"])
