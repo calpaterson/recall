@@ -7,4 +7,4 @@ virtualenv --python=python3 /var/recall/environment/
 pip install /usr/share/recall/bundle.zip
 deactivate
 echo "...done"
-echo "Now rename /etc/recall.config.sh.example to /etc/recall.config.sh"
+echo "Now rename /etc/recall/config.sh.example to /etc/recall/config.sh"
