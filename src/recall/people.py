@@ -44,8 +44,9 @@ def user_(who):
                 "email",
                 "firstName",
                 ])
-    except AttributeError:
-        logger.warn("Asked about {email}, but that is not a user".format(email=who))
+    except TypeError:
+        logger.warn("Asked about {email}, but that is not a user".format(
+            email=who))
         abort(404, "User not found")
 
 @app.get("/<who>/self")

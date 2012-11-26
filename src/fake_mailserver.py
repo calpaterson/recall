@@ -24,7 +24,7 @@ settings = conv.settings
 
 class FakeMailServer(smtpd.SMTPServer):
     def __init__(self, localaddr, remoteaddr):
-        self.logger = conv.logger("fake_smtpd")
+        self.logger = conv.logger("fake_mailserver")
         self.logger.info("Starting on port " + str(localaddr[1]))
         smtpd.SMTPServer.__init__(self, localaddr, remoteaddr)
 

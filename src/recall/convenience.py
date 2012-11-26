@@ -36,6 +36,11 @@ def db():
         settings["RECALL_MONGODB_HOST"],
         int(settings["RECALL_MONGODB_PORT"]))[db_name]
 
+_logging = True
+def no_logging():
+    global _logging
+    _logging = False
+
 _loggers = {}
 
 def logger(name):
@@ -52,7 +57,8 @@ def logger(name):
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(logging.INFO)
-        logger.addHandler(handler)
+        if _logging:
+            logger.addHandler(handler)
         _loggers[name] = logger
     return _loggers[name]
 
@@ -179,10 +185,11 @@ def create_test_user(fixture_user=False):
 
     class User(object):
         email = None
-        def __init__(self, pseudonym, email, password):
+        def __init__(self, pseudonym, email, password, id):
             self.pseudonym = pseudonym
             self.email = email
             self.password = password
+            self.id = id
 
         def headers(self):
             return {"x-email": self.email, "x-password": self.password}
@@ -198,7 +205,8 @@ def create_test_user(fixture_user=False):
     url = new_url() + "people/" + email + "/" + email_key
     requests.post(url, data=post_data,
                   headers={"content-type": "application/json"})
-    return User(pseudonym, email, password)
+    user = requests.get(url, headers={"content-type": "application/json"}).json
+    return User(pseudonym, email, password, "")
 
 def with_patience(test, seconds=7, gap=0.1):
     give_up = int(time.time()) + seconds
