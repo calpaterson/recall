@@ -3,5 +3,5 @@ set -e
 set -x
 
 source /var/recall/environment/bin/activate
-source /etc/recall.config.sh
+source /etc/recall/config.sh
 python /usr/share/recall/src/worker.py
