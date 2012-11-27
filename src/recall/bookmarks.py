@@ -52,7 +52,7 @@ def add_public(who, when, user):
     request.json["£created"] = conv.unixtime()
     conv.db().bookmarks.insert(request.json)
     del request.json["_id"]
-    jobs.enqueue(jobs.IndexRecord(request.json), priority=1)
+    jobs.enqueue(search.IndexRecord(request.json), priority=1)
     response.status = 202
 
 @app.post("/<who>/private/<when>/")
@@ -114,7 +114,7 @@ def import_(who, user):
     for each in bookmarks:
         conv.db().eachs.insert(each)
         del each["_id"]
-        jobs.enqueue(jobs.IndexRecord(each), priority=1)
+        jobs.enqueue(search.IndexRecord(each), priority=1)
     response.status = 202
 
 @app.get("/<who>/all/recent/")

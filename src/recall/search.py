@@ -15,12 +15,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
 from pprint import pformat
+from urllib.parse import urlparse
+import json
+import robotexclusionrulesparser as rerp
+import time
 
 import requests
+from bs4 import BeautifulSoup
+from redis import StrictRedis
 
+from recall import messages, jobs
 from recall import convenience as conv
+
 
 def get_es_base_url():
     return "http://" + conv.settings["RECALL_ELASTICSEARCH_HOST"] + ":" +\
@@ -157,3 +164,70 @@ def search(queryBuilder):
     except KeyError:
         conv.logger("search").exception("Elasticsearch error: " + str(response.json))
     return response.json["hits"]["total"], marks
+
+class IndexRecord(jobs.Job):
+    """Index a record (part of a mark) in elasticsearch"""
+    user_agent = "Recall (like Googlebot/2.1) - email cal@calpaterson.com for support"
+
+    def __init__(self, record):
+        self.record = record
+
+    def may_fetch(self, hyperlink):
+        url_obj = urlparse(hyperlink)
+        robots_url = url_obj.scheme + "://" + url_obj.netloc + "/robots.txt"
+        robots_parser = rerp.RobotExclusionRulesParser()
+        robots_parser.user_agent = self.user_agent
+        robots_parser.fetch(robots_url)
+        allowed = robots_parser.is_allowed(self.user_agent, hyperlink)
+        if not allowed:
+            self.logger.warn("Not allowed to fetch " + hyperlink)
+        return allowed
+
+    def get_fulltext(self, mark):
+        try:
+            headers = {"User-Agent": self.user_agent}
+            if "hyperlink" in mark and self.may_fetch(mark["hyperlink"]):
+                response = requests.get(mark["hyperlink"], headers=headers)
+                if response.status_code in range(200, 300):
+                    mark["£fulltext"] = BeautifulSoup(response.content).get_text()
+                else:
+                    self.logger.warn("Requested {hyperlink}, but got {status_code}".format(
+                        hyperlink=mark["hyperlink"],
+                        status_code=response.status_code))
+        except Exception as e:
+            self.logger.exception("Error while getting fulltext" + repr({
+                "hyperlink": mark["hyperlink"],
+                "response_status": response.status_code}))
+
+
+    def update_last_indexed_time(self, mark):
+        mark["£last_indexed"] = int(time.time())
+        db = conv.db()
+        db.marks.update(
+            {"@": mark["@"], "~": mark["~"]},
+            {"$set": {"£last_indexed": mark["£last_indexed"]},
+             "$unset": "£q"})
+
+    def mark_for_record(self, record):
+        if ":" not in record:
+            mark = record
+        else:
+            db = conv.db()
+            mark = db.marks.find_one(
+                {"@": record[":"]["@"], "~": record[":"]["~"]})
+            del mark["_id"]
+        return mark
+
+    def do(self):
+        mark = self.mark_for_record(self.record)
+        self.update_last_indexed_time(mark)
+
+        self.get_fulltext(mark)
+
+        url = "http://{hostname}:{port}/{index}/{type}/{id}".format(
+            hostname = conv.settings["RECALL_ELASTICSEARCH_HOST"],
+            port = int(conv.settings["RECALL_ELASTICSEARCH_PORT"]),
+            index = conv.settings["RECALL_ELASTICSEARCH_INDEX"],
+            type = "mark",
+            id = mark["@"] + str(mark["~"]))
+        requests.post(url, data=json.dumps(mark))
