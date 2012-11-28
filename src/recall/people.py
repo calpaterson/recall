@@ -43,6 +43,7 @@ def user_(who):
         return whitelist(c.db().users.find_one({"email": who}), [
                 "email",
                 "firstName",
+                "pseudonym"
                 ])
     except TypeError:
         logger.warn("Asked about {email}, but that is not a user".format(
@@ -54,8 +55,11 @@ def self_(who, user):
     if who != user["email"]:
         response.status = 400
     else:
-        return whitelist(user, ["pseudonym", "firstName", "surname",
-                                "email"])
+        return whitelist(user, ["pseudonym",
+                                "firstName",
+                                "surname",
+                                "email",
+                                "private_email"])
 
 @app.post("/<who>/")
 def request_invite(who):
@@ -64,13 +68,14 @@ def request_invite(who):
             "pseudonym",
             "firstName",
             "surname",
-            "email",
+            "private_email",
             "token",
             ])
-    if "email" not in user:
-        return "You must provide an email field", 400
+    if "private_email" not in user:
+        abort(400, "You must provide a private_email field")
     user["email_key"] = str(uuid.uuid4())
     user["registered"] = c.unixtime()
+    user["email"] = who
     c.db().users.ensure_index("email", unique=True)
     c.db().users.insert(user, safe=True)
     response.status = 202
@@ -89,27 +94,17 @@ def verify_email(who, email_key):
         salt = bcrypt.gensalt()
     password_hash = bcrypt.hashpw(request.json["password"], salt)
 
-    spec = {"email_key": email_key, "email": request.json["email"],
-            "verified": {"$exists": False}}
+    spec = {"email_key": email_key, "verified": {"$exists": False}}
     update = {"$set": {"password_hash": password_hash,
                        "verified": c.unixtime()}}
     success = c.db().users.update(spec, update, safe=True)["updatedExisting"]
     if not success:
-        if c.db().users.find_one({"email_key": email_key, "email": request.json["email"]}):
+        if c.db().users.find_one({"email_key": email_key}):
             logger.warn("{email} tried to verify a second time".format(email=who))
             abort(403, "Already verified")
         else:
-            user = c.db().users.find_one({"email": who})
-            if user is not None:
-                right_key = user["email_key"]
-                logger.warn("{email} tried to verify with {wrong_key} but should use {right_key}".format(
-                        email=who, wrong_key = email_key, right_key=right_key))
-                abort(404, "No such email_key or wrong email")
-            else:
-                logger.warn("{email} tried to verify with {email_key}, but " +
-                            "never requested an invite.".format(
-                        email=who, email_key=email_key))
-                abort(404, "No such email_key or wrong email")
+            logger.warn("Someone tried to verify with a key, but it doesn't exist")
+            abort(404, "Don't know that key")
     user = c.db().users.find_one({"email_key": email_key})
     response.status = 201
     return blacklist(user, ["_id", "email_key",  "password_hash"])

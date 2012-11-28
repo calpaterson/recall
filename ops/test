@@ -23,4 +23,5 @@ sleep 2
 
 trap 'kill $WEBSERVER_PID; kill $MAILSERVER_PID; kill $PAYMILL_PID; kill $SERVER_PID; kill $WORKER_PID' SIGTERM
 
-python -m unittest discover -s $PROJECT_ROOT/src/ -v
+behave
+# python -m unittest discover -s $PROJECT_ROOT/src/ -v

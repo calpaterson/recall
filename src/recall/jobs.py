@@ -73,7 +73,7 @@ class SendInvite(object):
 
 Follow this link to get your invite to Recall:
 
-    https://recall.calpaterson.com/verify-email/$email_key
+    $scheme://$host/people/verify-email/$email_key
 
 Reply to this email if you have any trouble!
 Cal"""
@@ -84,7 +84,10 @@ Cal"""
         except KeyError:
             name = self.user["pseudonym"]
         body = template.substitute(
-            name=name, email_key=self.user["email_key"])
+            host=conv.settings["RECALL_API_HOST"],
+            scheme="http",
+            name=name,
+            email_key=self.user["email_key"])
         messages.email_(self.user["email"], "cal@calpaterson.com", body,
                         "Recall Invite")
         if "RECALL_TEST_MODE" not in conv.settings and\

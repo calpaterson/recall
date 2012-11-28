@@ -185,28 +185,27 @@ def create_test_user(fixture_user=False):
 
     class User(object):
         email = None
-        def __init__(self, pseudonym, email, password, id):
+        def __init__(self, pseudonym, email, password):
             self.pseudonym = pseudonym
             self.email = email
             self.password = password
-            self.id = id
 
         def headers(self):
             return {"x-email": self.email, "x-password": self.password}
 
-    post_data = json.dumps({"pseudonym": pseudonym, "email": email})
+    post_data = json.dumps({"pseudonym": pseudonym, "private_email": email})
     url = new_url() + "people/" + email + "/"
-    requests.post(url, data=post_data,
-                  headers={"content-type": "application/json"})
+    response = requests.post(url, data=post_data,
+                             headers={"content-type": "application/json"})
 
     email_key = db().users.find_one({"email": email})["email_key"]
 
     post_data = json.dumps({"password": password, "email": email})
     url = new_url() + "people/" + email + "/" + email_key
-    requests.post(url, data=post_data,
-                  headers={"content-type": "application/json"})
+    response = requests.post(url, data=post_data,
+                             headers={"content-type": "application/json"})
     user = requests.get(url, headers={"content-type": "application/json"}).json
-    return User(pseudonym, email, password, "")
+    return User(user["pseudonym"], user["email"], password)
 
 def with_patience(test, seconds=7, gap=0.1):
     give_up = int(time.time()) + seconds
