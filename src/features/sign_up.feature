@@ -1,5 +1,5 @@
 Feature: sign up
-  Scenario: sign up for recall
+  Scenario: as a user I want to be able to sign up for recall
     When i sign up
     Then i get an email
     And i have an account

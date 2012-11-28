@@ -66,7 +66,7 @@ def load_settings():
     logger_ = logger("load_settings")
     if "RECALL_DEBUG_MODE" in os.environ:
         settings.update({
-                "RECALL_API_BASE_URL": "https://localhost:7777",
+                "RECALL_API_BASE_URL": "http://localhost:7777",
                 "RECALL_API_HOST": "localhost",
                 "RECALL_API_PORT": "7777",
                 "RECALL_DEBUG_MODE": "true",
@@ -90,7 +90,7 @@ def load_settings():
         logger_.warning("Using debug mode settings")
     elif "RECALL_TEST_MODE" in os.environ:
         settings.update({
-                "RECALL_API_BASE_URL": "https://localhost:6666",
+                "RECALL_API_BASE_URL": "http://localhost:6666",
                 "RECALL_API_HOST": "localhost",
                 "RECALL_API_PORT": "6666",
                 "RECALL_ELASTICSEARCH_HOST": "localhost",
