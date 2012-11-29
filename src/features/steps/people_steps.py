@@ -54,6 +54,9 @@ def step(context):
             if "verify-email" in line:
                 verify_url = line.strip()
                 break
+        mail_file.seek(0)
+        contents = mail_file.read()
+        assert_that(contents, contains_string(context.private_email))
 
     response = requests.post(
         url=verify_url,

@@ -61,6 +61,6 @@ class SendInvite(jobs.Job):
             base_url=conv.settings["RECALL_API_BASE_URL"],
             name=self._name(),
             email_key=self.user["email_key"])
-        email_(self.user["email"], "cal@calpaterson.com", body,
+        email_(self.user["private_email"], "cal@calpaterson.com", body,
                         "Recall Invite")
         logger.info("Sent invite email to " + self.user["email"])
