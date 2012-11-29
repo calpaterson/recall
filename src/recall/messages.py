@@ -18,18 +18,18 @@ import smtplib
 from email.mime.text import MIMEText
 from string import Template
 
-# from twilio.rest import TwilioRestClient
+from recall.convenience import settings
+from recall import convenience as conv
+from recall import jobs
 
-from recall. convenience import settings
+_invite_template = """Hello $name,
 
-def text(to, body):
-    pass
-    # sid = settings["RECALL_TWILIO_SID"]
-    # auth_token = settings["RECALL_TWILIO_AUTH_TOKEN"]
-    # number = settings["RECALL_TWILIO_PHONE_NUMBER"]
-    # client = TwilioRestClient(sid, auth_token)
-    # message = client.sms.messages.create(
-    #     to=to, from_=number, body=body)
+Follow this link to get your invite to Recall:
+
+    $base_url/people/verify-email/$email_key
+
+Reply to this email if you have any trouble!
+Cal"""
 
 def email_(to, from_, body, subject):
     msg = MIMEText(body)
@@ -42,3 +42,25 @@ def email_(to, from_, body, subject):
         int(settings["RECALL_SMTPD_PORT"]))
     smtp_server.sendmail(from_, [to], msg.as_string())
     smtp_server.quit()
+
+class SendInvite(jobs.Job):
+    def __init__(self, user):
+        self.user = user
+
+    def _name(self):
+        try:
+            name = self.user["firstName"]
+            return name + " " + self.user["surname"]
+        except KeyError:
+            return self.user["pseudonym"]
+
+    def do(self):
+        logger = conv.logger("SendInvite")
+        template = Template(_invite_template)
+        body = template.substitute(
+            base_url=conv.settings["RECALL_API_BASE_URL"],
+            name=self._name(),
+            email_key=self.user["email_key"])
+        email_(self.user["email"], "cal@calpaterson.com", body,
+                        "Recall Invite")
+        logger.info("Sent invite email to " + self.user["email"])

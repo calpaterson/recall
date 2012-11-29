@@ -19,8 +19,7 @@ from datetime import datetime, timedelta
 import requests
 
 from recall.convenience import settings
-from recall import jobs
-from recall import convenience
+from recall import jobs, convenience, messages
 
 _VERIFY_SSL = False
 
@@ -139,7 +138,7 @@ class CheckBilling(jobs.Job):
         if _has_been_recently_billed(self.user):
             self.logger.info("Billing for {email} went through".format(
                 email=self.user["email"]))
-            jobs.enqueue(jobs.SendInvite(self.user))
+            jobs.enqueue(messages.SendInvite(self.user))
         else:
             if self.last_noted < (datetime.now() - timedelta(hours=1)):
                 email = self.user["email"]

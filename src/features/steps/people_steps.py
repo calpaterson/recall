@@ -54,7 +54,6 @@ def step(context):
             if "verify-email" in line:
                 verify_url = line.strip()
                 break
-            print(line)
 
     response = requests.post(
         url=verify_url,

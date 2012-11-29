@@ -17,13 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pickle
-from string import Template
 from abc import ABCMeta, abstractmethod
+from string import Template
+import pickle
 
 from redis import StrictRedis
 
-from recall import messages
 from recall import convenience as conv
 
 def redis_connection():
@@ -62,38 +61,3 @@ class Job(metaclass=ABCMeta):
     def __setstate__(self, state):
         self.__dict__.update(state)
         self.logger = conv.logger(self.__class__.__name__)
-
-class SendInvite(object):
-    def __init__(self, user):
-        self.user = user
-
-    def do(self):
-        logger = conv.logger("SendInvite")
-        template_string = """Hello $name,
-
-Follow this link to get your invite to Recall:
-
-    $scheme://$host/people/verify-email/$email_key
-
-Reply to this email if you have any trouble!
-Cal"""
-        template = Template(template_string)
-        try:
-            name = self.user["firstName"]
-            fullname = name + " " + self.user["surname"]
-        except KeyError:
-            name = self.user["pseudonym"]
-        body = template.substitute(
-            host=conv.settings["RECALL_API_HOST"],
-            scheme="http",
-            name=name,
-            email_key=self.user["email_key"])
-        messages.email_(self.user["email"], "cal@calpaterson.com", body,
-                        "Recall Invite")
-        if "RECALL_TEST_MODE" not in conv.settings and\
-                "RECALL_DEBUG_MODE" not in conv.settings:
-            for number in conv.settings["RECALL_ALERT_PHONE_NUMBERS"].split(", "):
-                messages.text(
-                    number, "{fullname} ({email}) just signed up for Recall".format(
-                        fullname=fullname, email=self.user["email"]))
-        logger.info("Sent invite email to " + self.user["email"])
