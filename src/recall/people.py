@@ -21,9 +21,7 @@ import bcrypt
 
 from recall.data import whitelist, blacklist
 from recall import convenience as c
-from recall import plugins
-from recall import jobs
-from recall import paymill
+from recall import plugins, jobs, messages
 
 app = Bottle()
 app.install(plugins.ppjson)
@@ -51,7 +49,7 @@ def user_(who):
         abort(404, "User not found")
 
 @app.get("/<who>/self")
-def self_(who, user):
+def _self(who, user):
     if who != user["email"]:
         response.status = 400
     else:
@@ -80,14 +78,10 @@ def request_invite(who):
     c.db().users.insert(user, safe=True)
     response.status = 202
     logger.info("{email} subscribed".format(email=who))
-    jobs.enqueue(paymill.StartBilling(user["email"], user["token"]))
+    jobs.enqueue(messages.SendInvite(user))
 
 @app.post("/<who>/<email_key>")
 def verify_email(who, email_key):
-    # FIXME: Need to harden this code:
-    # Information leaks between wrong email and email already existing
-    # if who != request.json["email"]:
-    #     abort(400, "You can only verify your own email")
     if "RECALL_TEST_MODE" in c.settings or "RECALL_DEBUG_MODE" in c.settings:
         salt = bcrypt.gensalt(1)
     else:

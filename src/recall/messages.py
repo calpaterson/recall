@@ -24,9 +24,11 @@ from recall import jobs
 
 _invite_template = """Hello $name,
 
-Follow this link to get your invite to Recall:
+We've given you the username: $username
 
-    $base_url/people/verify-email/$email_key
+Please enter this username and your password on this page to complete registration:
+
+    $base_url/verify-email/$email_key
 
 Reply to this email if you have any trouble!
 Cal"""
@@ -58,9 +60,11 @@ class SendInvite(jobs.Job):
         logger = conv.logger("SendInvite")
         template = Template(_invite_template)
         body = template.substitute(
-            base_url=conv.settings["RECALL_API_BASE_URL"],
+            username=self.user["email"].split("@")[0],
+            base_url=conv.settings["RECALL_WEB_BASE_URL"],
             name=self._name(),
-            email_key=self.user["email_key"])
+            email_key=self.user["email_key"],
+            )
         email_(self.user["private_email"], "cal@calpaterson.com", body,
                         "Recall Invite")
         logger.info("Sent invite email to " + self.user["email"])

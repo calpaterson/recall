@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 from datetime import datetime, timedelta
 import json
 import os
+import re
 import time
 
 from behave import *
@@ -50,12 +50,8 @@ def step(context):
 def step(context):
     time.sleep(0.5)
     with open(settings["RECALL_MAILFILE"], "r") as mail_file:
-        for line in mail_file:
-            if "verify-email" in line:
-                verify_url = line.strip()
-                break
-        mail_file.seek(0)
         contents = mail_file.read()
+        email_key =  re.search(r"[a-z0-9\-]{36}", contents).group()
         assert_that(contents, contains_string(context.private_email))
 
     response = requests.post(
