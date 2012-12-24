@@ -20,8 +20,10 @@
 from abc import ABCMeta, abstractmethod
 from string import Template
 import pickle
+import time
 
 from redis import StrictRedis
+from redis.exceptions import ConnectionError
 
 from recall import convenience as conv
 
@@ -38,7 +40,17 @@ def enqueue(job, priority=5):
 
 def dequeue():
     sub_queues = ["work1", "work2", "work3", "work4", "work5"]
-    return pickle.loads(redis_connection().blpop(sub_queues)[1])
+    while True:
+        try:
+            return pickle.loads(redis_connection().blpop(sub_queues)[1])
+        except ConnectionError as e:
+            logger = conv.logger("jobs")
+            logger.warn(
+                "Problem connecting to redis; host: {host}, port: {port}, db: {db}".format(
+                    host=conv.settings["RECALL_REDIS_HOST"],
+                    port=conv.settings["RECALL_REDIS_PORT"],
+                    db=conv.settings["RECALL_REDIS_DB"]))
+            time.sleep(5)
 
 def status():
     try:
