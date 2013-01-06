@@ -87,7 +87,7 @@ def user_all_bookmarks(who, user):
     data.strip_generated_keys(results)
     return results
 
-@app.route("/<who>/", method="PATCH")
+@app.route("/<who>/", method="POST")
 def import_(who, user):
     soup = BeautifulSoup(request.body)
     if soup.contents[0] != "NETSCAPE-Bookmark-file-1":
