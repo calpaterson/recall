@@ -195,9 +195,13 @@ class IndexRecord(jobs.Job):
                         hyperlink=mark["hyperlink"],
                         status_code=response.status_code))
         except Exception as e:
+            try:
+                status_code = response.status_code
+            except NameError:
+                status_code = None
             self.logger.exception("Error while getting fulltext" + repr({
                 "hyperlink": mark["hyperlink"],
-                "response_status": response.status_code}))
+                "response_status": status_code}))
 
 
     def update_last_indexed_time(self, mark):
