@@ -167,7 +167,7 @@ def search(queryBuilder):
 
 class IndexRecord(jobs.Job):
     """Index a record (part of a mark) in elasticsearch"""
-    user_agent = "Recall (like Googlebot/2.1) - email cal@calpaterson.com for support"
+    user_agent = "Recall - email cal@calpaterson.com for support"
 
     def __init__(self, record):
         self.record = record
