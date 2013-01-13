@@ -54,7 +54,7 @@ def step(context):
         assert_that(contents, contains_string(context.private_email))
 
     response = requests.post(
-        url=verify_url,
+        url=_people_url() + "example" + "/" + email_key,
         data=json.dumps({"password": "password"}),
         headers={"content-type": "application/json"})
     assert_that(response.status_code, is_(201))
