@@ -36,6 +36,7 @@ app = Bottle()
 app.install(plugins.ppjson)
 app.install(plugins.auth)
 app.install(plugins.cors)
+app.install(plugins.exceptions)
 app.error_handler = plugins.handler_dict
 
 @app.post("/<who>/public/<when>/")

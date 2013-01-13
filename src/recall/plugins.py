@@ -24,6 +24,7 @@ from pygments.formatters import HtmlFormatter
 import bcrypt
 
 from recall import convenience as conv
+from recall import logs
 
 def mimetypes(header_contents):
     """Returns a list of allowed mimetypes based on the Accept header"""
@@ -61,7 +62,7 @@ ppjson = PPJSONPlugin()
 class CORSPlugin(object):
     api = 2
 
-    def apply(self, callback, unused_content):
+    def apply(self, callback, unused_context):
         def wrapper(*args, **kwargs):
             return_value = callback(*args, **kwargs)
             response.set_header("Access-Control-Allow-Origin", "*")
@@ -121,3 +122,17 @@ class AuthenticationPlugin(object):
             return wrapper
 
 auth = AuthenticationPlugin()
+
+class _UncaughtExceptionLoggingPlugin_(object):
+    api = 2
+
+    def apply(self, callback, unused_context):
+        def wrapper(*args, **kwargs):
+            try:
+                return callback(*args, **kwargs)
+            except Exception as e:
+                logs.get(self.__class__.__name__).exception(e)
+                return None
+        return wrapper
+
+exceptions = _UncaughtExceptionLoggingPlugin_()

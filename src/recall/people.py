@@ -24,6 +24,7 @@ from recall import convenience as c
 from recall import plugins, jobs, messages
 
 app = Bottle()
+app.install(plugins.exceptions)
 app.install(plugins.ppjson)
 app.install(plugins.auth)
 app.install(plugins.cors)
